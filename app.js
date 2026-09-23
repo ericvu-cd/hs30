@@ -358,6 +358,25 @@
       return '<a href="' + esc(h) + '"' + (h === here ? ' aria-current="page"' : '') + '>' + esc(n.label) + '</a>';
     }).join('');
 
+    // 手機版選單：展開的面板從頁首下方開始
+    var setTop = function () { document.documentElement.style.setProperty('--topbar-h', $('.topbar').offsetHeight + 'px'); };
+    setTop();
+    window.addEventListener('resize', setTop);
+
+    // 手機版選單按鈕
+    var mb = $('#menuBtn'), nav = $('#nav');
+    if (mb && !mb._bound) {
+      mb._bound = true;
+      var setOpen = function (o) {
+        document.body.classList.toggle('menu-open', o);
+        mb.setAttribute('aria-expanded', o ? 'true' : 'false');
+        mb.textContent = o ? '關閉' : '選單';
+      };
+      mb.addEventListener('click', function () { setOpen(!document.body.classList.contains('menu-open')); });
+      nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    }
+
     // 封面按鈕
     var hb = $('#heroBtns');
     if (hb) {
@@ -400,17 +419,25 @@
     return '<h2 class="sec-h" id="' + id + '">' + esc(c.title || fallback) + '</h2>' + (c.intro ? '<p class="sec-intro">' + esc(c.intro) + '</p>' : '');
   }
 
+  // 服務卡片：直式大照片 + 名稱 + 一句話 + 服務資訊標籤
+  function svcCard(x, i) {
+    var src = img(x.cover, 900);
+    var chips = [x.duration, x.audience, x.fee].filter(Boolean).slice(0, 2);
+    return '<a class="svc-card" href="' + serviceUrl(x) + '"><div class="svc-photo ph t' + (i % 3 + 1) + '">' +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="' + (i < 2 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</div>' +
+      '<div class="svc-text"><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
+      (chips.length ? '<ul class="chips">' + chips.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>' : '') + '</div></a>';
+  }
+  function servicesHtml(rail) {
+    var list = shown(D.services);
+    if (!list.length) return '';
+    return '<div class="' + (rail ? 'svc-rail' : 'svc-grid2') + '">' + list.map(svcCard).join('') + '</div>';
+  }
   function cardHtml(x, href, i) {
     var src = img(x.cover, 800);
     return '<a class="card" href="' + href + '"><div class="ph t' + (i % 3 + 1) + '" aria-hidden="true">' +
       (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
-      '</div><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '<span class="card-more">了解更多</span></a>';
-  }
-
-  function servicesHtml(full) {
-    var list = shown(D.services);
-    if (!list.length) return '';
-    return '<div class="cards">' + list.map(function (x, i) { return cardHtml(x, serviceUrl(x), i); }).join('') + '</div>';
+      '</div><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '</a>';
   }
   function townsHtml() {
     var list = shown(D.towns);
@@ -430,20 +457,57 @@
       '<figcaption><strong>' + esc(v.title) + '</strong>' + (v.description ? '<span>' + esc(v.description) + '</span>' : '') + '</figcaption></figure>';
   }
 
+  function bookingActs(svc, compact) {
+    var V = C.visit, book = bookingUrl(svc);
+    return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">線上預約</a>' : '') +
+      (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? '打電話' : '打電話 ' + esc(V.phone)) + '</a>' : '') +
+      (V.line ? '<a class="btn line" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">LINE 詢問</a>' : '') +
+      (!V.line && V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook 私訊</a>' : '');
+  }
+
+  // 預約與到訪：開放狀態、時間地址、預約按鈕，一個區塊講完
   function bookingBarHtml(key) {
-    var V = C.visit, book = bookingUrl();
-    return '<section class="booking" id="booking" aria-labelledby="bkH"><div class="wrap booking-in"><div>' + secHead(key, 'bkH', '預約與到訪') +
-      '<p class="status" data-status><span class="dot"></span><span class="status-text"></span></p></div><div class="booking-acts">' +
-      (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">填寫預約表單</a>' : '') +
-      (V.phone ? '<a class="btn ' + (book ? 'ghost-dark' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">電話 ' + esc(V.phone) + '</a>' : '') +
-      (V.line ? '<a class="btn ghost-dark" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">LINE 詢問</a>' : '') +
-      (V.facebookUrl ? '<a class="btn ghost-dark" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook 私訊</a>' : '') +
-      '</div></div></section>';
+    var V = C.visit;
+    var fmt = function (t) { return String(t || '').replace(/^0/, ''); };
+    var map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(V.address);
+    return '<section class="booking" id="visit" aria-labelledby="bkH"><div class="wrap booking-in"><div class="booking-head">' + secHead(key, 'bkH', '預約與到訪') +
+      '<p class="status" data-status><span class="dot"></span><span class="status-text"></span></p></div>' +
+      '<dl class="booking-facts"><div><dt>開放時間</dt><dd>' + esc(V.openText) + ' ' + fmt(V.open) + '–' + fmt(V.close) + '</dd></div>' +
+      '<div><dt>地址</dt><dd><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address) + '</a>' + (V.transport ? '<small>' + esc(V.transport) + '</small>' : '') + '</dd></div></dl>' +
+      '<div class="booking-acts">' + bookingActs() + '</div></div></section>';
+  }
+
+  // 探索更多：社區、媒體報導、影片、山海集、紀錄文章，各一張小圖卡
+  function exploreHtml(key) {
+    var tiles = [];
+    var tw = shown(D.towns), md = mediaSorted(), vd = shown(D.videos);
+    if (tw.length) tiles.push(['?view=towns', '社區人文', tw.length + ' 個社區', img((tw.filter(function (x) { return x.cover; })[0] || {}).cover, 600)]);
+    if (md.length) tiles.push(['?view=media', '媒體報導', md.length + ' 則報導', img((md.filter(function (x) { return x.cover; })[0] || {}).cover, 600)]);
+    if (vd.length) { var id = ytId(vd[0].url); tiles.push(['?view=videos', '影片精選', vd.length + ' 部影片', id ? 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' : '']); }
+    if (C.shanhaiji && C.shanhaiji.text) tiles.push(['?view=shanhaiji', '《山海集》', '協會的地方刊物', '']);
+    tiles.push(['?view=archives', '紀錄文章', '活動紀錄與在地觀察', '']);
+    return '<section class="explore wrap" id="explore" aria-labelledby="exH">' + secHead(key, 'exH', '探索更多') + '<div class="tiles">' +
+      tiles.map(function (t, i) {
+        return '<a class="tile' + (t[3] ? ' has-img' : ' t' + (i % 3 + 1)) + '" href="' + t[0] + '">' +
+          (t[3] ? '<img data-ph="1" src="' + esc(t[3]) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
+          '<span class="tile-txt"><strong>' + esc(t[1]) + '</strong><small>' + esc(t[2]) + '</small></span></a>';
+      }).join('') + '</div></section>';
+  }
+
+  function shanhaijiHtml(sec) {
+    var S = C.shanhaiji || {};
+    return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers" aria-hidden="true">' +
+      (S.covers || []).slice(0, 3).map(function (c, i) { return '<div class="mag m' + (i + 1) + '"><span class="mv">山海集</span><span class="my">' + esc(c) + '</span></div>'; }).join('') +
+      '</div><div><h2 id="sH">' + esc((sec && sec.title) || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
+      (S.buyUrl ? '<a class="btn" href="' + esc(S.buyUrl) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
+      (S.blogUrl ? '<a class="btn ghost" href="' + esc(S.blogUrl) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
+      '</div></div></div></section>';
   }
 
   function renderHome() {
     setTitle('', C.description);
     $('#hero').hidden = false;
+    playIntro();
     var needPosts = (C.sections || []).some(function (x) { return x.key === 'posts' && x.show; });
     var postsP = needPosts ? api('posts', { per_page: C.homePostCount || 4, _fields: LIST_FIELDS }) : Promise.resolve([]);
     // 文章讀不到時，首頁其他段落照常顯示
@@ -452,32 +516,25 @@
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'services') {
-          var sv = servicesHtml();
-          return sv ? '<section class="svc-home wrap" id="services" aria-labelledby="svH">' + secHead(k, 'svH', '協會的服務') + sv + '</section>' : '';
+          var sv = servicesHtml(true);
+          return sv ? '<section class="svc-home" id="services" aria-labelledby="svH"><div class="wrap svc-home-head"><div>' + secHead(k, 'svH', '協會的服務') + '</div>' +
+            '<a class="more" href="?view=services">所有服務</a></div>' + sv + '<p class="wrap swipe-hint" aria-hidden="true">左右滑動看更多服務</p></section>' : '';
         }
         if (k === 'booking') return bookingBarHtml(k);
         if (k === 'events') return eventsHtml(k);
+        if (k === 'explore') return exploreHtml(k);
         if (k === 'towns') {
           var tw = townsHtml();
           return tw ? '<section class="towns wrap" id="towns" aria-labelledby="tH">' + secHead(k, 'tH', '小鎮社區人文') + tw + '</section>' : '';
         }
-        if (k === 'shanhaiji') {
-          var S = C.shanhaiji || {};
-          return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers" aria-hidden="true">' +
-            (S.covers || []).slice(0, 3).map(function (c, i) { return '<div class="mag m' + (i + 1) + '"><span class="mv">山海集</span><span class="my">' + esc(c) + '</span></div>'; }).join('') +
-            '</div><div><h2 id="sH">' + esc(sec.title || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
-            (S.buyUrl ? '<a class="btn" href="' + esc(S.buyUrl) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
-            (S.blogUrl ? '<a class="btn ghost" href="' + esc(S.blogUrl) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
-            '</div></div></div></section>';
-        }
+        if (k === 'shanhaiji') return shanhaijiHtml(sec);
         if (k === 'videos') {
           var vids = shown(D.videos).slice(0, 3).map(videoCard).join('');
           return vids ? '<section class="videos wrap" id="videos" aria-labelledby="vdH">' + secHead(k, 'vdH', '影片精選') +
             '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">看所有影片</a></p></section>' : '';
         }
         if (k === 'posts') {
-          if (posts === null) return '<section class="journal wrap" id="journal">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
-            '<p class="c-empty">文章暫時讀不到，請稍後重新整理，或到 <a href="https://' + esc(C.wordpressSite) + '/">原網站</a> 閱讀。</p></section>';
+          if (posts === null) return '';
           return '<section class="journal wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
             '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">看所有文章</a></div></section>';
         }
@@ -492,8 +549,27 @@
         return '';
       }).join('');
       updateOpenStatus();
+      var rail = $('.svc-rail');
+      if (rail && rail.scrollWidth <= rail.clientWidth + 4) { var h = $('.swipe-hint'); if (h) h.remove(); }
       if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
     });
+  }
+
+  // 首頁開場：標題逐字出現，接著古厝大門打開。每次開啟瀏覽器只播放一次；系統設定減少動態時不播放
+  function playIntro() {
+    var hero = $('#hero'), gate = $('#gateFig');
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = false;
+    try { seen = sessionStorage.getItem('fs30-intro') === '1'; sessionStorage.setItem('fs30-intro', '1'); } catch (e) { /* 忽略 */ }
+    if (reduce || seen) { hero.classList.add('intro-done'); return; }
+    var h = $('#heroName');
+    h.innerHTML = Array.prototype.map.call(h.textContent, function (ch, i) { return '<span style="--i:' + i + '">' + esc(ch) + '</span>'; }).join('');
+    hero.classList.add('intro');
+    setTimeout(function () {
+      gate.classList.add('is-open');
+      var b = $('#gateBtn'); if (b) { b.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-label', '關門'); }
+    }, 1300);
+    setTimeout(function () { hero.classList.add('intro-done'); }, 2400);
   }
 
   function upcomingEvents(service) {
@@ -651,9 +727,7 @@
       var book = bookingUrl(x), V = C.visit;
       info = '<aside class="svc-info" aria-label="服務資訊">' +
         (rows.length ? '<dl>' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : '') +
-        '<div class="svc-book">' +
-        (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">預約這項服務</a>' : '') +
-        (V.phone ? '<a class="btn' + (book ? ' ghost-dark' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">電話 ' + esc(V.phone) + '</a>' : '') +
+        '<div class="svc-book">' + bookingActs(x) +
         (V.email ? '<a class="more" href="mailto:' + esc(V.email) + '?subject=' + encodeURIComponent('詢問：' + x.title) + '">Email 詢問</a>' : '') +
         '</div></aside>';
     } else if (x.mapUrl) {
@@ -668,6 +742,7 @@
       '<div class="detail-grid"><div class="prose"><div class="entry">' + clean(x.body || '') + '</div>' + galleryHtml(x.gallery) + '</div>' + info + '</div>' +
       (evs.length ? '<section class="detail-sec" aria-labelledby="dEv"><h2 id="dEv">近期活動</h2>' + eventsListHtml(evs) + '</section>' : '') +
       '<section class="detail-sec" id="relPosts" hidden></section>' +
+      (kind === 'service' ? '<div class="m-book" role="region" aria-label="預約">' + bookingActs(x, true) + '</div>' : '') +
       '</article>';
   }
 
@@ -685,7 +760,7 @@
     setTitle(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文'));
     view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文')) + '</h1>' +
       (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
-      ((isSvc ? servicesHtml() : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
+      ((isSvc ? servicesHtml(false) : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
       (isSvc ? bookingBarHtml('booking') : '');
     updateOpenStatus();
   }
@@ -1032,6 +1107,7 @@
     if (g('view') === 'services') return renderIndex('services');
     if (g('view') === 'towns') return renderIndex('towns');
     if (g('view') === 'videos') return renderVideos();
+    if (g('view') === 'shanhaiji') { setTitle('山海集'); view.innerHTML = shanhaijiHtml(sectionConf('shanhaiji')); return; }
     if (g('media')) return renderMediaDetail(g('media'));
     if (g('view') === 'media') return renderMediaIndex();
     var post = g('p') || g('name');
@@ -1046,6 +1122,28 @@
     if (g('view') === 'archives') return renderArchives();
     if (g('view') === 'posts' || g('paged')) return renderList({ title: '所有文章', showFilter: true, keep: { view: 'posts' } });
     renderHome();
+  }
+
+  // 首頁精簡版（版面第 2 版）：服務為主，其他內容收進「探索更多」。管理程式發布後會把這個設定存起來
+  function migrateLayout(s) {
+    if ((s.layoutVersion || 1) >= 2) return;
+    var old = {};
+    (s.sections || []).forEach(function (x) { old[x.key] = x; });
+    var def = [
+      ['services', true, '協會的服務', '以陳家古厝為據點，提供導覽、展覽、課程與市集。'],
+      ['booking', true, '預約與到訪', '團體導覽與手作課程請先預約。'],
+      ['events', true, '近期活動', ''],
+      ['explore', true, '探索更多', ''],
+      ['posts', false, '活動紀錄與在地觀察', ''], ['media', false, '媒體報導', ''], ['towns', false, '小鎮社區人文', ''],
+      ['shanhaiji', false, '《山海集》', ''], ['videos', false, '影片精選', ''], ['visit', false, '到訪陳家古厝', ''],
+    ];
+    s.sections = def.map(function (d) {
+      var o = old[d[0]] || {};
+      var x = { key: d[0], show: d[1], title: o.title || d[2], intro: o.intro != null && o.intro !== '' ? o.intro : d[3] };
+      if (d[0] === 'media') x.count = o.count || 3;
+      return x;
+    });
+    s.layoutVersion = 2;
   }
 
   // 讀取 data/ 資料夾。cache: 'no-cache' 讓瀏覽器每次都確認有沒有新版本，管理程式發布後很快就看得到
@@ -1071,6 +1169,7 @@
   loadData().then(function () {
     C = D.site;
     C.sections = C.sections || [];
+    migrateLayout(C);
     if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {
       var at = C.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
       C.sections.splice(at || C.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });

@@ -147,12 +147,35 @@
     s.nav.forEach(function (n) { if (n.type === 'category' && n.target === '媒體報導') { n.type = 'media'; delete n.target; } });
     s.sections.forEach(function (x) { if (x.key === 'media') delete x.category; });
     s.featuredCategories = s.featuredCategories.filter(function (c) { return c !== '媒體報導'; });
+    migrateLayout(s);
     state.services.concat(state.towns).forEach(function (x) { x.gallery = x.gallery || []; });
     // 舊版資料沒有「媒體報導」段落時補上
     if (!s.sections.some(function (x) { return x.key === 'media'; })) {
       var at = s.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
       s.sections.splice(at || s.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
     }
+  }
+
+  // 首頁精簡版（版面第 2 版）：和網站 app.js 的 migrateLayout 相同
+  function migrateLayout(s) {
+    if ((s.layoutVersion || 1) >= 2) return;
+    var old = {};
+    (s.sections || []).forEach(function (x) { old[x.key] = x; });
+    var def = [
+      ['services', true, '協會的服務', '以陳家古厝為據點，提供導覽、展覽、課程與市集。'],
+      ['booking', true, '預約與到訪', '團體導覽與手作課程請先預約。'],
+      ['events', true, '近期活動', ''],
+      ['explore', true, '探索更多', ''],
+      ['posts', false, '活動紀錄與在地觀察', ''], ['media', false, '媒體報導', ''], ['towns', false, '小鎮社區人文', ''],
+      ['shanhaiji', false, '《山海集》', ''], ['videos', false, '影片精選', ''], ['visit', false, '到訪陳家古厝', ''],
+    ];
+    s.sections = def.map(function (d) {
+      var o = old[d[0]] || {};
+      var x = { key: d[0], show: d[1], title: o.title || d[2], intro: o.intro != null && o.intro !== '' ? o.intro : d[3] };
+      if (d[0] === 'media') x.count = o.count || 3;
+      return x;
+    });
+    s.layoutVersion = 2;
   }
 
   function isDirty() {
@@ -711,9 +734,9 @@
       }).join('') + '</div>' : '<p class="empty">目前沒有活動。</p>');
   }
 
-  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪（橫條）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
+  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
   function viewHome() {
-    return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。') +
+    return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
       '<div class="panel"><h2>封面按鈕</h2><div class="grid2">' + inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
       inp('site.hero.secondaryText', '第二個按鈕文字（連到預約）') + '</div></div>' +
       '<div class="panel"><h2>首頁段落</h2><div class="list">' + state.site.sections.map(function (s, i) {

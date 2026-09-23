@@ -64,7 +64,12 @@
   }
   function postUrl(p) { return q({ p: p.id }); }
   function pageUrl(p) { return q({ page_id: p.id }); }
-  function catUrl(c) { return q({ category_name: c.slugText }); }
+  function catUrl(c) { return isMediaCat(c.name || c.slugText) ? '?view=media' : q({ category_name: c.slugText }); }
+  // 媒體報導已經搬到管理程式：WordPress 的「媒體報導」分類改顯示新的媒體報導頁
+  function isMediaCat(name) {
+    var n = decodeSlug(String(name || ''));
+    return shown(D.media).length > 0 && (n === '媒體報導' || n === 'media' || n === '媒体报道');
+  }
   function tagUrl(t) { return q({ tag: t.slugText }); }
   function decodeSlug(s) { try { return decodeURIComponent(s); } catch (e) { return s; } }
   function setTitle(t, desc) {
@@ -313,7 +318,7 @@
       case 'posts': return '?view=archives';
       case 'visit': return './#visit';
       case 'search': return '?view=search';
-      case 'category': return q({ category_name: item.target || '' });
+      case 'category': return isMediaCat(item.target) ? '?view=media' : q({ category_name: item.target || '' });
       case 'url': return item.target || './';
       default: return './';
     }
@@ -859,6 +864,7 @@
   }
 
   function renderCategory(slug) {
+    if (isMediaCat(slug)) return renderMediaIndex();
     categoriesP.then(function (cats) {
       var c = cats.filter(function (x) { return x.slugText === slug || x.slug === slug || String(x.id) === slug || x.name === slug; })[0];
       if (!c) { var e = new Error('not found'); e.notFound = true; throw e; }
@@ -1064,6 +1070,11 @@
   loading();
   loadData().then(function () {
     C = D.site;
+    C.sections = C.sections || [];
+    if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {
+      var at = C.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
+      C.sections.splice(at || C.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
+    }
     API = 'https://public-api.wordpress.com/wp/v2/sites/' + C.wordpressSite;
     OLD_HOSTS = [C.wordpressSite.toLowerCase()];
     startWordPress();

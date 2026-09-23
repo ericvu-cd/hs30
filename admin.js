@@ -125,8 +125,8 @@
       }));
     }).then(function (r) {
       FILES.forEach(function (f, i) { state[f] = r[i]; });
-      normalize();
       saved = clone(state);
+      normalize();   // 自動調整（例如舊版選單）會顯示成尚未發布的修改，按發布就會存回 GitHub
       pending = {};
       removed = {};
     });
@@ -146,6 +146,7 @@
     // 媒體報導改由管理程式管理：舊的「WordPress 分類」選單項目換成新的媒體報導頁
     s.nav.forEach(function (n) { if (n.type === 'category' && n.target === '媒體報導') { n.type = 'media'; delete n.target; } });
     s.sections.forEach(function (x) { if (x.key === 'media') delete x.category; });
+    s.featuredCategories = s.featuredCategories.filter(function (c) { return c !== '媒體報導'; });
     state.services.concat(state.towns).forEach(function (x) { x.gallery = x.gallery || []; });
     // 舊版資料沒有「媒體報導」段落時補上
     if (!s.sections.some(function (x) { return x.key === 'media'; })) {

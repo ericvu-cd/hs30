@@ -377,7 +377,7 @@ h1.v{font-family:var(--serif);font-weight:900;font-size:clamp(64px,9.5vw,132px);
 .nf{padding:64px 0 120px;max-width:40em}
 .nf h1{font-family:var(--serif);font-weight:900;font-size:clamp(32px,4vw,48px);margin:0 0 12px}
 
-@media print{.mast,.nav,.react,
+@media print{.mast,.nav,.react,.share,.foot-grid,.pn,.related,.hero-cta,.booking-acts,.c-write{display:none!important}}
 /* 內文區裡的小字元件，不套用內文段落的大字 */
 .prose .share p.share-q{margin:0 6px 0 0;font-family:var(--sans);font-size:15px;line-height:1.6}
 .prose .old-c p.hint,.prose p.c-off{font-family:var(--sans);font-size:15px;line-height:1.7}
@@ -404,3 +404,70 @@ h1.v{font-family:var(--serif);font-weight:900;font-size:clamp(64px,9.5vw,132px);
 .prose .old-c .c-list .c-list{padding-left:16px}
 .prose .share p.share-q{margin:0 6px 0 0;font-family:var(--sans);font-size:15px;line-height:1.6}
 .prose .old-c .c-body p{font-family:var(--sans);font-size:16px;line-height:1.8;margin:0 0 .6em}
+
+/* ───────── 以協會服務為主軸的版面 ───────── */
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;padding:28px 0 40px}
+.btn.ghost-dark{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.hero .btn{background:var(--ink);color:var(--gold)}
+.hero .btn.ghost-dark{background:transparent;color:var(--on-gold);border-color:var(--on-gold)}
+.sec-intro{color:var(--muted);margin:10px 0 0;max-width:40em}
+
+.svc-home{padding:88px 0 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 32px;margin-top:36px}
+.cards-sm{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:32px 24px}
+.card{display:flex;flex-direction:column;text-decoration:none;color:inherit}
+.card .ph{aspect-ratio:4/3;border-radius:3px;overflow:hidden;margin-bottom:16px}
+.card .ph img{transition:transform .5s}
+.card:hover .ph img{transform:scale(1.03)}
+.card h3{font-family:var(--serif);font-weight:900;font-size:24px;line-height:1.4;margin:0}
+.cards-sm .card h3{font-size:20px}
+.card p{margin:8px 0 0;color:var(--muted);font-size:15.5px;line-height:1.75}
+.card-more{margin-top:12px;font-size:15px;font-weight:700;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:.3em}
+.card:hover h3{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:.2em}
+
+.booking{background:var(--paper-2);margin-top:96px;padding:48px 0}
+.booking-in{display:grid;grid-template-columns:1fr auto;gap:24px 48px;align-items:center}
+.booking .status{margin-top:14px}
+.booking-acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:760px){.booking-in{grid-template-columns:1fr}.booking-acts{justify-content:flex-start}}
+.towns .cards{margin-top:28px}
+.ev-date{margin:0}
+.ev-svc{margin-top:6px!important}
+.ev-svc a{font-size:14px;color:var(--link);text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:.25em}
+.visit-note{color:var(--muted);font-size:15px;margin:10px 0 0}
+
+.videos{padding:104px 0 0}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:32px 24px;margin-top:28px}
+.vid{margin:0}
+.vid-play,.vid iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:3px;overflow:hidden;background:var(--ink)}
+.vid-play{position:relative;padding:0;cursor:pointer}
+.vid-play img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
+.vid-btn{position:absolute;left:50%;top:50%;width:68px;height:48px;margin:-24px 0 0 -34px;border-radius:12px;background:var(--gold)}
+.vid-btn::after{content:"";position:absolute;left:27px;top:14px;border-left:18px solid #17222E;border-top:10px solid transparent;border-bottom:10px solid transparent}
+.vid-play:hover .vid-btn{filter:brightness(1.08)}
+.vid figcaption{margin-top:10px}
+.vid figcaption strong{display:block;font-family:var(--serif);font-size:19px;line-height:1.45}
+.vid figcaption span{display:block;color:var(--muted);font-size:15px;margin-top:4px}
+
+.detail{padding-bottom:88px}
+.detail-head{padding:32px 0 28px;max-width:46em}
+.detail-head h1{font-family:var(--serif);font-weight:900;font-size:clamp(34px,5vw,60px);line-height:1.25;margin:6px 0 0}
+.lead{font-family:var(--serif);font-size:clamp(19px,2vw,22px);line-height:1.8;margin:16px 0 0;color:var(--muted)}
+.detail .art-cover{margin-bottom:48px}
+.detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px 64px;align-items:start}
+.svc-info{position:sticky;top:24px;border-top:6px solid var(--gold);padding-top:20px}
+.svc-info dl{margin:0 0 20px;display:grid;grid-template-columns:auto 1fr;gap:10px 16px}
+.svc-info dt{color:var(--muted);font-size:14px;padding-top:2px}
+.svc-info dd{margin:0;font-weight:500}
+.svc-book{display:grid;gap:10px}
+.svc-book .btn{text-align:center}
+.svc-book .more{justify-self:start;margin-top:4px}
+@media (max-width:900px){.detail-grid{grid-template-columns:1fr}.svc-info{position:static;order:-1}}
+.detail-sec{margin-top:72px}
+.detail-sec h2{font-family:var(--serif);font-weight:900;font-size:28px;margin:0 0 12px}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:2em 0}
+.gallery-grid figure{margin:0}
+.prose .gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px}
+.detail-grid .prose{grid-column:auto;margin-top:0}
+.detail-grid .svc-info{grid-column:auto}
+@media (max-width:900px){.detail-grid .prose{margin-top:8px}}

@@ -1,30 +1,31 @@
 /* 番社參拾網站程式
-   訪客打開網頁時，直接向 WordPress.com 讀取文章、照片與留言，再用新版面顯示。
-   一般維護不需要改這個檔案；文字與選單請改 config.js。
+   ・網站設定、協會服務、社區人文、影片、活動：讀取 data/ 資料夾（用 admin.html 管理程式編輯）
+   ・文章、照片、留言：訪客打開網頁時，直接向 WordPress.com 讀取
+   一般維護不需要改這個檔案。
 
-   網址對照（沿用 WordPress 的參數寫法，舊網站的 ?p=123 短網址也能用）：
+   網址對照：
      ./                      首頁
-     ?p=123                  文章（依編號）
-     ?name=代稱               文章（依網址代稱）
-     ?page_id=45             頁面（依編號）
-     ?pagename=代稱           頁面（依網址代稱）
-     ?category_name=代稱      分類
-     ?tag=代稱                標籤
-     ?s=關鍵字                搜尋結果
-     ?view=archives          所有文章
-     ?view=search            搜尋頁
-     ?paged=2                列表第 2 頁（可和分類、標籤、搜尋一起用）
+     ?service=名稱            服務頁          ?view=services   所有服務
+     ?town=名稱               社區頁          ?view=towns      所有社區
+     ?view=videos            影片精選
+     ?p=123 / ?name=代稱      文章（沿用 WordPress 的寫法，舊網站的短網址也能用）
+     ?page_id=45 / ?pagename= WordPress 上的頁面
+     ?category_name=代稱      分類            ?tag=代稱         標籤
+     ?s=關鍵字                搜尋            ?view=search     搜尋頁
+     ?view=archives          所有文章         ?view=posts      文章列表（可加 &paged=2）
 */
 (function () {
   'use strict';
 
-  var C = window.SITE_CONFIG;
-  var API = 'https://public-api.wordpress.com/wp/v2/sites/' + C.wordpressSite;
-  var OLD_HOSTS = [C.wordpressSite];
+  var D = {};          // data/ 資料夾裡的網站資料
+  var C = {};          // 網站設定（data/site.json）
+  var API = '';
+  var OLD_HOSTS = [];
   var POST_FIELDS = 'id,date,slug,link,title,content,excerpt,categories,tags,comment_status,jetpack_featured_media_url,sticky';
   var LIST_FIELDS = 'id,date,link,title,excerpt,categories,jetpack_featured_media_url,sticky';
   var view = document.getElementById('view');
   var params = new URLSearchParams(location.search);
+  var categoriesP, pagesP;
 
   /* ---------- 小工具 ---------- */
 
@@ -116,16 +117,20 @@
     }
     return next(1);
   }
-  var categoriesP = cached('fs30-cats', function () {
+  function startWordPress() {
+  categoriesP = cached('fs30-cats-' + C.wordpressSite, function () {
     return allPages('categories', { _fields: 'id,name,slug,count,parent' }).then(function (list) {
       return list.map(function (c) { return { id: c.id, name: text(c.name), slug: c.slug, slugText: decodeSlug(c.slug), count: c.count }; });
     });
   });
-  var pagesP = cached('fs30-pages', function () {
+  pagesP = cached('fs30-pages-' + C.wordpressSite, function () {
     return allPages('pages', { _fields: 'id,slug,title,parent,menu_order,link' }).then(function (list) {
       return list.map(function (p) { return { id: p.id, slug: p.slug, title: title(p), parent: p.parent, order: p.menu_order, link: p.link }; });
     });
   });
+  categoriesP.catch(function () {});
+  pagesP.catch(function () {});
+  }
   function catsById(ids, cats) {
     return (ids || []).map(function (id) { return cats.filter(function (c) { return c.id === id; })[0]; })
       .filter(function (c) { return c && c.slug !== 'uncategorized'; });
@@ -266,19 +271,48 @@
       (hasMore ? '<a href="' + q(Object.assign({}, extra, { paged: n + 1 })) + '" rel="next">下一頁</a>' : '') + '</nav>';
   }
 
-  // 依連結寫法找出網址（頁面標題、分類名稱或網址）
-  function resolve(item, pages, cats) {
-    if (item.href) return item.href;
-    if (item.pageTitle) {
-      var p = pages.filter(function (x) { return x.title.indexOf(item.pageTitle) >= 0; })[0];
-      if (p) return pageUrl(p);
+  /* ---------- 網站資料 ---------- */
+
+  function shown(list) { return (list || []).filter(function (x) { return x && !x.hidden && x.title; }); }
+  function serviceUrl(x) { return q({ service: x.slug || x.title }); }
+  function townUrl(x) { return q({ town: x.slug || x.title }); }
+  function findBy(list, slug) {
+    return shown(list).filter(function (x) { return (x.slug || x.title) === slug || x.title === slug; })[0];
+  }
+  // 照片網址：管理程式上傳的是 uploads/ 開頭的相對路徑；WordPress 的照片用 ?w= 縮圖
+  function img(u, w) {
+    if (!u) return '';
+    if (/^uploads\//.test(u)) return u;
+    return sized(u, w);
+  }
+  function bookingUrl(svc) {
+    return (svc && svc.bookingUrl) || C.visit.bookingUrl || '';
+  }
+  function sectionConf(key) {
+    return (C.sections || []).filter(function (x) { return x.key === key; })[0] || { key: key, title: '', intro: '' };
+  }
+
+  // 選單項目的網址
+  function navHref(item) {
+    switch (item.type) {
+      case 'auto-services': return '?view=services';
+      case 'auto-towns': return '?view=towns';
+      case 'service': var sv = findBy(D.services, item.target); return sv ? serviceUrl(sv) : '?view=services';
+      case 'town': var tw = findBy(D.towns, item.target); return tw ? townUrl(tw) : '?view=towns';
+      case 'videos': return '?view=videos';
+      case 'posts': return '?view=archives';
+      case 'visit': return './#visit';
+      case 'search': return '?view=search';
+      case 'category': return q({ category_name: item.target || '' });
+      case 'url': return item.target || './';
+      default: return './';
     }
-    if (item.category) {
-      var c = cats.filter(function (x) { return x.name === item.category || x.slugText === item.category; })[0];
-      if (c) return catUrl(c);
-    }
-    if (window.console) console.warn('[連結] 找不到「' + item.label + '」對應的頁面，改連到搜尋。請檢查 config.js。');
-    return q({ s: item.label });
+  }
+  function navChildren(item) {
+    if (item.type === 'auto-services') return shown(D.services).map(function (x) { return { label: x.title, href: serviceUrl(x) }; });
+    if (item.type === 'auto-towns') return shown(D.towns).map(function (x) { return { label: x.title, href: townUrl(x) }; });
+    if (item.type === 'menu') return (item.children || []).map(function (c) { return { label: c.label, href: navHref(c) }; });
+    return [];
   }
 
   /* ---------- 頁首、頁尾 ---------- */
@@ -290,29 +324,33 @@
     $('#copy').textContent = '© ' + new Date().getFullYear() + ' ' + C.org;
     var V = C.visit;
     $('#contact').innerHTML = '<p>' + esc(V.address) + '</p><div class="foot-links">' +
-      '<a href="tel:' + esc(V.phone.replace(/-/g, '')) + '">' + esc(V.phone) + '</a>' +
-      '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a>' +
-      '<a href="' + esc(V.facebook.url) + '" target="_blank" rel="noopener">Facebook</a>' +
-      (V.bookingForm ? '<a href="' + esc(V.bookingForm) + '" target="_blank" rel="noopener">預約導覽</a>' : '') +
-      '<a href="?view=archives">所有文章</a><a href="?view=search">搜尋</a></div>';
+      (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a>' : '') +
+      (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a>' : '') +
+      (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook</a>' : '') +
+      (V.bookingUrl ? '<a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">預約導覽</a>' : '') +
+      '<a href="?view=services">服務項目</a><a href="?view=archives">所有文章</a><a href="?view=search">搜尋</a></div>';
 
-    // 選單先用暫時的連結顯示，讀到頁面清單後再換成正確網址
-    function draw(pages, cats) {
-      $('#nav').innerHTML = C.nav.map(function (n) {
-        if (n.children && n.children.length) {
-          var top = n.pageTitle || n.category ? resolve(n, pages, cats) : '';
-          return '<details><summary>' + esc(n.label) + '</summary><div class="sub">' +
-            (top && top.indexOf('?s=') !== 0 ? '<a href="' + esc(top) + '">' + esc(n.label) + '總覽</a>' : '') +
-            n.children.map(function (c) { return '<a href="' + esc(resolve(c, pages, cats)) + '">' + esc(c.label) + '</a>'; }).join('') +
-            '</div></details>';
-        }
-        return '<a href="' + esc(resolve(n, pages, cats)) + '">' + esc(n.label) + '</a>';
-      }).join('');
-      var here = location.search;
-      $$('#nav > a').forEach(function (a) { if (here && a.getAttribute('href') === here) a.setAttribute('aria-current', 'page'); });
+    var here = location.search || './';
+    $('#nav').innerHTML = (C.nav || []).map(function (n) {
+      var kids = navChildren(n);
+      if (kids.length) {
+        var top = n.type === 'menu' ? '' : navHref(n);
+        return '<details><summary>' + esc(n.label) + '</summary><div class="sub">' +
+          (top ? '<a href="' + esc(top) + '">' + esc(n.label) + '總覽</a>' : '') +
+          kids.map(function (c) { return '<a href="' + esc(c.href) + '">' + esc(c.label) + '</a>'; }).join('') + '</div></details>';
+      }
+      var h = navHref(n);
+      return '<a href="' + esc(h) + '"' + (h === here ? ' aria-current="page"' : '') + '>' + esc(n.label) + '</a>';
+    }).join('');
+
+    // 封面按鈕
+    var hb = $('#heroBtns');
+    if (hb) {
+      var H = C.hero || {};
+      var book = bookingUrl();
+      hb.innerHTML = '<a class="btn" href="?view=services">' + esc(H.primaryText || '看服務項目') + '</a>' +
+        '<a class="btn ghost-dark" href="' + esc(book || './#visit') + '"' + (book ? ' target="_blank" rel="noopener"' : '') + '>' + esc(H.secondaryText || '預約導覽') + '</a>';
     }
-    draw([], []);
-    Promise.all([pagesP, categoriesP]).then(function (r) { draw(r[0], r[1]); }).catch(function () {});
 
     // Email 訂閱：使用 WordPress.com 原本的訂閱服務，現有訂閱者不用搬
     var blogId = C.wordpressBlogId
@@ -342,93 +380,148 @@
 
   /* ---------- 首頁 ---------- */
 
+  function secHead(key, id, fallback) {
+    var c = sectionConf(key);
+    return '<h2 class="sec-h" id="' + id + '">' + esc(c.title || fallback) + '</h2>' + (c.intro ? '<p class="sec-intro">' + esc(c.intro) + '</p>' : '');
+  }
+
+  function cardHtml(x, href, i) {
+    var src = img(x.cover, 800);
+    return '<a class="card" href="' + href + '"><div class="ph t' + (i % 3 + 1) + '" aria-hidden="true">' +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
+      '</div><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '<span class="card-more">了解更多</span></a>';
+  }
+
+  function servicesHtml(full) {
+    var list = shown(D.services);
+    if (!list.length) return '';
+    return '<div class="cards">' + list.map(function (x, i) { return cardHtml(x, serviceUrl(x), i); }).join('') + '</div>';
+  }
+  function townsHtml() {
+    var list = shown(D.towns);
+    if (!list.length) return '';
+    return '<div class="cards cards-sm">' + list.map(function (x, i) { return cardHtml(x, townUrl(x), i + 1); }).join('') + '</div>';
+  }
+
+  function ytId(u) {
+    var m = String(u || '').match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([\w-]{11})/);
+    return m ? m[1] : '';
+  }
+  function videoCard(v) {
+    var id = ytId(v.url);
+    if (!id) return '';
+    return '<figure class="vid"><button type="button" class="vid-play" data-yt="' + id + '" aria-label="播放：' + esc(v.title) + '">' +
+      '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="vid-btn" aria-hidden="true"></span></button>' +
+      '<figcaption><strong>' + esc(v.title) + '</strong>' + (v.description ? '<span>' + esc(v.description) + '</span>' : '') + '</figcaption></figure>';
+  }
+
+  function bookingBarHtml(key) {
+    var V = C.visit, book = bookingUrl();
+    return '<section class="booking" id="booking" aria-labelledby="bkH"><div class="wrap booking-in"><div>' + secHead(key, 'bkH', '預約與到訪') +
+      '<p class="status" data-status><span class="dot"></span><span class="status-text"></span></p></div><div class="booking-acts">' +
+      (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">填寫預約表單</a>' : '') +
+      (V.phone ? '<a class="btn ' + (book ? 'ghost-dark' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">電話 ' + esc(V.phone) + '</a>' : '') +
+      (V.line ? '<a class="btn ghost-dark" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">LINE 詢問</a>' : '') +
+      (V.facebookUrl ? '<a class="btn ghost-dark" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook 私訊</a>' : '') +
+      '</div></div></section>';
+  }
+
   function renderHome() {
     setTitle('', C.description);
     $('#hero').hidden = false;
-    var n = C.homePostCount + 1;
-    Promise.all([
-      api('posts', { per_page: n, _fields: LIST_FIELDS }),
-      api('posts', { sticky: true, per_page: 1, _fields: LIST_FIELDS }).catch(function () { return []; }),
-      categoriesP, pagesP.catch(function () { return []; }),
-    ]).then(function (r) {
-      var posts = r[0], cats = r[2], pages = r[3];
-      var cover = r[1][0] || posts[0];
-      var rest = posts.filter(function (p) { return !cover || p.id !== cover.id; }).slice(0, C.homePostCount);
-      var html = C.homeSections.map(function (s) {
-        if (s === 'cover' && cover) {
-          var cc = catsById(cover.categories, cats)[0];
-          return '<section class="cover wrap" aria-labelledby="coverH"><div class="cover-grid">' +
-            '<h2 id="coverH"><a href="' + postUrl(cover) + '">' + esc(title(cover)) + '</a></h2><div>' +
-            '<div class="meta"><span>' + longDate(cover.date) + '</span>' + (cc ? '<span>' + esc(cc.name) + '</span>' : '') + '</div>' +
-            '<p>' + esc(excerpt(cover)) + '</p><a class="more" href="' + postUrl(cover) + '">閱讀全文</a></div></div></section>';
+    var needPosts = (C.sections || []).some(function (x) { return x.key === 'posts' && x.show; });
+    var postsP = needPosts ? api('posts', { per_page: C.homePostCount || 4, _fields: LIST_FIELDS }) : Promise.resolve([]);
+    // 文章讀不到時，首頁其他段落照常顯示
+    Promise.all([postsP.catch(function () { return null; }), categoriesP.catch(function () { return []; })]).then(function (r) {
+      var posts = r[0], cats = r[1];
+      view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
+        var k = sec.key;
+        if (k === 'services') {
+          var sv = servicesHtml();
+          return sv ? '<section class="svc-home wrap" id="services" aria-labelledby="svH">' + secHead(k, 'svH', '協會的服務') + sv + '</section>' : '';
         }
-        if (s === 'journal') {
-          return '<section class="journal wrap" id="journal" aria-labelledby="jH"><div class="j-head"><h2 class="sec-h" id="jH">文章</h2>' +
-            filterHtml(cats) + '</div><div class="feed">' + listHtml(rest, cats) + '</div>' +
-            '<div class="list-more"><a class="more" href="?paged=2">看更多文章</a><a class="more" href="?view=archives">依年份瀏覽全部文章</a></div></section>';
+        if (k === 'booking') return bookingBarHtml(k);
+        if (k === 'events') return eventsHtml(k);
+        if (k === 'towns') {
+          var tw = townsHtml();
+          return tw ? '<section class="towns wrap" id="towns" aria-labelledby="tH">' + secHead(k, 'tH', '小鎮社區人文') + tw + '</section>' : '';
         }
-        if (s === 'events') return eventsHtml();
-        if (s === 'shanhaiji') {
-          var S = C.shanhaiji;
+        if (k === 'shanhaiji') {
+          var S = C.shanhaiji || {};
           return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers" aria-hidden="true">' +
-            S.covers.slice(0, 3).map(function (c, i) { return '<div class="mag m' + (i + 1) + '"><span class="mv">山海集</span><span class="my">' + esc(c) + '</span></div>'; }).join('') +
-            '</div><div><h2 id="sH">《山海集》</h2><p>' + esc(S.text) + '</p><div class="btns">' +
-            '<a class="btn" href="' + esc(S.buy) + '" target="_blank" rel="noopener">到好事集市購買</a>' +
-            '<a class="btn ghost" href="' + esc(S.blog) + '" target="_blank" rel="noopener">閱讀部落格</a></div></div></div></section>';
+            (S.covers || []).slice(0, 3).map(function (c, i) { return '<div class="mag m' + (i + 1) + '"><span class="mv">山海集</span><span class="my">' + esc(c) + '</span></div>'; }).join('') +
+            '</div><div><h2 id="sH">' + esc(sec.title || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
+            (S.buyUrl ? '<a class="btn" href="' + esc(S.buyUrl) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
+            (S.blogUrl ? '<a class="btn ghost" href="' + esc(S.blogUrl) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
+            '</div></div></div></section>';
         }
-        if (s === 'services') {
-          return '<section class="services wrap" id="services" aria-labelledby="svH"><div class="svc-grid"><div class="svc-side">' +
-            '<h2 class="sec-h" id="svH">協會的服務</h2><p>' + esc(C.services.intro) + '</p></div><div>' +
-            C.services.items.map(function (it) { return '<article class="svc"><h3>' + esc(it.title) + '</h3><p>' + esc(it.text) + '</p></article>'; }).join('') +
-            '</div></div></section>';
+        if (k === 'videos') {
+          var vids = shown(D.videos).slice(0, 3).map(videoCard).join('');
+          return vids ? '<section class="videos wrap" id="videos" aria-labelledby="vdH">' + secHead(k, 'vdH', '影片精選') +
+            '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">看所有影片</a></p></section>' : '';
         }
-        if (s === 'towns') {
-          return '<section class="towns wrap" id="towns" aria-labelledby="tH"><h2 class="sec-h" id="tH">小鎮社區人文</h2><div class="town-list">' +
-            C.towns.map(function (t) { return '<a href="' + esc(resolve(t, pages, cats)) + '">' + esc(t.label) + '</a>'; }).join('') + '</div></section>';
+        if (k === 'posts') {
+          if (posts === null) return '<section class="journal wrap" id="journal">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
+            '<p class="c-empty">文章暫時讀不到，請稍後重新整理，或到 <a href="https://' + esc(C.wordpressSite) + '/">原網站</a> 閱讀。</p></section>';
+          return '<section class="journal wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
+            '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">看所有文章</a></div></section>';
         }
-        if (s === 'visit') return visitHtml();
+        if (k === 'visit') return visitHtml(k);
         return '';
       }).join('');
-      view.innerHTML = html;
       updateOpenStatus();
       if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
-    }).catch(function (e) { showError(e); });
+    });
   }
 
-  function eventsHtml() {
+  function upcomingEvents(service) {
     var today = taipeiToday();
-    var list = (C.events || []).filter(function (e) { return e.title && (e.end || e.date) >= today; })
-      .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
-    if (!list.length) return '';
-    return '<section class="events wrap" id="events" aria-labelledby="evH"><h2 class="sec-h" id="evH">近期活動</h2><ul class="ev-list">' +
-      list.map(function (e) {
-        var d = e.date.split('-');
-        var wd = '日一二三四五六'.charAt(new Date(e.date + 'T00:00:00+08:00').getUTCDay());
-        var span = e.end && e.end !== e.date ? '–' + (+e.end.split('-')[1]) + ' 月 ' + (+e.end.split('-')[2]) + ' 日' : '';
-        return '<li class="ev"><p class="ev-date" style="margin:0">' + (+d[1]) + ' 月 ' + (+d[2]) + ' 日' + span +
-          '<small>週' + wd + (e.time ? '　' + esc(e.time) : '') + '</small></p><div><h3>' +
-          (e.link ? '<a href="' + esc(e.link) + '">' + esc(e.title) + '</a>' : esc(e.title)) + '</h3>' +
-          (e.place || e.note ? '<p>' + esc([e.place, e.note].filter(Boolean).join('。')) + '</p>' : '') + '</div></li>';
-      }).join('') + '</ul></section>';
+    return (D.events || []).filter(function (e) {
+      return e.title && e.date && (e.end || e.date) >= today && (!service || e.service === service);
+    }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   }
 
-  function visitHtml() {
+  function eventsListHtml(list) {
+    return '<ul class="ev-list">' + list.map(function (e) {
+      var d = e.date.split('-');
+      var wd = '日一二三四五六'.charAt(new Date(e.date + 'T00:00:00+08:00').getUTCDay());
+      var span = e.end && e.end !== e.date ? '–' + (+e.end.split('-')[1]) + ' 月 ' + (+e.end.split('-')[2]) + ' 日' : '';
+      var sv = e.service && findBy(D.services, e.service);
+      return '<li class="ev"><p class="ev-date">' + (+d[1]) + ' 月 ' + (+d[2]) + ' 日' + span +
+        '<small>週' + wd + (e.time ? '　' + esc(e.time) : '') + '</small></p><div><h3>' +
+        (e.link ? '<a href="' + esc(e.link) + '">' + esc(e.title) + '</a>' : esc(e.title)) + '</h3>' +
+        (e.place || e.note ? '<p>' + esc([e.place, e.note].filter(Boolean).join('。')) + '</p>' : '') +
+        (sv ? '<p class="ev-svc"><a href="' + serviceUrl(sv) + '">' + esc(sv.title) + '</a></p>' : '') + '</div></li>';
+    }).join('') + '</ul>';
+  }
+
+  function eventsHtml(key) {
+    var list = upcomingEvents();
+    if (!list.length) return '';
+    return '<section class="events wrap" id="events" aria-labelledby="evH">' + secHead(key, 'evH', '近期活動') + eventsListHtml(list) + '</section>';
+  }
+
+  function visitHtml(key) {
     var V = C.visit;
-    var fmt = function (t) { return t.replace(/^0/, ''); };
+    var fmt = function (t) { return String(t || '').replace(/^0/, ''); };
     var map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(V.address);
-    return '<section class="visit wrap" id="visit" aria-labelledby="vH"><h2 class="sec-h" id="vH">到訪陳家古厝</h2><div class="visit-grid">' +
-      '<div><p class="k">地址</p><p class="val"><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address.slice(0, 6)) + '<br>' + esc(V.address.slice(6)) + '</a></p></div>' +
+    return '<section class="visit wrap" id="visit" aria-labelledby="vH">' + secHead(key, 'vH', '到訪陳家古厝') + '<div class="visit-grid">' +
+      '<div><p class="k">地址</p><p class="val"><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address.slice(0, 6)) + '<br>' + esc(V.address.slice(6)) + '</a></p>' +
+      (V.transport ? '<p class="visit-note">' + esc(V.transport) + '</p>' : '') + '</div>' +
       '<div><p class="k">開放時間</p><p class="val">' + esc(V.openText) + '<br>' + fmt(V.open) + '–' + fmt(V.close) + '</p>' +
-      '<p class="status" id="status" aria-live="polite"><span class="dot"></span><span id="statusText"></span></p></div>' +
-      '<div><p class="k">聯絡</p><p class="val"><a href="tel:' + esc(V.phone.replace(/-/g, '')) + '">' + esc(V.phone) + '</a><br>' +
-      '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a><br><a href="' + esc(V.facebook.url) + '" target="_blank" rel="noopener">Facebook：' + esc(V.facebook.label) + '</a>' +
-      (V.bookingForm ? '<br><a href="' + esc(V.bookingForm) + '" target="_blank" rel="noopener">填寫預約表單</a>' : '') + '</p></div></div></section>';
+      '<p class="status" data-status aria-live="polite"><span class="dot"></span><span class="status-text"></span></p></div>' +
+      '<div><p class="k">聯絡</p><p class="val">' +
+      (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a><br>' : '') +
+      (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a><br>' : '') +
+      (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook：' + esc(V.facebookLabel || '粉絲專頁') + '</a>' : '') +
+      (V.bookingUrl ? '<br><a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">填寫預約表單</a>' : '') + '</p></div></div></section>';
   }
 
   // 依台北時間顯示現在是否開放
   function updateOpenStatus() {
-    var el = $('#status'), tx = $('#statusText');
-    if (!el) return;
+    var els = $$('[data-status]');
+    if (!els.length) return;
+    var msg = '', open = false;
     try {
       var V = C.visit;
       var toMin = function (t) { var a = t.split(':'); return +a[0] * 60 + +a[1]; };
@@ -439,18 +532,109 @@
       var d = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[parts.weekday];
       var m = (+parts.hour % 24) * 60 + +parts.minute;
       var names = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
-      if (V.openDays.indexOf(d) >= 0 && m >= o && m < c) {
-        el.classList.add('open');
-        tx.textContent = '現在開放中，今天到 ' + V.close.replace(/^0/, '');
-        return;
+      var days = (V.openDays || []).map(Number);
+      if (days.indexOf(d) >= 0 && m >= o && m < c) {
+        open = true;
+        msg = '現在開放中，今天到 ' + V.close.replace(/^0/, '');
+      } else {
+        for (var i = 0; i <= 7; i++) {
+          var dd = (d + i) % 7;
+          if (days.indexOf(dd) < 0 || (i === 0 && m >= o)) continue;
+          msg = '目前休館，' + (i === 0 ? '今天' : i === 1 ? '明天' : names[dd]) + ' ' + V.open.replace(/^0/, '') + ' 開放';
+          break;
+        }
       }
-      for (var i = 0; i <= 7; i++) {
-        var dd = (d + i) % 7;
-        if (V.openDays.indexOf(dd) < 0 || (i === 0 && m >= o)) continue;
-        tx.textContent = '目前休館，' + (i === 0 ? '今天' : i === 1 ? '明天' : names[dd]) + ' ' + V.open.replace(/^0/, '') + ' 開放';
-        return;
-      }
-    } catch (e) { el.hidden = true; }
+    } catch (e) { msg = ''; }
+    els.forEach(function (el) {
+      if (!msg) { el.hidden = true; return; }
+      el.classList.toggle('open', open);
+      el.querySelector('.status-text').textContent = msg;
+    });
+  }
+
+  /* ---------- 服務、社區、影片 ---------- */
+
+  function galleryHtml(list) {
+    list = (list || []).filter(Boolean);
+    if (!list.length) return '';
+    return '<div class="gallery-grid">' + list.map(function (u) {
+      return '<figure><img src="' + esc(img(u, 800)) + '" data-full="' + esc(img(u, 2000)) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>';
+    }).join('') + '</div>';
+  }
+
+  // 服務頁、社區頁下方的相關文章（依 WordPress 的分類或標籤）
+  function loadRelatedPosts(x, box) {
+    if (!x.relatedCategory && !x.relatedTag) return;
+    var tagP = x.relatedTag ? api('tags', { slug: x.relatedTag, _fields: 'id' }).then(function (l) { return l[0] && l[0].id; }) : Promise.resolve(null);
+    Promise.all([categoriesP, tagP]).then(function (r) {
+      var cat = x.relatedCategory && r[0].filter(function (c) { return c.name === x.relatedCategory || c.slugText === x.relatedCategory; })[0];
+      var query = { per_page: 6, _fields: LIST_FIELDS };
+      if (r[1]) query.tags = r[1];
+      else if (cat) query.categories = cat.id;
+      else return;
+      return api('posts', query).then(function (posts) {
+        if (!posts.length) return;
+        box.innerHTML = '<h2>相關紀錄</h2><div class="feed">' + listHtml(posts, r[0]) + '</div>' +
+          '<p class="list-more"><a class="more" href="' + (r[1] ? q({ tag: x.relatedTag }) : catUrl(cat)) + '">看更多</a></p>';
+        box.hidden = false;
+      });
+    }).catch(function () {});
+  }
+
+  function detailHtml(x, kind) {
+    var cover = img(x.cover, 1600);
+    var info = '';
+    if (kind === 'service') {
+      var rows = [['適合對象', x.audience], ['所需時間', x.duration], ['人數', x.capacity], ['費用', x.fee]].filter(function (r) { return r[1]; });
+      var book = bookingUrl(x), V = C.visit;
+      info = '<aside class="svc-info" aria-label="服務資訊">' +
+        (rows.length ? '<dl>' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : '') +
+        '<div class="svc-book">' +
+        (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">預約這項服務</a>' : '') +
+        (V.phone ? '<a class="btn' + (book ? ' ghost-dark' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">電話 ' + esc(V.phone) + '</a>' : '') +
+        (V.email ? '<a class="more" href="mailto:' + esc(V.email) + '?subject=' + encodeURIComponent('詢問：' + x.title) + '">Email 詢問</a>' : '') +
+        '</div></aside>';
+    } else if (x.mapUrl) {
+      info = '<aside class="svc-info"><div class="svc-book"><a class="btn" href="' + esc(x.mapUrl) + '" target="_blank" rel="noopener">在地圖上看</a></div></aside>';
+    }
+    var evs = kind === 'service' ? upcomingEvents(x.slug || x.title) : [];
+    var back = kind === 'service' ? '<a class="back" href="?view=services">所有服務</a>' : '<a class="back" href="?view=towns">所有社區</a>';
+    return '<article class="wrap detail">' + back +
+      '<header class="detail-head"><p class="meta"><span>' + (kind === 'service' ? '協會服務' : '小鎮社區人文') + '</span></p><h1>' + esc(x.title) + '</h1>' +
+      (x.summary ? '<p class="lead">' + esc(x.summary) + '</p>' : '') + '</header>' +
+      (cover ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
+      '<div class="detail-grid"><div class="prose"><div class="entry">' + clean(x.body || '') + '</div>' + galleryHtml(x.gallery) + '</div>' + info + '</div>' +
+      (evs.length ? '<section class="detail-sec" aria-labelledby="dEv"><h2 id="dEv">近期活動</h2>' + eventsListHtml(evs) + '</section>' : '') +
+      '<section class="detail-sec" id="relPosts" hidden></section>' +
+      '</article>';
+  }
+
+  function renderDetail(kind, slug) {
+    var x = findBy(kind === 'service' ? D.services : D.towns, slug);
+    if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, kind === 'service' ? '服務' : '社區頁'); }
+    setTitle(x.title, x.summary || C.description);
+    view.innerHTML = detailHtml(x, kind);
+    loadRelatedPosts(x, $('#relPosts'));
+  }
+
+  function renderIndex(kind) {
+    var isSvc = kind === 'services';
+    var conf = sectionConf(isSvc ? 'services' : 'towns');
+    setTitle(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文'));
+    view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文')) + '</h1>' +
+      (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
+      ((isSvc ? servicesHtml() : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
+      (isSvc ? bookingBarHtml('booking') : '');
+    updateOpenStatus();
+  }
+
+  function renderVideos() {
+    var conf = sectionConf('videos');
+    setTitle(conf.title || '影片精選');
+    var vids = shown(D.videos).map(videoCard).join('');
+    view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || '影片精選') + '</h1>' +
+      (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
+      (vids ? '<div class="vid-grid">' + vids + '</div>' : '<p class="c-empty">目前還沒有影片。</p>') + '</div>';
   }
 
   /* ---------- 文章 ---------- */
@@ -599,9 +783,7 @@
     var n = Math.max(1, parseInt(params.get('paged'), 10) || 1);
     var per = C.perPage;
     // 第 1 頁的列表接在首頁之後：首頁已經顯示了最新的幾篇
-    var base = opts.all ? C.homePostCount + 1 : 0;
-    var offset = base + (opts.all ? (n - 2) * per : (n - 1) * per);
-    if (opts.all && n === 1) { location.replace('./#journal'); return; }
+    var offset = (n - 1) * per;
     var query = Object.assign({ per_page: per + 1, offset: offset, _fields: LIST_FIELDS }, opts.query || {});
     Promise.all([api('posts', query), categoriesP]).then(function (r) {
       var posts = r[0], cats = r[1];
@@ -708,6 +890,17 @@
         else window.prompt('複製這個連結：', link);
       }
     });
+    // 影片：點縮圖才載入 YouTube 播放器，頁面比較快
+    document.addEventListener('click', function (e) {
+      var v = e.target.closest && e.target.closest('[data-yt]');
+      if (!v) return;
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + v.getAttribute('data-yt') + '?autoplay=1&rel=0';
+      f.title = v.getAttribute('aria-label') || '影片';
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      v.replaceWith(f);
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') $$('.nav details').forEach(function (d) { d.open = false; });
     });
@@ -738,28 +931,67 @@
 
   /* ---------- 依網址決定顯示哪一頁 ---------- */
 
+  // 已經用管理程式搬過來的 WordPress 頁面，舊連結改顯示新頁面
+  function importedTarget(idOrSlug) {
+    var hit = function (x) { return x && (String(x.wpId) === idOrSlug || (x.wpSlug && decodeSlug(x.wpSlug) === idOrSlug)); };
+    var s = shown(D.services).filter(hit)[0];
+    if (s) return function () { renderDetail('service', s.slug || s.title); };
+    var t = shown(D.towns).filter(hit)[0];
+    if (t) return function () { renderDetail('town', t.slug || t.title); };
+    if ((D.site.importedVideoPages || []).some(function (p) { return String(p.id) === idOrSlug || decodeSlug(p.slug || '') === idOrSlug; })) return renderVideos;
+    return null;
+  }
+
   function route() {
     var g = function (k) { return (params.get(k) || '').trim(); };
+    if (g('service')) return renderDetail('service', g('service'));
+    if (g('town')) return renderDetail('town', g('town'));
+    if (g('view') === 'services') return renderIndex('services');
+    if (g('view') === 'towns') return renderIndex('towns');
+    if (g('view') === 'videos') return renderVideos();
     if (g('p')) return renderPost(g('p'));
     if (g('name')) return renderPost(g('name'));
-    if (g('page_id')) return renderPage(g('page_id'));
-    if (g('pagename')) return renderPage(g('pagename').split('/').filter(Boolean).pop());
+    var pg = g('page_id') || g('pagename').split('/').filter(Boolean).pop();
+    if (pg) { var imp = importedTarget(pg); return imp ? imp() : renderPage(pg); }
     if (g('cat')) return renderCategory(g('cat'));
     if (g('category_name')) return renderCategory(g('category_name').split('/').filter(Boolean).pop());
     if (g('tag')) return renderTag(g('tag'));
     if (params.has('s')) return renderSearch(g('s'));
     if (g('view') === 'search') return renderSearch('');
     if (g('view') === 'archives') return renderArchives();
-    if (g('paged')) return renderList({ title: '所有文章', all: true, showFilter: true });
+    if (g('view') === 'posts' || g('paged')) return renderList({ title: '所有文章', showFilter: true, keep: { view: 'posts' } });
     renderHome();
   }
 
-  renderChrome();
+  // 讀取 data/ 資料夾。cache: 'no-cache' 讓瀏覽器每次都確認有沒有新版本，管理程式發布後很快就看得到
+  function loadData() {
+    var get = function (name) {
+      return fetch('data/' + name + '.json', { cache: 'no-cache' }).then(function (r) {
+        if (!r.ok) throw new Error(name + '.json HTTP ' + r.status);
+        return r.json();
+      });
+    };
+    var names = ['site', 'services', 'towns', 'videos', 'events'];
+    return Promise.all(names.map(function (n) {
+      return get(n).catch(function (e) { if (n === 'site') throw e; console.warn(e); return []; });
+    })).then(function (r) { names.forEach(function (n, i) { D[n] = r[i]; }); });
+  }
+
   bindInteractions();
   if (!window.fetch || !window.Promise) {
-    view.innerHTML = '<div class="wrap err"><h1>瀏覽器版本太舊</h1><p>請更新瀏覽器，或到 <a href="https://' + esc(C.wordpressSite) + '/">原網站</a> 閱讀。</p></div>';
+    view.innerHTML = '<div class="wrap err"><h1>瀏覽器版本太舊</h1><p>請更新瀏覽器後再開啟。</p></div>';
     return;
   }
   loading();
-  route();
+  loadData().then(function () {
+    C = D.site;
+    API = 'https://public-api.wordpress.com/wp/v2/sites/' + C.wordpressSite;
+    OLD_HOSTS = [C.wordpressSite.toLowerCase()];
+    startWordPress();
+    renderChrome();
+    route();
+  }).catch(function (e) {
+    console.error(e);
+    view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
+  });
 })();

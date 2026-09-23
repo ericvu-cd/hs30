@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>管理程式｜番社參拾</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- 登入 -->
+<section id="login" class="login" hidden>
+  <div class="login-box">
+    <h1>番社參拾 管理程式</h1>
+    <p class="muted">用 GitHub 存取權杖登入。權杖只存在這台電腦的瀏覽器裡。</p>
+    <form id="loginForm">
+      <label>GitHub 帳號名稱<input id="lgOwner" required autocomplete="username" placeholder="例如 huansia30"></label>
+      <label>網站的 repo 名稱<input id="lgRepo" required placeholder="例如 fanshe30-site"></label>
+      <label>存取權杖（Token）<input id="lgToken" type="password" required autocomplete="current-password" placeholder="github_pat_ 開頭的一串文字"></label>
+      <label class="check"><input id="lgRemember" type="checkbox" checked> 記住這台電腦（公用電腦請取消勾選）</label>
+      <button class="btn primary" type="submit">登入</button>
+      <p class="err" id="lgErr" hidden></p>
+    </form>
+    <details class="help">
+      <summary>怎麼取得存取權杖？</summary>
+      <ol>
+        <li>登入 GitHub，點右上角頭像 → <b>Settings</b>。</li>
+        <li>左邊選單最下面 <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>。</li>
+        <li><b>Token name</b> 填「番社參拾管理」；<b>Expiration</b> 選一年（到期後再產生一組新的）。</li>
+        <li><b>Repository access</b> 選 <b>Only select repositories</b>，選這個網站的 repo。</li>
+        <li><b>Permissions → Repository permissions</b>：<b>Contents</b> 選 <b>Read and write</b>；<b>Pages</b> 選 <b>Read-only</b>（用來顯示網站更新進度，可不設）。</li>
+        <li>按 <b>Generate token</b>，複製那串文字貼到上面。這串文字只會出現一次，也不要給別人。</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- 管理介面 -->
+<div id="app" class="app" hidden>
+  <header class="top">
+    <strong class="brand">番社參拾 管理程式</strong>
+    <span class="dirty" id="dirty" hidden>有尚未發布的修改</span>
+    <span class="spacer"></span>
+    <a class="btn" href="./" target="_blank" rel="noopener">看網站</a>
+    <button class="btn primary" id="publishBtn" type="button" disabled>發布</button>
+    <button class="btn plain" id="logoutBtn" type="button">登出</button>
+  </header>
+  <div class="body">
+    <nav class="side" id="tabs" aria-label="管理項目"></nav>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<div class="boot" id="boot">載入中…</div>
+
+<!-- 照片選擇視窗 -->
+<dialog class="modal" id="picker">
+  <div class="modal-head"><h2>選擇照片</h2><button class="btn plain" type="button" data-close>關閉</button></div>
+  <div class="modal-body">
+    <label class="btn primary upload">上傳新照片<input type="file" accept="image/*" multiple hidden id="pickerFile"></label>
+    <span class="muted">照片會自動縮小到適合網頁的大小。</span>
+    <div class="lib" id="pickerLib"></div>
+  </div>
+</dialog>
+
+<!-- 通用對話框 -->
+<dialog class="modal" id="dlg">
+  <div class="modal-head"><h2 id="dlgTitle"></h2><button class="btn plain" type="button" data-close>關閉</button></div>
+  <div class="modal-body" id="dlgBody"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>

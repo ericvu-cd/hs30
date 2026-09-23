@@ -1,0 +1,132 @@
+{
+ "name": "番社參拾",
+ "org": "苗栗縣在地文化推廣協會",
+ "tagline": "老屋裡的在地學",
+ "description": "苗栗縣在地文化推廣協會以竹南中港的陳家古厝（番社30號）為據點，提供文化導覽、藝文策展、古厝市集與在地教育。",
+ "wordpressSite": "huansia30.home.blog",
+ "wordpressBlogId": "",
+ "goatcounter": "",
+ "hero": {
+  "primaryText": "看服務項目",
+  "secondaryText": "預約導覽"
+ },
+ "sections": [
+  {
+   "key": "services",
+   "show": true,
+   "title": "協會的服務",
+   "intro": "以陳家古厝為據點，做導覽、展覽、課程與市集。"
+  },
+  {
+   "key": "booking",
+   "show": true,
+   "title": "預約與到訪",
+   "intro": "團體導覽與手作課程請先預約，我們會回覆可安排的時間。"
+  },
+  {
+   "key": "events",
+   "show": true,
+   "title": "近期活動",
+   "intro": ""
+  },
+  {
+   "key": "towns",
+   "show": true,
+   "title": "小鎮社區人文",
+   "intro": "走訪竹南沿海與中港周邊的社區，認識各地的人與故事。"
+  },
+  {
+   "key": "shanhaiji",
+   "show": true,
+   "title": "《山海集》",
+   "intro": ""
+  },
+  {
+   "key": "videos",
+   "show": true,
+   "title": "影片精選",
+   "intro": ""
+  },
+  {
+   "key": "posts",
+   "show": true,
+   "title": "活動紀錄與在地觀察",
+   "intro": ""
+  },
+  {
+   "key": "visit",
+   "show": true,
+   "title": "到訪陳家古厝",
+   "intro": ""
+  }
+ ],
+ "homePostCount": 4,
+ "perPage": 12,
+ "featuredCategories": [
+  "在地微觀",
+  "文史記錄",
+  "最新消息",
+  "故事工坊",
+  "公告訊息",
+  "活動記實",
+  "媒體報導"
+ ],
+ "nav": [
+  {
+   "label": "服務項目",
+   "type": "auto-services"
+  },
+  {
+   "label": "社區人文",
+   "type": "auto-towns"
+  },
+  {
+   "label": "影片精選",
+   "type": "videos"
+  },
+  {
+   "label": "紀錄文章",
+   "type": "posts"
+  },
+  {
+   "label": "預約與到訪",
+   "type": "visit"
+  },
+  {
+   "label": "搜尋",
+   "type": "search"
+  }
+ ],
+ "visit": {
+  "address": "苗栗縣竹南鎮中港里番社30號",
+  "openDays": [
+   0,
+   3,
+   4,
+   5,
+   6
+  ],
+  "openText": "週三至週日",
+  "open": "08:30",
+  "close": "16:30",
+  "phone": "0953-118-143",
+  "email": "cnhuansia30@gmail.com",
+  "facebookLabel": "蕃社30",
+  "facebookUrl": "https://www.facebook.com/huansia",
+  "line": "",
+  "bookingUrl": "",
+  "transport": ""
+ },
+ "shanhaiji": {
+  "text": "協會自 2018 年創刊的地方刊物，介紹在地文化、歷史風俗與人物故事，至今持續發行，已出版到第七期。近年的主題包括飲食、地名與地方信仰。",
+  "covers": [
+   "2020 夏季號",
+   "2022 秋季號",
+   "2024 小鎮眾神會"
+  ],
+  "buyUrl": "https://www.huansiaeshop.com/",
+  "buyText": "到好事集市購買",
+  "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
+  "blogText": "閱讀部落格"
+ }
+}

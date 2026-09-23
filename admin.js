@@ -158,7 +158,13 @@
 
   // 首頁精簡版（版面第 2 版）：和網站 app.js 的 migrateLayout 相同
   function migrateLayout(s) {
-    if ((s.layoutVersion || 1) >= 2) return;
+    if ((s.layoutVersion || 1) === 2) {
+      // 第 3 版：首頁最上面加一段開場短文
+      if (!s.sections.some(function (x) { return x.key === 'about'; })) s.sections.unshift({ key: 'about', show: true, title: '關於番社參拾', intro: '' });
+      s.layoutVersion = 3;
+      return;
+    }
+    if ((s.layoutVersion || 1) >= 3) return;
     var old = {};
     (s.sections || []).forEach(function (x) { old[x.key] = x; });
     var def = [
@@ -176,6 +182,7 @@
       return x;
     });
     s.layoutVersion = 2;
+    migrateLayout(s);
   }
 
   function isDirty() {
@@ -688,7 +695,8 @@
         inp(p + '.duration', '所需時間', { placeholder: '例如：約 90 分鐘' }) +
         inp(p + '.capacity', '人數', { placeholder: '例如：10–40 人' }) +
         inp(p + '.fee', '費用', { placeholder: '例如：每人 200 元' }) +
-        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空會使用「到訪與預約」裡的預約表單。' }) + '</div></div>'
+        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空會使用「到訪與預約」裡的預約表單。' }) +
+        inp(p + '.notes', '預約須知（一行一項，選填）', { textarea: true, full: true, rows: 4, hint: '例如：請於一週前預約；10 人以上可包場；雨天照常進行。' }) + '</div></div>'
         : '<div class="panel"><h2>地點</h2>' + inp(p + '.mapUrl', 'Google 地圖連結', { hint: '在 Google 地圖找到地點 → 分享 → 複製連結' }) + '</div>') +
       '<div class="panel"><h2>內文</h2>' + richHtml(p + '.body') + '</div>' +
       (isMedia ? '' : '<div class="panel"><h2>照片集</h2>' + galleryField(p + '.gallery') + '</div>') +
@@ -734,17 +742,21 @@
       }).join('') + '</div>' : '<p class="empty">目前沒有活動。</p>');
   }
 
-  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
+  var SECTION_NAMES = { about: '開場短文', services: '協會的服務', booking: '預約與到訪', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
   function viewHome() {
     return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
-      '<div class="panel"><h2>封面按鈕</h2><div class="grid2">' + inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
+      '<div class="panel"><h2>封面</h2><div class="grid2">' +
+      imgField('site.hero.image', '封面照片（選填）') +
+      '<p class="muted field-full" style="margin:0">設定封面照片後，首頁最上面會改成滿版照片，建議用橫式、清楚的古厝照片。沒有設定時顯示古厝大門插畫。</p>' +
+      inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
       inp('site.hero.secondaryText', '第二個按鈕文字（連到預約）') + '</div></div>' +
       '<div class="panel"><h2>首頁段落</h2><div class="list">' + state.site.sections.map(function (s, i) {
         var p = 'site.sections.' + i;
         return '<div class="item" data-list="site.sections" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
           '<div class="item-body"><div class="title">' + esc(SECTION_NAMES[s.key] || s.key) + (s.show ? '' : '<span class="badge off">不顯示</span>') + '</div></div>' +
           '<div class="acts">' + moveBtns('site.sections', i) + '</div>' +
-          '<div class="item-form grid2">' + chk(p + '.show', '在首頁顯示') + '<span></span>' + inp(p + '.title', '段落標題') + inp(p + '.intro', '段落說明（選填）') +
+          '<div class="item-form grid2">' + chk(p + '.show', '在首頁顯示') + '<span></span>' + inp(p + '.title', '段落標題') +
+          (s.key === 'about' ? inp(p + '.intro', '短文內容', { textarea: true, rows: 3, hint: '留空會使用「基本資料」裡的網站簡介。建議 40 到 80 字。' }) : inp(p + '.intro', '段落說明（選填）')) +
           (s.key === 'media' ? inp(p + '.count', '首頁顯示幾則', { type: 'number' }) : '') + '</div></div>';
       }).join('') + '</div></div>' +
       '<div class="panel"><h2>最新文章</h2><div class="grid2">' + inp('site.homePostCount', '首頁顯示幾篇', { type: 'number' }) + '</div></div>';

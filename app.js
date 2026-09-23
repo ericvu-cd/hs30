@@ -428,10 +428,22 @@
       '<div class="svc-text"><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
       (chips.length ? '<ul class="chips">' + chips.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>' : '') + '</div></a>';
   }
-  function servicesHtml(rail) {
+  function servicesHtml() {
     var list = shown(D.services);
     if (!list.length) return '';
-    return '<div class="' + (rail ? 'svc-rail' : 'svc-grid2') + '">' + list.map(svcCard).join('') + '</div>';
+    return '<div class="svc-rows">' + list.map(svcRow).join('') + '</div>';
+  }
+  function factsOf(x) {
+    return [['適合對象', x.audience], ['所需時間', x.duration], ['人數', x.capacity], ['費用', x.fee]].filter(function (r) { return r[1]; });
+  }
+  // 服務列：照片佔大面積，文字只放名稱、一句話、服務資訊
+  function svcRow(x, i) {
+    var src = img(x.cover, 1400), href = serviceUrl(x), f = factsOf(x);
+    return '<article class="svc-row"><a class="svc-row-photo ph t' + (i % 3 + 1) + '" href="' + href + '" tabindex="-1" aria-hidden="true">' +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="' + (i < 1 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</a>' +
+      '<div class="svc-row-text"><h3><a href="' + href + '">' + esc(x.title) + '</a></h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
+      (f.length ? '<dl class="mini-facts">' + f.slice(0, 3).map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+      '<a class="more" href="' + href + '">了解與預約</a></div></article>';
   }
   function cardHtml(x, href, i) {
     var src = img(x.cover, 800);
@@ -515,10 +527,12 @@
       var posts = r[0] && hideImported(r[0]), cats = r[1];
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
+        if (k === 'about') {
+          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p></section>';
+        }
         if (k === 'services') {
-          var sv = servicesHtml(true);
-          return sv ? '<section class="svc-home" id="services" aria-labelledby="svH"><div class="wrap svc-home-head"><div>' + secHead(k, 'svH', '協會的服務') + '</div>' +
-            '<a class="more" href="?view=services">所有服務</a></div>' + sv + '<p class="wrap swipe-hint" aria-hidden="true">左右滑動看更多服務</p></section>' : '';
+          var sv = servicesHtml();
+          return sv ? '<section class="svc-home wrap" id="services" aria-labelledby="svH">' + secHead(k, 'svH', '協會的服務') + sv + '</section>' : '';
         }
         if (k === 'booking') return bookingBarHtml(k);
         if (k === 'events') return eventsHtml(k);
@@ -549,14 +563,24 @@
         return '';
       }).join('');
       updateOpenStatus();
-      var rail = $('.svc-rail');
-      if (rail && rail.scrollWidth <= rail.clientWidth + 4) { var h = $('.swipe-hint'); if (h) h.remove(); }
       if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
     });
   }
 
   // 首頁開場：標題逐字出現，接著古厝大門打開。每次開啟瀏覽器只播放一次；系統設定減少動態時不播放
+  function setupHeroPhoto() {
+    var hero = $('#hero'), u = C.hero && C.hero.image;
+    if (!u || hero.classList.contains('hero--photo')) return;
+    var box = document.createElement('div');
+    box.className = 'hero-photo';
+    box.innerHTML = '<img src="' + esc(img(u, 2000)) + '" alt="" decoding="async" fetchpriority="high" referrerpolicy="no-referrer">';
+    box.querySelector('img').addEventListener('error', function () { hero.classList.remove('hero--photo'); box.remove(); });
+    hero.insertBefore(box, hero.firstChild);
+    hero.classList.add('hero--photo');
+  }
+
   function playIntro() {
+    setupHeroPhoto();
     var hero = $('#hero'), gate = $('#gateFig');
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var seen = false;
@@ -746,11 +770,33 @@
       '</article>';
   }
 
+  // 服務頁：大照片 → 名稱與一句話 → 服務資訊與預約 → 內容 → 照片 → 預約須知 → 近期場次 → 相關紀錄 → 其他服務 → 預約與到訪
+  function serviceHtml(x) {
+    var cover = img(x.cover, 2000), f = factsOf(x);
+    var notes = String(x.notes || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var evs = upcomingEvents(x.slug || x.title);
+    var others = shown(D.services).filter(function (o) { return o !== x; }).slice(0, 3);
+    return '<article class="svc-page">' +
+      (cover ? '<div class="svc-hero ph t2"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" fetchpriority="high" referrerpolicy="no-referrer"></div>' : '') +
+      '<div class="wrap"><a class="back" href="?view=services">所有服務</a>' +
+      '<header class="svc-head"><h1>' + esc(x.title) + '</h1>' + (x.summary ? '<p class="lead">' + esc(x.summary) + '</p>' : '') + '</header>' +
+      '<div class="svc-bar">' + (f.length ? '<dl class="facts">' + f.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+      '<div class="svc-bar-acts">' + bookingActs(x) + '</div></div>' +
+      '<div class="prose svc-body"><div class="entry">' + clean(x.body || '') + '</div>' + galleryHtml(x.gallery) + '</div>' +
+      (notes.length ? '<section class="svc-sec" aria-labelledby="ntH"><h2 id="ntH">預約須知</h2><ul class="notes">' + notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></section>' : '') +
+      (evs.length ? '<section class="svc-sec" aria-labelledby="evH2"><h2 id="evH2">近期場次</h2>' + eventsListHtml(evs) + '</section>' : '') +
+      '<section class="svc-sec" id="relPosts" hidden></section>' +
+      (others.length ? '<section class="svc-sec" aria-labelledby="otH"><h2 id="otH">其他服務</h2><div class="others">' + others.map(svcCard).join('') + '</div></section>' : '') +
+      '</div>' + bookingBarHtml('booking') +
+      '<div class="m-book" role="region" aria-label="預約">' + bookingActs(x, true) + '</div></article>';
+  }
+
   function renderDetail(kind, slug) {
     var x = findBy(kind === 'service' ? D.services : D.towns, slug);
     if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, kind === 'service' ? '服務' : '社區頁'); }
     setTitle(x.title, x.summary || C.description);
-    view.innerHTML = detailHtml(x, kind);
+    view.innerHTML = kind === 'service' ? serviceHtml(x) : detailHtml(x, kind);
+    if (kind === 'service') updateOpenStatus();
     loadRelatedPosts(x, $('#relPosts'));
   }
 
@@ -760,7 +806,7 @@
     setTitle(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文'));
     view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文')) + '</h1>' +
       (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
-      ((isSvc ? servicesHtml(false) : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
+      ((isSvc ? servicesHtml() : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
       (isSvc ? bookingBarHtml('booking') : '');
     updateOpenStatus();
   }
@@ -1126,7 +1172,13 @@
 
   // 首頁精簡版（版面第 2 版）：服務為主，其他內容收進「探索更多」。管理程式發布後會把這個設定存起來
   function migrateLayout(s) {
-    if ((s.layoutVersion || 1) >= 2) return;
+    if ((s.layoutVersion || 1) === 2) {
+      // 第 3 版：首頁最上面加一段開場短文
+      if (!s.sections.some(function (x) { return x.key === 'about'; })) s.sections.unshift({ key: 'about', show: true, title: '關於番社參拾', intro: '' });
+      s.layoutVersion = 3;
+      return;
+    }
+    if ((s.layoutVersion || 1) >= 3) return;
     var old = {};
     (s.sections || []).forEach(function (x) { old[x.key] = x; });
     var def = [
@@ -1144,6 +1196,7 @@
       return x;
     });
     s.layoutVersion = 2;
+    migrateLayout(s);
   }
 
   // 讀取 data/ 資料夾。cache: 'no-cache' 讓瀏覽器每次都確認有沒有新版本，管理程式發布後很快就看得到

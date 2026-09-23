@@ -473,3 +473,257 @@ h1.v{font-family:var(--serif);font-weight:900;font-size:clamp(64px,9.5vw,132px);
 @media (max-width:900px){.detail-grid .prose{margin-top:8px}}
 .journal > .feed{margin-top:24px}
 .media{padding-top:88px}
+
+/* ═════════ 版面第 2 版：以服務為主、手機優先 ═════════
+   手機是主要尺寸；大於 900px 時改成桌機排版。
+   動態只有兩處：首頁開場（標題逐字出現、大門打開，每次開瀏覽器播一次）與使用者操作的回饋。 */
+
+:root{--brick:#9B4B3A;--gutter:20px;--r:6px}
+@media (min-width:700px){:root{--gutter:32px}}
+.wrap{width:min(1120px,100% - var(--gutter)*2)}
+
+/* 按鈕：手指好按的高度 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:999px;font-size:16px;line-height:1.3;transition:transform .15s,filter .15s,background-color .15s}
+.btn:active{transform:scale(.97)}
+.btn.line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px currentColor}
+.btn.ghost-dark{border:0;box-shadow:inset 0 0 0 1.5px currentColor}
+
+/* 頁首：固定在上方 */
+.topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent}
+.mast{padding:14px 0;align-items:center;flex-wrap:nowrap}
+.brand{font-size:15px;letter-spacing:.04em;line-height:1.4}
+.menu-btn{display:none;font:inherit;font-size:15px;font-weight:700;min-height:40px;padding:6px 18px;border-radius:999px;border:0;background:var(--ink);color:var(--paper);cursor:pointer}
+@media (max-width:899px){
+  .menu-btn{display:inline-flex;align-items:center}
+  .nav{position:fixed;left:0;right:0;top:var(--topbar-h,64px);bottom:0;z-index:29;display:flex;flex-direction:column;gap:0;flex-wrap:nowrap;
+    padding:8px var(--gutter) calc(32px + env(safe-area-inset-bottom,0px));background:var(--paper);overflow-y:auto;
+    opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .22s,transform .22s,visibility 0s .22s}
+  .menu-open .nav{opacity:1;visibility:visible;transform:none;transition:opacity .22s,transform .22s}
+  .nav{align-items:stretch}
+  .menu-open{overflow:hidden}
+  .nav > a,.nav summary{font-family:var(--serif);font-weight:700;font-size:22px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .nav a[aria-current="page"]{border-bottom-color:var(--line);color:var(--blue)}
+  .nav details summary{border-bottom:1px solid var(--line)}
+  .nav details[open] summary{border-color:var(--line)}
+  .nav .sub{position:static;border:0;background:transparent;padding:4px 0 12px 16px;min-width:0}
+  .nav .sub a{font-size:17px;padding:10px 0;border-bottom:0}
+}
+
+/* 首頁封面：直排標題與古厝大門並排（手機也是） */
+.hero-in{grid-template-columns:auto minmax(0,1fr);gap:clamp(12px,4vw,56px);align-items:end;padding-top:clamp(24px,5vw,56px)}
+.hero-title{flex-direction:row;gap:clamp(8px,1.6vw,28px);padding-bottom:clamp(24px,5vw,56px)}
+.hero-title .v{writing-mode:vertical-rl}
+h1.v{font-size:clamp(50px,14vw,132px);line-height:1.06}
+.sub{font-size:clamp(15px,2vw,26px);letter-spacing:.3em;margin-top:.6em!important}
+.gate button{width:min(100%,560px)}
+.gate figcaption{font-size:13px;padding:10px 0 18px}
+.leaf{transition:transform 1.2s cubic-bezier(.65,0,.2,1)}
+.hero-cta{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:20px 0 28px}
+.hero-cta .btn{width:100%}
+@media (min-width:700px){.hero-cta{display:flex;padding:28px 0 40px}.hero-cta .btn{width:auto}}
+@media (max-width:599px){.gate figcaption{display:none}.gate{padding-bottom:0}}
+
+/* 開場動畫 */
+.hero.intro #heroName span{display:inline-block;opacity:0;transform:translateY(-.35em);animation:fs-rise .7s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i) * .16s + .1s)}
+.hero.intro .sub,.hero.intro .hero-cta,.hero.intro .gate figcaption{opacity:0;animation:fs-fade .6s ease forwards 1s}
+.hero.intro-done #heroName span,.hero.intro-done .sub,.hero.intro-done .hero-cta,.hero.intro-done .gate figcaption{opacity:1;transform:none;animation:none}
+@keyframes fs-rise{to{opacity:1;transform:none}}
+@keyframes fs-fade{to{opacity:1}}
+
+/* 段落標題 */
+.sec-h{font-size:clamp(28px,6vw,44px)}
+.sec-intro{font-size:15.5px;line-height:1.75;margin-top:8px}
+.more{min-height:44px;display:inline-flex;align-items:center}
+
+/* 首頁：協會的服務（手機左右滑動、桌機三欄） */
+.svc-home{padding:clamp(48px,8vw,96px) 0 0}
+.svc-home-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.svc-home-head .more{flex:none}
+.svc-rail{display:grid;grid-auto-flow:column;grid-auto-columns:min(78%,340px);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:24px max(var(--gutter),calc((100% - 1120px)/2)) 8px;scroll-padding-inline:max(var(--gutter),calc((100% - 1120px)/2));scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.svc-rail::-webkit-scrollbar{display:none}
+.svc-rail .svc-card{scroll-snap-align:start}
+.swipe-hint{font-size:13px;color:var(--muted);margin-top:4px}
+@media (min-width:900px){
+  .svc-rail{grid-auto-flow:row;grid-template-columns:repeat(3,1fr);grid-auto-columns:auto;gap:40px 28px;overflow:visible;padding:32px 0 0;width:min(1120px,100% - var(--gutter)*2);margin-inline:auto}
+  .swipe-hint{display:none}
+}
+.svc-card{display:flex;flex-direction:column;text-decoration:none;color:inherit;min-width:0}
+.svc-photo{position:relative;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden}
+.svc-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover){.svc-card:hover .svc-photo img{transform:scale(1.04)}.svc-card:hover h3{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:.2em}}
+.svc-text{padding-top:14px}
+.svc-text h3{font-family:var(--serif);font-weight:900;font-size:clamp(22px,5.6vw,26px);line-height:1.35;margin:0}
+.svc-text p{margin:6px 0 0;color:var(--muted);font-size:15px;line-height:1.7}
+.chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}
+.chips li{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--paper-2);color:var(--ink)}
+
+/* 所有服務頁 */
+.svc-grid2{display:grid;grid-template-columns:1fr;gap:32px}
+.svc-grid2 .svc-photo{aspect-ratio:3/2}
+@media (min-width:640px){.svc-grid2{grid-template-columns:1fr 1fr;gap:40px 24px}.svc-grid2 .svc-photo{aspect-ratio:4/5}}
+@media (min-width:900px){.svc-grid2{grid-template-columns:repeat(3,1fr);gap:48px 28px}}
+
+/* 預約與到訪：深藍色區塊 */
+.booking{background:var(--band);color:var(--band-ink);margin-top:clamp(56px,9vw,104px);padding:clamp(40px,7vw,64px) 0}
+.booking .sec-intro{color:rgba(242,242,237,.75)}
+.booking-in{display:grid;grid-template-columns:1fr;gap:24px}
+.booking .status{margin-top:14px;color:var(--band-ink)}
+.booking-facts{margin:0;display:grid;gap:14px}
+.booking-facts dt{font-size:13px;color:rgba(242,242,237,.65)}
+.booking-facts dd{margin:2px 0 0;font-size:17px;font-weight:500}
+.booking-facts a{color:inherit;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:.25em}
+.booking-facts small{display:block;font-size:14px;color:rgba(242,242,237,.7);margin-top:4px;font-weight:400}
+.booking-acts{display:grid;gap:10px;justify-content:stretch}
+.booking .btn.line{color:var(--band-ink)}
+@media (min-width:900px){
+  .booking-in{grid-template-columns:5fr 4fr;gap:24px 64px;align-items:start}
+  .booking-head{grid-row:span 2}
+  .booking-acts{display:flex;flex-wrap:wrap;justify-content:flex-start}
+}
+
+/* 近期活動 */
+.events{padding-top:clamp(56px,9vw,96px)}
+.ev{grid-template-columns:96px 1fr;gap:4px 20px;padding:18px 0}
+.ev-date{font-size:19px}
+@media (max-width:680px){.ev{grid-template-columns:1fr}}
+
+/* 探索更多 */
+.explore{padding:clamp(56px,9vw,96px) 0 clamp(24px,5vw,48px)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+@media (min-width:700px){.tiles{grid-template-columns:repeat(3,1fr);gap:14px}}
+@media (min-width:1000px){.tiles{grid-template-columns:repeat(5,1fr)}}
+.tile{position:relative;display:flex;align-items:flex-end;min-height:clamp(132px,36vw,200px);border-radius:var(--r);overflow:hidden;text-decoration:none;color:#fff;isolation:isolate}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.tile::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(15,22,32,.82),rgba(15,22,32,.1) 70%)}
+.tile.t1::before,.tile.t3::before{background:linear-gradient(to top,rgba(15,22,32,.85),rgba(15,22,32,.25))}
+@media (hover:hover){.tile:hover img{transform:scale(1.05)}}
+.tile-txt{padding:14px;display:grid;gap:2px}
+.tile-txt strong{font-family:var(--serif);font-weight:900;font-size:clamp(18px,4.6vw,22px);line-height:1.3}
+.tile-txt small{font-size:13px;opacity:.85}
+.tiles .tile:last-child:nth-child(odd){grid-column:1/-1}
+@media (min-width:700px){.tiles .tile:last-child:nth-child(odd){grid-column:auto}}
+
+/* 服務頁、社區頁 */
+.detail-head{padding:20px 0 20px}
+.detail-head h1{font-size:clamp(34px,9vw,60px)}
+.lead{font-size:clamp(17px,4.4vw,22px)}
+.detail .art-cover .ph{border-radius:var(--r);overflow:hidden}
+.detail .art-cover{margin:0 calc(var(--gutter) * -1) 28px}
+@media (min-width:700px){.detail .art-cover{margin:0 0 44px}}
+.svc-info{border-top:0;background:var(--paper-2);border-radius:var(--r);padding:18px 20px}
+.svc-info dl{margin:0}
+.svc-book{margin-top:16px}
+.svc-book .btn{width:100%}
+.m-book{display:none}
+@media (max-width:899px){
+  .svc-info dl{margin:0}
+  .svc-info .svc-book{display:none}
+  .m-book{display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:25;padding:10px var(--gutter) calc(10px + env(safe-area-inset-bottom,0px));
+    background:color-mix(in srgb,var(--paper) 92%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+  .m-book .btn{flex:1 1 0;min-width:0;padding:10px 12px;font-size:15px}
+  .m-book .btn:nth-child(n+3){display:none}
+  .detail{padding-bottom:110px}
+}
+
+/* 手機上的其他細節 */
+@media (max-width:680px){
+  .list-head{padding:28px 0 18px}
+  .band{padding:56px 0;margin-top:56px}
+  .covers{height:240px}
+  .foot-grid{padding:36px 0 24px}
+  .sub-form .btn{width:100%}
+  .prose{margin-top:28px}
+  .art-head h1{font-size:clamp(28px,7.6vw,40px)}
+  .post h3{font-size:19px}
+}
+.ph img{transition:opacity .4s}
+.tile{background-color:var(--blue)}
+.svc-home-head{flex-wrap:wrap}
+.svc-home-head > div{flex:1 1 280px;min-width:0}
+.svc-home-head .sec-intro{max-width:32em}
+/* 頁首的毛玻璃效果放在底層，避免影響手機選單面板的定位 */
+.topbar{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;isolation:isolate}
+.topbar::before{content:"";position:absolute;inset:0;z-index:-1;background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px)}
+.menu-open .topbar::before{background:var(--paper)}
+@media (min-width:681px){.ev{grid-template-columns:160px 1fr}}
+
+/* ═════════ 版面第 3 版：安靜的大照片（首頁）＋清楚的預約資訊（服務頁） ═════════ */
+
+/* 滿版照片封面（管理程式設定了封面照片時） */
+.hero--photo{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:min(86svh,860px);background:#1d242c;color:#fff;overflow:hidden;isolation:isolate}
+.hero-photo{position:absolute;inset:0;z-index:-1}
+.hero-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(12,16,22,.62),rgba(12,16,22,0) 46%),linear-gradient(to left,rgba(12,16,22,.38),rgba(12,16,22,0) 42%)}
+.hero--photo .hero-in{position:static;display:block;padding:0}
+.hero--photo .gate{display:none}
+.hero--photo .hero-title{position:absolute;top:clamp(20px,5vw,64px);right:max(var(--gutter),calc((100% - 1120px)/2));flex-direction:row-reverse;padding:0;text-shadow:0 1px 18px rgba(0,0,0,.35)}
+.hero--photo h1.v{font-size:clamp(48px,12vw,120px)}
+.hero--photo .sub{color:rgba(255,255,255,.92)}
+.hero--photo .hero-cta{position:relative;padding-bottom:clamp(24px,5vw,56px)}
+.hero--photo .btn{background:var(--gold);color:#17222E}
+.hero--photo .btn.ghost-dark{background:rgba(255,255,255,.08);color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hero--photo.intro .hero-photo img{animation:fs-settle 2.6s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fs-settle{from{transform:scale(1.07);opacity:.2}to{transform:none;opacity:1}}
+.hero--photo.intro-done .hero-photo img{animation:none}
+
+/* 開場短文 */
+.about{padding:clamp(56px,10vw,128px) 0 0}
+.about-text{font-family:var(--serif);font-weight:600;font-size:clamp(21px,4.4vw,32px);line-height:1.8;margin:0;max-width:26em;text-wrap:pretty}
+
+/* 服務列：照片大、文字少，左右交錯 */
+.svc-home{padding-top:clamp(56px,10vw,128px)}
+.svc-rows{display:grid;gap:clamp(40px,8vw,96px);margin-top:clamp(24px,4vw,48px)}
+.svc-row{display:grid;gap:18px}
+.svc-row-photo{display:block;position:relative;aspect-ratio:3/2;border-radius:var(--r);overflow:hidden}
+.svc-row-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover){.svc-row:hover .svc-row-photo img{transform:scale(1.03)}}
+.svc-row-text h3{font-family:var(--serif);font-weight:900;font-size:clamp(26px,6vw,36px);line-height:1.3;margin:0}
+.svc-row-text h3 a{text-decoration:none}
+.svc-row-text h3 a:hover{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:.2em}
+.svc-row-text p{margin:10px 0 0;color:var(--muted);font-size:16px;line-height:1.8;max-width:30em}
+.svc-row-text .more{margin-top:10px}
+.mini-facts{display:flex;flex-wrap:wrap;gap:6px 22px;margin:14px 0 0}
+.mini-facts dt{font-size:12.5px;color:var(--muted)}
+.mini-facts dd{margin:0;font-size:15px;font-weight:500}
+@media (min-width:900px){
+  .svc-row{grid-template-columns:7fr 5fr;gap:56px;align-items:center}
+  .svc-row:nth-child(even) .svc-row-photo{order:2}
+}
+
+/* 服務頁 */
+.svc-page{padding-bottom:0}
+.svc-hero{position:relative;aspect-ratio:3/2;max-height:72svh;width:100%;overflow:hidden}
+.svc-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media (min-width:900px){.svc-hero{aspect-ratio:21/9}}
+.svc-page .back{margin-top:20px}
+.svc-head{padding:12px 0 0;max-width:40em}
+.svc-head h1{font-family:var(--serif);font-weight:900;font-size:clamp(36px,9vw,64px);line-height:1.2;margin:0}
+.svc-head .lead{margin-top:14px}
+.svc-bar{margin-top:28px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:20px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin:0}
+.facts dt{font-size:13px;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-size:17px;font-weight:700;line-height:1.5}
+.svc-bar-acts{display:flex;flex-wrap:wrap;gap:10px}
+@media (min-width:900px){
+  .svc-bar{grid-template-columns:1fr auto;align-items:center;gap:24px 48px}
+  .facts{grid-template-columns:repeat(4,auto);justify-content:start;gap:8px 48px}
+}
+@media (max-width:899px){.svc-bar-acts{display:none}}
+.svc-body{max-width:40em;margin:clamp(32px,6vw,56px) 0 0}
+.svc-sec{margin-top:clamp(48px,8vw,80px);max-width:1120px}
+.svc-sec h2{font-family:var(--serif);font-weight:900;font-size:clamp(24px,5vw,32px);margin:0 0 14px}
+.notes{margin:0;padding-left:1.2em;max-width:40em}
+.notes li{margin:6px 0;line-height:1.8}
+.others{display:grid;grid-template-columns:1fr;gap:28px}
+.others .svc-photo{aspect-ratio:3/2}
+@media (min-width:700px){.others{grid-template-columns:repeat(3,1fr)}.others .svc-photo{aspect-ratio:4/5}}
+.svc-page .booking{margin-top:clamp(56px,9vw,104px)}
+@media (max-width:899px){.svc-page{padding-bottom:84px}}
+
+/* 桌機上多一點留白 */
+@media (min-width:900px){
+  .events,.explore{padding-top:120px}
+  .booking{margin-top:128px}
+}
+@media (min-width:900px){.svc-row:nth-child(even){grid-template-columns:5fr 7fr}}

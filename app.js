@@ -430,10 +430,18 @@
     setTitle('', C.description);
     $('#hero').hidden = false;
     var needPosts = (C.sections || []).some(function (x) { return x.key === 'posts' && x.show; });
+    var mediaConf = (C.sections || []).filter(function (x) { return x.key === 'media' && x.show; })[0];
+    // 媒體報導：WordPress 上指定分類的最新幾篇
+    var mediaP = mediaConf ? categoriesP.then(function (cats) {
+      var name = mediaConf.category || '媒體報導';
+      var c = cats.filter(function (x) { return x.name === name || x.slugText === name; })[0];
+      if (!c) return null;
+      return api('posts', { categories: c.id, per_page: mediaConf.count || 3, _fields: LIST_FIELDS }).then(function (l) { return { cat: c, posts: l }; });
+    }).catch(function () { return null; }) : Promise.resolve(null);
     var postsP = needPosts ? api('posts', { per_page: C.homePostCount || 4, _fields: LIST_FIELDS }) : Promise.resolve([]);
     // 文章讀不到時，首頁其他段落照常顯示
-    Promise.all([postsP.catch(function () { return null; }), categoriesP.catch(function () { return []; })]).then(function (r) {
-      var posts = r[0], cats = r[1];
+    Promise.all([postsP.catch(function () { return null; }), categoriesP.catch(function () { return []; }), mediaP]).then(function (r) {
+      var posts = r[0], cats = r[1], media = r[2];
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'services') {
@@ -465,6 +473,12 @@
             '<p class="c-empty">文章暫時讀不到，請稍後重新整理，或到 <a href="https://' + esc(C.wordpressSite) + '/">原網站</a> 閱讀。</p></section>';
           return '<section class="journal wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
             '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">看所有文章</a></div></section>';
+        }
+        if (k === 'media') {
+          if (!media || !media.posts.length) return '';
+          return '<section class="journal media wrap" id="media" aria-labelledby="mdH">' + secHead(k, 'mdH', '媒體報導') +
+            '<div class="feed">' + listHtml(media.posts, cats) + '</div><div class="list-more"><a class="more" href="' + catUrl(media.cat) +
+            '">看全部媒體報導' + (media.cat.count ? '（' + media.cat.count + ' 篇）' : '') + '</a></div></section>';
         }
         if (k === 'visit') return visitHtml(k);
         return '';

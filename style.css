@@ -471,3 +471,5 @@ h1.v{font-family:var(--serif);font-weight:900;font-size:clamp(64px,9.5vw,132px);
 .detail-grid .prose{grid-column:auto;margin-top:0}
 .detail-grid .svc-info{grid-column:auto}
 @media (max-width:900px){.detail-grid .prose{margin-top:8px}}
+.journal > .feed{margin-top:24px}
+.media{padding-top:88px}

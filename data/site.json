@@ -54,6 +54,14 @@
    "intro": ""
   },
   {
+   "key": "media",
+   "show": true,
+   "title": "媒體報導",
+   "intro": "報章、電視與網路媒體對協會與陳家古厝的報導。",
+   "category": "媒體報導",
+   "count": 3
+  },
+  {
    "key": "visit",
    "show": true,
    "title": "到訪陳家古厝",
@@ -87,6 +95,11 @@
   {
    "label": "紀錄文章",
    "type": "posts"
+  },
+  {
+   "label": "媒體報導",
+   "type": "category",
+   "target": "媒體報導"
   },
   {
    "label": "預約與到訪",

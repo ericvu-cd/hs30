@@ -144,6 +144,11 @@
     s.importedVideoPages = s.importedVideoPages || [];
     ['services', 'towns', 'videos', 'events'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
     state.services.concat(state.towns).forEach(function (x) { x.gallery = x.gallery || []; });
+    // 舊版資料沒有「媒體報導」段落時補上
+    if (!s.sections.some(function (x) { return x.key === 'media'; })) {
+      var at = s.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
+      s.sections.splice(at || s.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', category: '媒體報導', count: 3 });
+    }
   }
 
   function isDirty() {
@@ -669,7 +674,7 @@
       }).join('') + '</div>' : '<p class="empty">目前沒有活動。</p>');
   }
 
-  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪（橫條）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', visit: '到訪資訊' };
+  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪（橫條）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導（WordPress）', visit: '到訪資訊' };
   function viewHome() {
     return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。') +
       '<div class="panel"><h2>封面按鈕</h2><div class="grid2">' + inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
@@ -679,7 +684,8 @@
         return '<div class="item" data-list="site.sections" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
           '<div class="item-body"><div class="title">' + esc(SECTION_NAMES[s.key] || s.key) + (s.show ? '' : '<span class="badge off">不顯示</span>') + '</div></div>' +
           '<div class="acts">' + moveBtns('site.sections', i) + '</div>' +
-          '<div class="item-form grid2">' + chk(p + '.show', '在首頁顯示') + '<span></span>' + inp(p + '.title', '段落標題') + inp(p + '.intro', '段落說明（選填）') + '</div></div>';
+          '<div class="item-form grid2">' + chk(p + '.show', '在首頁顯示') + '<span></span>' + inp(p + '.title', '段落標題') + inp(p + '.intro', '段落說明（選填）') +
+          (s.key === 'media' ? inp(p + '.category', 'WordPress 分類', { hint: '顯示這個分類的最新文章' }) + inp(p + '.count', '顯示幾篇', { type: 'number' }) : '') + '</div></div>';
       }).join('') + '</div></div>' +
       '<div class="panel"><h2>最新文章</h2><div class="grid2">' + inp('site.homePostCount', '首頁顯示幾篇', { type: 'number' }) + '</div></div>';
   }

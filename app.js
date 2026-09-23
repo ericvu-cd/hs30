@@ -8,6 +8,7 @@
      ?service=名稱            服務頁          ?view=services   所有服務
      ?town=名稱               社區頁          ?view=towns      所有社區
      ?view=videos            影片精選
+     ?media=名稱              媒體報導        ?view=media      所有媒體報導
      ?p=123 / ?name=代稱      文章（沿用 WordPress 的寫法，舊網站的短網址也能用）
      ?page_id=45 / ?pagename= WordPress 上的頁面
      ?category_name=代稱      分類            ?tag=代稱         標籤
@@ -247,7 +248,15 @@
     return m ? m[1] : '';
   }
 
+  // 已經匯入管理程式的 WordPress 文章（媒體報導），不在文章列表重複出現
+  function hideImported(posts) {
+    var ids = {};
+    (D.media || []).forEach(function (x) { if (x.wpId) ids[x.wpId] = 1; });
+    return posts.filter(function (p) { return !ids[p.id]; });
+  }
+
   function listHtml(posts, cats, offset) {
+    posts = hideImported(posts);
     if (!posts.length) return '<p class="c-empty">這裡目前沒有文章。<a href="?view=archives">看所有文章</a></p>';
     return posts.map(function (p, i) {
       var c = catsById(p.categories, cats)[0];
@@ -300,6 +309,7 @@
       case 'service': var sv = findBy(D.services, item.target); return sv ? serviceUrl(sv) : '?view=services';
       case 'town': var tw = findBy(D.towns, item.target); return tw ? townUrl(tw) : '?view=towns';
       case 'videos': return '?view=videos';
+      case 'media': return '?view=media';
       case 'posts': return '?view=archives';
       case 'visit': return './#visit';
       case 'search': return '?view=search';
@@ -430,18 +440,10 @@
     setTitle('', C.description);
     $('#hero').hidden = false;
     var needPosts = (C.sections || []).some(function (x) { return x.key === 'posts' && x.show; });
-    var mediaConf = (C.sections || []).filter(function (x) { return x.key === 'media' && x.show; })[0];
-    // 媒體報導：WordPress 上指定分類的最新幾篇
-    var mediaP = mediaConf ? categoriesP.then(function (cats) {
-      var name = mediaConf.category || '媒體報導';
-      var c = cats.filter(function (x) { return x.name === name || x.slugText === name; })[0];
-      if (!c) return null;
-      return api('posts', { categories: c.id, per_page: mediaConf.count || 3, _fields: LIST_FIELDS }).then(function (l) { return { cat: c, posts: l }; });
-    }).catch(function () { return null; }) : Promise.resolve(null);
     var postsP = needPosts ? api('posts', { per_page: C.homePostCount || 4, _fields: LIST_FIELDS }) : Promise.resolve([]);
     // 文章讀不到時，首頁其他段落照常顯示
-    Promise.all([postsP.catch(function () { return null; }), categoriesP.catch(function () { return []; }), mediaP]).then(function (r) {
-      var posts = r[0], cats = r[1], media = r[2];
+    Promise.all([postsP.catch(function () { return null; }), categoriesP.catch(function () { return []; })]).then(function (r) {
+      var posts = r[0] && hideImported(r[0]), cats = r[1];
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'services') {
@@ -475,10 +477,11 @@
             '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">看所有文章</a></div></section>';
         }
         if (k === 'media') {
-          if (!media || !media.posts.length) return '';
+          var all = mediaSorted();
+          if (!all.length) return '';
           return '<section class="journal media wrap" id="media" aria-labelledby="mdH">' + secHead(k, 'mdH', '媒體報導') +
-            '<div class="feed">' + listHtml(media.posts, cats) + '</div><div class="list-more"><a class="more" href="' + catUrl(media.cat) +
-            '">看全部媒體報導' + (media.cat.count ? '（' + media.cat.count + ' 篇）' : '') + '</a></div></section>';
+            '<div class="feed">' + mediaListHtml(all.slice(0, sec.count || 3)) + '</div>' +
+            (all.length > (sec.count || 3) ? '<div class="list-more"><a class="more" href="?view=media">看全部媒體報導（' + all.length + ' 則）</a></div>' : '') + '</section>';
         }
         if (k === 'visit') return visitHtml(k);
         return '';
@@ -564,6 +567,46 @@
       el.classList.toggle('open', open);
       el.querySelector('.status-text').textContent = msg;
     });
+  }
+
+  /* ---------- 媒體報導 ---------- */
+
+  function mediaUrl(x) { return q({ media: x.slug || x.title }); }
+  function mediaSorted() {
+    return shown(D.media).slice().sort(function (a, b) { return (b.date || '') < (a.date || '') ? -1 : 1; });
+  }
+  function mediaListHtml(list) {
+    return list.map(function (x, i) {
+      var src = img(x.cover, 480);
+      return '<article class="post"><div class="p-date"><span>' + esc(dotDate(x.date || '')) + '</span>' + (x.outlet ? '<span>' + esc(x.outlet) + '</span>' : '') + '</div>' +
+        '<div><h3><a href="' + mediaUrl(x) + '">' + esc(x.title) + '</a></h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '</div>' +
+        '<div class="ph thumb t' + (i % 3 + 1) + '" aria-hidden="true">' + (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '</div></article>';
+    }).join('');
+  }
+  function renderMediaIndex() {
+    var conf = sectionConf('media');
+    var t = conf.title || '媒體報導';
+    setTitle(t);
+    var list = mediaSorted();
+    view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(t) + '</h1>' +
+      (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
+      (list.length ? '<div class="feed">' + mediaListHtml(list) + '</div>' : '<p class="c-empty">目前還沒有媒體報導。</p>') + '</div>';
+  }
+  function renderMediaDetail(slug) {
+    var x = findBy(D.media, slug);
+    if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, '報導'); }
+    setTitle(x.title, x.summary || C.description);
+    var cover = img(x.cover, 1600);
+    var body = clean(x.body || '');
+    var first = (body.match(/<img[^>]+src="([^"]+)"/) || [])[1];
+    var share = location.origin + location.pathname + mediaUrl(x);
+    view.innerHTML = '<article class="wrap art"><a class="back" href="?view=media">所有媒體報導</a><div class="art-grid">' +
+      '<header class="art-head"><div class="meta"><span>媒體報導</span>' + (x.date ? '<time datetime="' + esc(x.date) + '">' + longDate(x.date) + '</time>' : '') +
+      (x.outlet ? '<span>' + esc(x.outlet) + '</span>' : '') + '</div><h1>' + esc(x.title) + '</h1></header>' +
+      (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
+      '<div class="prose">' + (x.summary && !body ? '<p>' + esc(x.summary) + '</p>' : '') + '<div class="entry">' + body + '</div>' +
+      (x.url ? '<p style="margin-top:28px"><a class="btn" href="' + esc(x.url) + '" target="_blank" rel="noopener">閱讀原始報導' + (x.outlet ? '（' + esc(x.outlet) + '）' : '') + '</a></p>' : '') +
+      '<div class="art-foot">' + shareHtml(x.title, share) + '</div></div></div></article>';
   }
 
   /* ---------- 服務、社區、影片 ---------- */
@@ -807,9 +850,9 @@
       view.innerHTML = '<div class="wrap list-page"><header class="list-head">' +
         (opts.label ? '<p class="meta"><span>' + esc(opts.label) + '</span></p>' : '') +
         '<h1>' + esc(opts.title) + '</h1>' + (opts.note ? '<p>' + opts.note + '</p>' : '') + '</header>' +
-        (opts.form || '') +
+        (opts.form || '') + (opts.local && (parseInt(params.get('paged'), 10) || 1) === 1 ? opts.local : '') +
         (opts.showFilter ? filterHtml(cats, opts.catId) : '') +
-        (opts.form && !posts.length ? '<p class="search-hint">找不到相關文章，換個關鍵字試試，或看 <a href="?view=archives">所有文章</a>。</p>'
+        (opts.form && !posts.length ? (opts.local ? '' : '<p class="search-hint">找不到相關文章，換個關鍵字試試，或看 <a href="?view=archives">所有文章</a>。</p>')
           : '<div class="feed" style="margin-top:20px">' + listHtml(posts, cats, n) + '</div>') +
         pagerHtml(n, hasMore, opts.keep || {}) + '</div>';
     }).catch(function (e) { showError(e); });
@@ -844,13 +887,31 @@
       var i = $('#sq'); if (i) i.focus();
       return;
     }
-    renderList({ title: '搜尋「' + term + '」', label: '搜尋結果', query: { search: term }, keep: { s: term }, form: searchForm(term) });
+    renderList({ title: '搜尋「' + term + '」', label: '搜尋結果', query: { search: term }, keep: { s: term }, form: searchForm(term), local: localMatches(term) });
+  }
+
+  // 在服務、社區、媒體報導、影片裡找關鍵字（這些內容不在 WordPress，WordPress 搜尋找不到）
+  function localMatches(term) {
+    var t = term.toLowerCase(), out = [];
+    var tmp = document.createElement('div');
+    var has = function (x) {
+      tmp.innerHTML = x.body || '';
+      return [x.title, x.summary, x.outlet, x.description, tmp.textContent].join(' ').toLowerCase().indexOf(t) >= 0;
+    };
+    shown(D.services).filter(has).forEach(function (x) { out.push(['協會服務', x.title, serviceUrl(x)]); });
+    shown(D.towns).filter(has).forEach(function (x) { out.push(['社區人文', x.title, townUrl(x)]); });
+    mediaSorted().filter(has).forEach(function (x) { out.push(['媒體報導', x.title, mediaUrl(x)]); });
+    shown(D.videos).filter(has).forEach(function (x) { out.push(['影片', x.title, '?view=videos']); });
+    if (!out.length) return '';
+    return '<section class="related" style="margin:28px 0 8px"><h2>網站頁面</h2><ul>' + out.map(function (o) {
+      return '<li><small>' + o[0] + '</small><a href="' + esc(o[2]) + '">' + esc(o[1]) + '</a></li>';
+    }).join('') + '</ul></section>';
   }
 
   function renderArchives() {
     setTitle('所有文章');
     Promise.all([allPages('posts', { _fields: 'id,date,title,categories' }), categoriesP]).then(function (r) {
-      var posts = r[0], cats = r[1];
+      var posts = hideImported(r[0]), cats = r[1];
       var years = {}, order = [];
       posts.forEach(function (p) {
         var y = p.date.slice(0, 4);
@@ -948,6 +1009,8 @@
   // 已經用管理程式搬過來的 WordPress 頁面，舊連結改顯示新頁面
   function importedTarget(idOrSlug) {
     var hit = function (x) { return x && (String(x.wpId) === idOrSlug || (x.wpSlug && decodeSlug(x.wpSlug) === idOrSlug)); };
+    var m = shown(D.media).filter(hit)[0];
+    if (m) return function () { renderMediaDetail(m.slug || m.title); };
     var s = shown(D.services).filter(hit)[0];
     if (s) return function () { renderDetail('service', s.slug || s.title); };
     var t = shown(D.towns).filter(hit)[0];
@@ -963,8 +1026,10 @@
     if (g('view') === 'services') return renderIndex('services');
     if (g('view') === 'towns') return renderIndex('towns');
     if (g('view') === 'videos') return renderVideos();
-    if (g('p')) return renderPost(g('p'));
-    if (g('name')) return renderPost(g('name'));
+    if (g('media')) return renderMediaDetail(g('media'));
+    if (g('view') === 'media') return renderMediaIndex();
+    var post = g('p') || g('name');
+    if (post) { var mt = importedTarget(post); return mt ? mt() : renderPost(post); }
     var pg = g('page_id') || g('pagename').split('/').filter(Boolean).pop();
     if (pg) { var imp = importedTarget(pg); return imp ? imp() : renderPage(pg); }
     if (g('cat')) return renderCategory(g('cat'));
@@ -985,7 +1050,7 @@
         return r.json();
       });
     };
-    var names = ['site', 'services', 'towns', 'videos', 'events'];
+    var names = ['site', 'services', 'towns', 'videos', 'events', 'media'];
     return Promise.all(names.map(function (n) {
       return get(n).catch(function (e) { if (n === 'site') throw e; console.warn(e); return []; });
     })).then(function (r) { names.forEach(function (n, i) { D[n] = r[i]; }); });

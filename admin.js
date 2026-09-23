@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var FILES = ['site', 'services', 'towns', 'videos', 'events'];
+  var FILES = ['site', 'services', 'towns', 'videos', 'events', 'media'];
   var GH = 'https://api.github.com';
   var auth = null;          // { owner, repo, token, branch }
   var state = {};           // 目前編輯中的資料
@@ -142,12 +142,15 @@
     s.hero = s.hero || {};
     s.featuredCategories = s.featuredCategories || [];
     s.importedVideoPages = s.importedVideoPages || [];
-    ['services', 'towns', 'videos', 'events'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
+    ['services', 'towns', 'videos', 'events', 'media'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
+    // 媒體報導改由管理程式管理：舊的「WordPress 分類」選單項目換成新的媒體報導頁
+    s.nav.forEach(function (n) { if (n.type === 'category' && n.target === '媒體報導') { n.type = 'media'; delete n.target; } });
+    s.sections.forEach(function (x) { if (x.key === 'media') delete x.category; });
     state.services.concat(state.towns).forEach(function (x) { x.gallery = x.gallery || []; });
     // 舊版資料沒有「媒體報導」段落時補上
     if (!s.sections.some(function (x) { return x.key === 'media'; })) {
       var at = s.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
-      s.sections.splice(at || s.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', category: '媒體報導', count: 3 });
+      s.sections.splice(at || s.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
     }
   }
 
@@ -164,8 +167,8 @@
 
   function validate() {
     var errs = [];
-    ['services', 'towns'].forEach(function (k) {
-      var name = k === 'services' ? '服務' : '社區';
+    ['services', 'towns', 'media'].forEach(function (k) {
+      var name = { services: '服務', towns: '社區', media: '媒體報導' }[k];
       var seen = {};
       state[k].forEach(function (x, i) {
         if (!x.title) errs.push(name + '第 ' + (i + 1) + ' 項沒有名稱。');
@@ -230,7 +233,7 @@
       });
     }).then(function (t) {
       tree = t;
-      var what = changed.map(function (f) { return { site: '網站設定', services: '服務', towns: '社區', videos: '影片', events: '活動' }[f]; });
+      var what = changed.map(function (f) { return { site: '網站設定', services: '服務', towns: '社區', videos: '影片', events: '活動', media: '媒體報導' }[f]; });
       if (Object.keys(pending).length) what.push('照片 ' + Object.keys(pending).length + ' 張');
       if (Object.keys(removed).length) what.push('刪除照片 ' + Object.keys(removed).length + ' 張');
       return gh(repoPath() + '/git/commits', { method: 'POST', body: { message: '管理程式：更新' + what.join('、'), tree: tree.sha, parents: [cur] } });
@@ -466,20 +469,31 @@
   }
 
   function importDialog(target) {
-    var names = { services: '協會服務', towns: '社區人文', videos: '影片精選' };
-    showDialog('從 WordPress 匯入到「' + names[target] + '」', '<p class="muted">讀取 WordPress 上的頁面中…</p>');
-    wpApi('pages?per_page=100&_fields=id,slug,title,parent').then(function (pages) {
+    var names = { services: '協會服務', towns: '社區人文', videos: '影片精選', media: '媒體報導' };
+    showDialog('從 WordPress 匯入到「' + names[target] + '」', '<p class="muted">讀取 WordPress 上的' + (target === 'media' ? '文章' : '頁面') + '中…</p>');
+    var listP = target !== 'media' ? wpApi('pages?per_page=100&_fields=id,slug,title,parent') :
+      wpApi('categories?per_page=100&_fields=id,name').then(function (cats) {
+        var c = cats.filter(function (x) { return x.name === '媒體報導'; })[0];
+        return wpApi('posts?per_page=100&_fields=id,slug,title,date' + (c ? '&categories=' + c.id : '')).then(function (l) {
+          return l.map(function (p) { p.parent = 0; p.dateText = p.date.slice(0, 10); return p; });
+        });
+      });
+    listP.then(function (pages) {
       var done = {};
       state.services.concat(state.towns).forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
       state.site.importedVideoPages.forEach(function (p) { done[p.id] = 1; });
+      state.media.forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
       var tmp = document.createElement('div');
       var t = function (h) { tmp.innerHTML = h; return tmp.textContent; };
       $('#dlgBody').innerHTML = '<p class="muted">' + (target === 'videos'
         ? '勾選含有影片的頁面，會把頁面裡的 YouTube 影片逐一加入影片清單。'
+        : target === 'media'
+        ? '下面是 WordPress「媒體報導」分類裡的文章，預設全部勾選。匯入後，這些文章會從網站的文章列表移到媒體報導，舊連結也會自動轉過來。已匯入的不能重複匯入。'
         : '勾選要搬過來的頁面。標題、內文、照片會一起帶進來，照片仍從 WordPress 載入。匯入後可以再修改。') + '</p>' +
+        (target === 'media' && !pages.length ? '<p class="notice">WordPress 上找不到「媒體報導」分類的文章。</p>' : '') +
         '<div class="list" style="margin:14px 0">' + pages.map(function (p) {
-          return '<label class="check item" style="grid-template-columns:auto 1fr"><input type="checkbox" value="' + p.id + '"' + (done[p.id] ? ' disabled' : '') + '> ' +
-            esc(t(p.title.rendered)) + (done[p.id] ? ' <span class="badge">已匯入</span>' : '') + (p.parent ? ' <span class="badge">子頁面</span>' : '') + '</label>';
+          return '<label class="check item" style="grid-template-columns:auto 1fr"><input type="checkbox" value="' + p.id + '"' + (done[p.id] ? ' disabled' : target === 'media' ? ' checked' : '') + '> ' +
+            (p.dateText ? '<span class="muted">' + p.dateText + '</span> ' : '') + esc(t(p.title.rendered)) + (done[p.id] ? ' <span class="badge">已匯入</span>' : '') + (p.parent ? ' <span class="badge">子頁面</span>' : '') + '</label>';
         }).join('') + '</div><button class="btn primary" type="button" data-act="doImport" data-target="' + target + '">匯入勾選的頁面</button>';
     }).catch(function () {
       $('#dlgBody').innerHTML = '<p class="notice bad">讀不到 WordPress 的頁面清單，請確認網路，或到「基本資料」確認 WordPress 網址。</p>';
@@ -489,7 +503,8 @@
     var ids = $$('#dlgBody input[type=checkbox]:checked').map(function (i) { return i.value; });
     if (!ids.length) { toast('請先勾選頁面'); return; }
     $('#dlgBody').innerHTML = '<p class="muted">匯入中…</p>';
-    Promise.all(ids.map(function (id) { return wpApi('pages/' + id + '?_fields=id,slug,title,content,excerpt,jetpack_featured_media_url'); })).then(function (list) {
+    var type = target === 'media' ? 'posts/' : 'pages/';
+    Promise.all(ids.map(function (id) { return wpApi(type + id + '?_fields=id,slug,date,title,content,excerpt,jetpack_featured_media_url'); })).then(function (list) {
       var tmp = document.createElement('div');
       var text = function (h) { tmp.innerHTML = h || ''; return (tmp.textContent || '').replace(/\s+/g, ' ').trim(); };
       var n = 0;
@@ -510,6 +525,19 @@
         }
         var first = (html.match(/<img[^>]+src="([^"]+)"/) || [])[1];
         var summary = text(p.excerpt && p.excerpt.rendered).replace(/\s*(\[…\]|繼續閱讀.*)$/, '');
+        if (target === 'media') {
+          // 內文裡第一個連到外部網站的連結，當作原始報導網址
+          var site = state.site.wordpressSite;
+          var ext = (html.match(/<a[^>]+href="(https?:\/\/[^"]+)"/g) || []).map(function (a) { return a.match(/href="([^"]+)"/)[1]; })
+            .filter(function (u) { return u.indexOf(site) < 0 && !/wordpress\.com|wp\.com|\.(jpe?g|png|gif|webp)(\?|$)/i.test(u); })[0] || '';
+          var sl = title;
+          if (state.media.some(function (x) { return (x.slug || x.title) === sl; })) sl = title + '-' + (p.date || '').slice(0, 10);
+          state.media.push({ slug: sl, title: title, outlet: '', date: (p.date || '').slice(0, 10), url: ext,
+            summary: summary.length > 80 ? summary.slice(0, 80) + '…' : summary,
+            cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), hidden: false, wpId: p.id, wpSlug: p.slug });
+          n++;
+          return;
+        }
         var item = { slug: title, title: title, summary: summary.length > 60 ? summary.slice(0, 60) + '…' : summary,
           cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), gallery: [],
           relatedCategory: '', relatedTag: '', hidden: false, wpId: p.id, wpSlug: p.slug };
@@ -533,7 +561,7 @@
   /* ---------- 畫面 ---------- */
 
   var TABS = [
-    ['services', '協會服務'], ['towns', '社區人文'], ['videos', '影片精選'], ['events', '近期活動'], ['sep'],
+    ['services', '協會服務'], ['towns', '社區人文'], ['videos', '影片精選'], ['media', '媒體報導'], ['events', '近期活動'], ['sep'],
     ['home', '首頁'], ['nav', '選單'], ['visit', '到訪與預約'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
     ['photos', '照片庫'], ['history', '版本紀錄'],
   ];
@@ -542,7 +570,7 @@
     $('#tabs').innerHTML = TABS.map(function (t) {
       return t[0] === 'sep' ? '<div class="sep"></div>' : '<button type="button" data-tab="' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</button>';
     }).join('');
-    var fn = { services: viewItems, towns: viewItems, videos: viewVideos, events: viewEvents, home: viewHome, nav: viewNav,
+    var fn = { services: viewItems, towns: viewItems, media: viewItems, videos: viewVideos, events: viewEvents, home: viewHome, nav: viewNav,
       visit: viewVisit, shanhaiji: viewShanhaiji, basic: viewBasic, photos: viewPhotos, history: viewHistory }[tab];
     $('#main').innerHTML = fn();
     if (tab === 'history') loadHistory();
@@ -589,41 +617,49 @@
 
   // 協會服務、社區人文
   function viewItems() {
-    var key = tab, isSvc = key === 'services';
-    var name = isSvc ? '服務' : '社區';
+    var key = tab, isSvc = key === 'services', isMedia = key === 'media';
+    var name = { services: '服務', towns: '社區', media: '報導' }[key];
     if (editing && editing.list === key && state[key][editing.i]) return viewItemForm(key, editing.i);
     editing = null;
     var list = state[key];
-    return head(isSvc ? '協會服務' : '社區人文', isSvc
-        ? '網站的主軸。每一項服務都有自己的介紹頁，首頁與選單會依這裡的順序顯示。拖曳或按箭頭調整順序。'
-        : '小鎮社區人文的各社區介紹頁。') +
+    return head({ services: '協會服務', towns: '社區人文', media: '媒體報導' }[key], {
+        services: '網站的主軸。每一項服務都有自己的介紹頁，首頁與選單會依這裡的順序顯示。拖曳或按箭頭調整順序。',
+        towns: '小鎮社區人文的各社區介紹頁。',
+        media: '媒體對協會的報導。網站上依日期由新到舊排列，首頁顯示最新幾則（在「首頁」設定）。' }[key]) +
       '<div class="row-acts" style="margin:0 0 16px"><button class="btn primary" type="button" data-act="addItem">＋ 新增' + name + '</button>' +
       '<button class="btn" type="button" data-act="import" data-target="' + key + '">從 WordPress 匯入</button></div>' +
-      (list.length ? '<div class="list">' + list.map(function (x, i) {
+      (list.length ? '<div class="list">' + list.map(function (x, i) { return [x, i]; }).sort(function (a, b) {
+        // 媒體報導依日期由新到舊顯示；其他依設定的順序
+        return isMedia ? ((b[0].date || '') > (a[0].date || '') ? 1 : -1) : a[1] - b[1];
+      }).map(function (row) {
+        var x = row[0], i = row[1];
         var src = imgSrc(x.cover, 200);
-        return '<div class="item" data-list="' + key + '" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
+        return (isMedia ? '<div class="item">' + '<span></span>' : '<div class="item" data-list="' + key + '" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>') +
           '<div class="item-main">' + (src ? '<img class="thumb" src="' + esc(src) + '" alt="">' : '<span class="thumb"></span>') +
           '<div class="item-body"><div class="title">' + esc(x.title || '（未命名）') + (x.hidden ? '<span class="badge off">隱藏中</span>' : '') + '</div>' +
-          '<div class="sub">' + esc(x.summary || '') + '</div></div></div>' +
-          '<div class="acts">' + moveBtns(key, i) + '<button class="btn small" type="button" data-act="edit" data-i="' + i + '">編輯</button></div></div>';
+          '<div class="sub">' + (isMedia ? esc([x.date, x.outlet].filter(Boolean).join('　')) : esc(x.summary || '')) + '</div></div></div>' +
+          '<div class="acts">' + (isMedia ? '' : moveBtns(key, i)) + '<button class="btn small" type="button" data-act="edit" data-i="' + i + '">編輯</button></div></div>';
       }).join('') + '</div>' : '<p class="empty">還沒有' + name + '，按「新增」或「從 WordPress 匯入」。</p>');
   }
 
   function viewItemForm(key, i) {
     loadWpLists();
-    var isSvc = key === 'services', p = key + '.' + i, x = state[key][i];
+    var isSvc = key === 'services', isMedia = key === 'media', p = key + '.' + i, x = state[key][i];
+    var param = { services: 'service', towns: 'town', media: 'media' }[key];
     var tagOpts = (wp.tags || []).map(function (t) { return '<option value="' + esc(t.slug) + '">' + esc(t.name) + '</option>'; }).join('');
     var live = saved[key] && saved[key].some(function (s) { return (s.slug || s.title) === (x.slug || x.title); });
     return '<div class="row-acts" style="margin:0 0 12px"><button class="btn" type="button" data-act="back">← 回到清單</button>' +
-      (live ? '<a class="btn" target="_blank" rel="noopener" href="./?' + (isSvc ? 'service' : 'town') + '=' + encodeURIComponent(x.slug || x.title) + '">在網站上看</a>' : '') + '</div>' +
+      (live ? '<a class="btn" target="_blank" rel="noopener" href="./?' + param + '=' + encodeURIComponent(x.slug || x.title) + '">在網站上看</a>' : '') + '</div>' +
       '<h1>' + esc(x.title || '新的項目') + '</h1><p class="muted">修改會先暫存在這個畫面，按右上角「發布」才會更新網站。</p>' +
       '<div class="panel"><h2>基本</h2><div class="grid2">' +
-      inp(p + '.title', '名稱') +
+      inp(p + '.title', isMedia ? '報導標題' : '名稱') +
       inp(p + '.slug', '網址代稱', { hint: '出現在網址裡。建立後盡量不要改，改了舊連結會失效。留空會用名稱。' }) +
-      inp(p + '.summary', '一句話介紹', { full: true, hint: '顯示在首頁卡片與頁面標題下方，約 20 到 40 字。' }) +
+      (isMedia ? inp(p + '.outlet', '媒體名稱', { placeholder: '例如：聯合報、客家電視台' }) + inp(p + '.date', '報導日期', { type: 'date' }) +
+        inp(p + '.url', '原始報導網址（選填）', { full: true, hint: '有填的話，頁面上會出現「閱讀原始報導」按鈕。', placeholder: 'https://' }) : '') +
+      inp(p + '.summary', isMedia ? '摘要' : '一句話介紹', { full: true, hint: isMedia ? '顯示在列表上，約 30 到 60 字。' : '顯示在首頁卡片與頁面標題下方，約 20 到 40 字。' }) +
       imgField(p + '.cover', '封面照片') + '</div>' +
       '<div class="row-acts">' + chk(p + '.hidden', '暫時隱藏（不在網站上顯示）') + '</div></div>' +
-      (isSvc ? '<div class="panel"><h2>服務資訊</h2><p class="muted">顯示在服務頁右側，沒有的可以留空。</p><div class="grid2">' +
+      (isMedia ? '' : isSvc ? '<div class="panel"><h2>服務資訊</h2><p class="muted">顯示在服務頁右側，沒有的可以留空。</p><div class="grid2">' +
         inp(p + '.audience', '適合對象', { placeholder: '例如：國小以上、團體 10 人起' }) +
         inp(p + '.duration', '所需時間', { placeholder: '例如：約 90 分鐘' }) +
         inp(p + '.capacity', '人數', { placeholder: '例如：10–40 人' }) +
@@ -631,13 +667,13 @@
         inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空會使用「到訪與預約」裡的預約表單。' }) + '</div></div>'
         : '<div class="panel"><h2>地點</h2>' + inp(p + '.mapUrl', 'Google 地圖連結', { hint: '在 Google 地圖找到地點 → 分享 → 複製連結' }) + '</div>') +
       '<div class="panel"><h2>內文</h2>' + richHtml(p + '.body') + '</div>' +
-      '<div class="panel"><h2>照片集</h2>' + galleryField(p + '.gallery') + '</div>' +
-      '<div class="panel"><h2>相關紀錄</h2><p class="muted">從 WordPress 自動列出相關文章。選分類或標籤其中一個即可，都不選就不顯示。</p><div class="grid2">' +
+      (isMedia ? '' : '<div class="panel"><h2>照片集</h2>' + galleryField(p + '.gallery') + '</div>') +
+      (isMedia ? '' : '<div class="panel"><h2>相關紀錄</h2><p class="muted">從 WordPress 自動列出相關文章。選分類或標籤其中一個即可，都不選就不顯示。</p><div class="grid2">' +
       inp(p + '.relatedCategory', 'WordPress 分類', { select: [''].concat(wp.cats || []).concat(x.relatedCategory && (wp.cats || []).indexOf(x.relatedCategory) < 0 ? [x.relatedCategory] : []) }) +
       inp(p + '.relatedTag', 'WordPress 標籤', { list: 'wpTags', hint: '輸入標籤，會出現建議', placeholder: '例如：導覽' }) +
-      '<datalist id="wpTags">' + tagOpts + '</datalist></div></div>' +
+      '<datalist id="wpTags">' + tagOpts + '</datalist></div></div>') +
       '<div class="row-acts"><button class="btn" type="button" data-act="back">← 回到清單</button><span class="spacer"></span>' +
-      '<button class="btn danger" type="button" data-act="delItem" data-i="' + i + '">刪除這個' + (isSvc ? '服務' : '社區') + '</button></div>';
+      '<button class="btn danger" type="button" data-act="delItem" data-i="' + i + '">刪除這個' + { services: '服務', towns: '社區', media: '報導' }[key] + '</button></div>';
   }
 
   function viewVideos() {
@@ -674,7 +710,7 @@
       }).join('') + '</div>' : '<p class="empty">目前沒有活動。</p>');
   }
 
-  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪（橫條）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導（WordPress）', visit: '到訪資訊' };
+  var SECTION_NAMES = { services: '協會的服務', booking: '預約與到訪（橫條）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
   function viewHome() {
     return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。') +
       '<div class="panel"><h2>封面按鈕</h2><div class="grid2">' + inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
@@ -685,13 +721,13 @@
           '<div class="item-body"><div class="title">' + esc(SECTION_NAMES[s.key] || s.key) + (s.show ? '' : '<span class="badge off">不顯示</span>') + '</div></div>' +
           '<div class="acts">' + moveBtns('site.sections', i) + '</div>' +
           '<div class="item-form grid2">' + chk(p + '.show', '在首頁顯示') + '<span></span>' + inp(p + '.title', '段落標題') + inp(p + '.intro', '段落說明（選填）') +
-          (s.key === 'media' ? inp(p + '.category', 'WordPress 分類', { hint: '顯示這個分類的最新文章' }) + inp(p + '.count', '顯示幾篇', { type: 'number' }) : '') + '</div></div>';
+          (s.key === 'media' ? inp(p + '.count', '首頁顯示幾則', { type: 'number' }) : '') + '</div></div>';
       }).join('') + '</div></div>' +
       '<div class="panel"><h2>最新文章</h2><div class="grid2">' + inp('site.homePostCount', '首頁顯示幾篇', { type: 'number' }) + '</div></div>';
   }
 
   var NAV_TYPES = [['auto-services', '服務項目（自動列出所有服務）'], ['auto-towns', '社區人文（自動列出所有社區）'], ['service', '某一項服務'], ['town', '某一個社區'],
-    ['videos', '影片精選'], ['posts', '所有文章'], ['visit', '到訪與預約'], ['search', '搜尋'], ['category', 'WordPress 分類'], ['url', '其他網址'], ['menu', '自訂下拉選單']];
+    ['videos', '影片精選'], ['media', '媒體報導'], ['posts', '所有文章'], ['visit', '到訪與預約'], ['search', '搜尋'], ['category', 'WordPress 分類'], ['url', '其他網址'], ['menu', '自訂下拉選單']];
   function navTarget(p, it) {
     if (it.type === 'service') return inp(p + '.target', '哪一項服務', { select: state.services.map(function (s) { return [s.slug || s.title, s.title]; }) });
     if (it.type === 'town') return inp(p + '.target', '哪一個社區', { select: state.towns.map(function (s) { return [s.slug || s.title, s.title]; }) });
@@ -880,6 +916,7 @@
       case 'addItem':
         var item = clone(blank);
         if (tab === 'services') { item.audience = ''; item.duration = ''; item.capacity = ''; item.fee = ''; item.bookingUrl = ''; }
+        else if (tab === 'media') { item = { slug: '', title: '', outlet: '', date: today(), url: '', summary: '', cover: '', body: '', hidden: false }; }
         else item.mapUrl = '';
         state[tab].push(item);
         editing = { list: tab, i: state[tab].length - 1 };

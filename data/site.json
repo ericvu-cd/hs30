@@ -141,5 +141,11 @@
   "buyText": "到好事集市購買",
   "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
   "blogText": "閱讀部落格"
- }
+ },
+ "importedVideoPages": [
+  {
+   "id": 592,
+   "slug": "%e5%bd%b1%e7%89%87%e7%b2%be%e9%81%b8"
+  }
+ ]
 }

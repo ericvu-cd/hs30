@@ -744,10 +744,10 @@
 
   var SECTION_NAMES = { about: '開場短文', services: '協會的服務', booking: '預約與到訪', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
   function viewHome() {
-    return head('首頁', '最上面固定是「番社參拾」封面與古厝大門，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
+    return head('首頁', '最上面固定是「番社參拾」封面，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
       '<div class="panel"><h2>封面</h2><div class="grid2">' +
       imgField('site.hero.image', '封面照片（選填）') +
-      '<p class="muted field-full" style="margin:0">設定封面照片後，首頁最上面會改成滿版照片，建議用橫式、清楚的古厝照片。沒有設定時顯示古厝大門插畫。</p>' +
+      '<p class="muted field-full" style="margin:0">設定封面照片後，首頁最上面會改成滿版照片，建議用橫式、清楚的古厝照片。沒有設定時，封面右邊顯示陳家古厝的示意插畫。</p>' +
       inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
       inp('site.hero.secondaryText', '第二個按鈕文字（連到預約）') + '</div></div>' +
       '<div class="panel"><h2>首頁段落</h2><div class="list">' + state.site.sections.map(function (s, i) {
@@ -980,6 +980,13 @@
         break;
       case 'addNav': state.site.nav.push({ label: '新項目', type: 'url', target: '' }); render(); break;
       case 'addNavChild': listAt(path).push({ label: '', type: 'service', target: '' }); render(); break;
+      case 'pickUrl': {
+        var u = ($('#pickerUrl').value || '').trim();
+        if (!/^https:\/\/.+\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(u)) { toast('請貼上 https:// 開頭、結尾是 .jpg 或 .png 的照片網址'); break; }
+        $('#picker').close();
+        if (pickerCb) pickerCb([u.replace(/\?.*$/, '')]);
+        break;
+      }
       case 'pickImg': openPicker(function (ps) { setPath(state, path, ps[0]); render(); }); break;
       case 'clearImg': setPath(state, path, ''); render(); break;
       case 'galAdd': openPicker(function (ps) { listAt(path).push.apply(listAt(path), ps); render(); }, true); break;

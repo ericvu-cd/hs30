@@ -34,74 +34,93 @@
       <h1 class="v" id="heroName">番社參拾</h1>
       <p class="v sub" id="heroTag">老屋裡的在地學</p>
     </div>
-    <figure class="gate" id="gateFig">
-        <button type="button" id="gateBtn" aria-pressed="false" aria-label="開門">
-          <svg viewBox="0 176 600 364" role="img" aria-labelledby="gt">
-            <title id="gt">陳家古厝大門的插畫：紅磚圍牆與藍色鐵門，門柱上掛著木匾，並嵌有 1937 與 2015 兩塊彩瓷。</title>
-            <defs>
-              <pattern id="brick" width="36" height="16" patternUnits="userSpaceOnUse">
-                <rect width="36" height="16" fill="#9B4B3A"/>
-                <path d="M0 8H36M0 16H36M18 0V8M0 8V16" stroke="#7B392C" stroke-width="1.6" fill="none"/>
-              </pattern>
-              <pattern id="rooftile" width="12" height="14" patternUnits="userSpaceOnUse">
-                <rect width="12" height="14" fill="#17222E"/>
-                <path d="M0 7Q6 13 12 7" stroke="#31465C" stroke-width="2" fill="none"/>
-              </pattern>
-            </defs>
-            <!-- 三合院正身屋頂 -->
-            <path d="M96 262C150 250 176 232 196 206H404C424 232 450 250 504 262Z" fill="url(#rooftile)"/>
-            <rect x="190" y="201" width="220" height="7" fill="#0E161E"/>
-            <rect x="110" y="262" width="380" height="62" fill="#EDE0B4"/>
-            <!-- 門內 -->
-            <rect x="232" y="284" width="136" height="216" fill="#F6E7B4"/>
-            <rect x="232" y="478" width="136" height="22" fill="#D9B450"/>
-            <rect x="252" y="372" width="96" height="106" fill="url(#brick)"/>
-            <rect x="246" y="362" width="108" height="12" fill="#17222E"/>
-            <ellipse cx="300" cy="410" rx="13" ry="9" fill="#F6E7B4" stroke="#17222E" stroke-width="3"/>
-            <!-- 圍牆 -->
-            <rect x="30" y="330" width="162" height="170" fill="url(#brick)"/>
-            <rect x="24" y="320" width="174" height="12" fill="#CFC9B8"/>
-            <rect x="408" y="330" width="162" height="170" fill="url(#brick)"/>
-            <rect x="402" y="320" width="174" height="12" fill="#CFC9B8"/>
-            <!-- 門柱與門楣 -->
-            <rect x="190" y="250" width="42" height="250" fill="url(#brick)"/>
-            <rect x="368" y="250" width="42" height="250" fill="url(#brick)"/>
-            <rect x="184" y="237" width="54" height="14" fill="#CFC9B8"/>
-            <rect x="362" y="237" width="54" height="14" fill="#CFC9B8"/>
-            <rect x="232" y="252" width="136" height="32" fill="url(#brick)"/>
-            <rect x="232" y="282" width="136" height="4" fill="#CFC9B8"/>
-            <!-- 木匾 -->
-            <rect x="198" y="262" width="26" height="100" rx="1" fill="#4A3426"/>
-            <rect x="376" y="262" width="26" height="100" rx="1" fill="#4A3426"/>
-            <g font-family="'Noto Serif TC','Songti TC',serif" font-weight="900" font-size="19" fill="#F1E3B2" text-anchor="middle">
-              <text x="211" y="283">番</text><text x="211" y="305">社</text><text x="211" y="327">參</text><text x="211" y="349">拾</text>
-              <text x="389" y="283">陳</text><text x="389" y="305">家</text><text x="389" y="327">古</text><text x="389" y="349">厝</text>
-            </g>
-            <!-- 彩瓷 1937／2015 -->
-            <rect x="196" y="372" width="30" height="30" fill="#F2F2ED" stroke="#29486B" stroke-width="2"/>
-            <rect x="199.5" y="375.5" width="23" height="23" fill="none" stroke="#D9B450" stroke-width="1.5"/>
-            <text x="211" y="391.5" font-family="'Noto Sans TC',sans-serif" font-weight="700" font-size="9" fill="#29486B" text-anchor="middle">1937</text>
-            <rect x="374" y="372" width="30" height="30" fill="#F2F2ED" stroke="#29486B" stroke-width="2"/>
-            <rect x="377.5" y="375.5" width="23" height="23" fill="none" stroke="#D9B450" stroke-width="1.5"/>
-            <text x="389" y="391.5" font-family="'Noto Sans TC',sans-serif" font-weight="700" font-size="9" fill="#29486B" text-anchor="middle">2015</text>
-            <!-- 藍色鐵門 -->
-            <g class="leaf leaf-l">
-              <rect x="232" y="286" width="68" height="214" fill="#29486B" stroke="#1D3350" stroke-width="1.5"/>
-              <path d="M232 322H300M232 358H300M232 394H300M232 430H300M232 466H300" stroke="#3B6392" stroke-width="3"/>
-              <circle cx="290" cy="402" r="4" fill="#D9B450"/>
-            </g>
-            <g class="leaf leaf-r">
-              <rect x="300" y="286" width="68" height="214" fill="#29486B" stroke="#1D3350" stroke-width="1.5"/>
-              <path d="M300 322H368M300 358H368M300 394H368M300 430H368M300 466H368" stroke="#3B6392" stroke-width="3"/>
-              <circle cx="310" cy="402" r="4" fill="#D9B450"/>
-            </g>
-            <!-- 地面 -->
-            <rect x="0" y="500" width="600" height="6" fill="#17222E"/>
-            <rect x="0" y="506" width="600" height="34" fill="#C9A23F"/>
-          </svg>
-        </button>
-        <figcaption>陳家古厝的大門。門柱上的 1937 與 2015，是三合院落成與修復完成的年份。點一下，開門看看。</figcaption>
-      </figure>
+    <figure class="house" id="houseFig">
+<svg viewBox="0 92 600 238" role="img" aria-labelledby="hsT hsD" xmlns="http://www.w3.org/2000/svg">
+  <title id="hsT">陳家古厝正面的示意插畫</title>
+  <desc id="hsD">閩式三合院：正身居中，兩側是較低的護龍。紅瓦屋頂，洗石子牆面，屋簷下有一排花磚。正身大門上方掛著「穎川堂」堂號，兩側各有一個圓形牛眼窗，門旁有 1937 與 2015 兩塊年份牌。</desc>
+  <defs>
+    <pattern id="hsWash" width="14" height="14" patternUnits="userSpaceOnUse">
+      <rect width="14" height="14" fill="#D9D1BC"/>
+      <circle cx="2" cy="3" r="1.1" fill="#B9AF98"/><circle cx="9" cy="2" r="0.9" fill="#EFE9D8"/><circle cx="12" cy="8" r="1.2" fill="#C4BAA3"/>
+      <circle cx="5" cy="9" r="0.9" fill="#EFE9D8"/><circle cx="1" cy="12" r="0.8" fill="#A99F88"/><circle cx="8" cy="12" r="1" fill="#CFC6AF"/>
+    </pattern>
+    <pattern id="hsRoof" width="9" height="10" patternUnits="userSpaceOnUse">
+      <rect width="9" height="10" fill="#B1583F"/>
+      <path d="M0 0V10M9 0V10" stroke="#8A3F2E" stroke-width="1.6"/><path d="M0 9.4H9" stroke="#9B4B3A" stroke-width="1.2"/>
+    </pattern>
+    <pattern id="hsHua" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#F3EFE2"/>
+      <path d="M8 1.5L14.5 8L8 14.5L1.5 8Z" fill="none" stroke="#29486B" stroke-width="1.3"/>
+      <circle cx="8" cy="8" r="2.4" fill="#D9B450"/><circle cx="8" cy="8" r="2.4" fill="none" stroke="#9B4B3A" stroke-width=".8"/>
+      <path d="M0 .5H16M0 15.5H16" stroke="#C9C0A8" stroke-width=".8"/>
+    </pattern>
+  </defs>
+
+  <!-- 埕（前院） -->
+  <rect x="0" y="292" width="600" height="38" fill="#C9A640"/>
+  <path d="M0 304H600M0 317H600M70 292V304M210 304V317M360 292V304M500 304V317M140 317V330M430 317V330" stroke="#B48F2E" stroke-width="1.2"/>
+  <rect x="0" y="292" width="600" height="5" fill="#17222E"/>
+
+  <!-- 正身 -->
+  <rect x="150" y="152" width="300" height="140" fill="url(#hsWash)"/>
+  <rect x="150" y="152" width="300" height="140" fill="none" stroke="#A99F88" stroke-width="1.5"/>
+  <path d="M122 118Q300 132 478 118L488 152H112Z" fill="url(#hsRoof)"/>
+  <path d="M116 107Q300 122 484 107V118Q300 133 116 118Z" fill="#7E3626"/>
+  <path d="M116 107Q300 122 484 107" fill="none" stroke="#5E281C" stroke-width="1.5"/>
+  <rect x="112" y="150" width="376" height="6" fill="#7E3626"/>
+  <rect x="150" y="158" width="300" height="16" fill="url(#hsHua)"/>
+  <rect x="150" y="174" width="300" height="5" fill="#000" opacity=".08"/>
+  <rect x="150" y="280" width="300" height="12" fill="#A99F88"/>
+
+  <!-- 大門與堂號 -->
+  <rect x="266" y="178" width="68" height="18" rx="1.5" fill="#17222E"/>
+  <text x="300" y="191.5" text-anchor="middle" font-family="'Noto Serif TC','PMingLiU',serif" font-weight="900" font-size="13" letter-spacing="1" fill="#D9B450">穎川堂</text>
+  <rect x="260" y="198" width="80" height="94" fill="#B9B09A"/>
+  <rect x="268" y="206" width="64" height="86" fill="#29486B"/>
+  <path d="M300 206V292" stroke="#17222E" stroke-width="2"/>
+  <rect x="273" y="212" width="22" height="34" fill="none" stroke="#3B6392" stroke-width="1.5"/><rect x="305" y="212" width="22" height="34" fill="none" stroke="#3B6392" stroke-width="1.5"/>
+  <rect x="273" y="252" width="22" height="34" fill="none" stroke="#3B6392" stroke-width="1.5"/><rect x="305" y="252" width="22" height="34" fill="none" stroke="#3B6392" stroke-width="1.5"/>
+  <circle cx="295" cy="262" r="2.6" fill="#D9B450"/><circle cx="305" cy="262" r="2.6" fill="#D9B450"/>
+
+  <!-- 牛眼窗 -->
+  <g>
+    <circle cx="208" cy="218" r="16" fill="#B9B09A"/><circle cx="208" cy="218" r="11.5" fill="#29486B"/>
+    <path d="M202 207.5V228.5M208 206.5V229.5M214 207.5V228.5" stroke="#B9B09A" stroke-width="1.6"/>
+    <circle cx="392" cy="218" r="16" fill="#B9B09A"/><circle cx="392" cy="218" r="11.5" fill="#29486B"/>
+    <path d="M386 207.5V228.5M392 206.5V229.5M398 207.5V228.5" stroke="#B9B09A" stroke-width="1.6"/>
+  </g>
+
+  <!-- 年份牌 -->
+  <rect x="194" y="252" width="38" height="17" rx="1.5" fill="#F3EFE2" stroke="#29486B" stroke-width="1.2"/>
+  <text x="213" y="264.5" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-weight="700" font-size="11" fill="#29486B">1937</text>
+  <rect x="368" y="252" width="38" height="17" rx="1.5" fill="#F3EFE2" stroke="#29486B" stroke-width="1.2"/>
+  <text x="387" y="264.5" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-weight="700" font-size="11" fill="#29486B">2015</text>
+
+  <!-- 護龍（左、右） -->
+  <g>
+    <rect x="40" y="208" width="112" height="84" fill="url(#hsWash)"/><rect x="40" y="208" width="112" height="84" fill="none" stroke="#A99F88" stroke-width="1.5"/>
+    <path d="M36 180Q96 192 156 180L164 206H28Z" fill="url(#hsRoof)"/>
+    <path d="M30 170Q96 184 162 170V180Q96 194 30 180Z" fill="#7E3626"/>
+    <rect x="28" y="204" width="136" height="6" fill="#7E3626"/>
+    <rect x="40" y="212" width="112" height="13" fill="url(#hsHua)"/>
+    <rect x="40" y="225" width="112" height="4" fill="#000" opacity=".08"/>
+    <rect x="76" y="238" width="40" height="34" fill="#B9B09A"/><rect x="80" y="242" width="32" height="26" fill="#29486B"/><path d="M96 242V268M80 255H112" stroke="#B9B09A" stroke-width="1.6"/>
+    <rect x="40" y="280" width="112" height="12" fill="#A99F88"/>
+  </g>
+  <g>
+    <rect x="448" y="208" width="112" height="84" fill="url(#hsWash)"/><rect x="448" y="208" width="112" height="84" fill="none" stroke="#A99F88" stroke-width="1.5"/>
+    <path d="M444 180Q504 192 564 180L572 206H436Z" fill="url(#hsRoof)"/>
+    <path d="M438 170Q504 184 570 170V180Q504 194 438 180Z" fill="#7E3626"/>
+    <rect x="436" y="204" width="136" height="6" fill="#7E3626"/>
+    <rect x="448" y="212" width="112" height="13" fill="url(#hsHua)"/>
+    <rect x="448" y="225" width="112" height="4" fill="#000" opacity=".08"/>
+    <rect x="484" y="238" width="40" height="34" fill="#B9B09A"/><rect x="488" y="242" width="32" height="26" fill="#29486B"/><path d="M504 242V268M488 255H520" stroke="#B9B09A" stroke-width="1.6"/>
+    <rect x="448" y="280" width="112" height="12" fill="#A99F88"/>
+  </g>
+</svg>
+
+      <figcaption class="hero-side" id="heroSide"></figcaption>
+    </figure>
   </div>
   <div class="wrap hero-cta" id="heroBtns"></div>
 </section>

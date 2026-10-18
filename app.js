@@ -358,6 +358,15 @@
       return '<a href="' + esc(h) + '"' + (h === here ? ' aria-current="page"' : '') + '>' + esc(n.label) + '</a>';
     }).join('');
 
+    // 古厝插畫下方：地址、開放時間與開放狀態
+    var hs = $('#heroSide');
+    if (hs) {
+      var fmt0 = function (t) { return String(t || '').replace(/^0/, ''); };
+      hs.innerHTML = '<p class="hero-addr">' + esc(V.address) + '</p>' +
+        '<p class="hero-hours">' + esc(V.openText) + '　' + fmt0(V.open) + '–' + fmt0(V.close) + '</p>' +
+        '<p class="status" data-status aria-live="polite"><span class="dot"></span><span class="status-text"></span></p>';
+    }
+
     // 手機版選單：展開的面板從頁首下方開始
     var setTop = function () { document.documentElement.style.setProperty('--topbar-h', $('.topbar').offsetHeight + 'px'); };
     setTop();
@@ -567,7 +576,7 @@
     });
   }
 
-  // 首頁開場：標題逐字出現，接著古厝大門打開。每次開啟瀏覽器只播放一次；系統設定減少動態時不播放
+  // 首頁開場：標題逐字出現。每次開啟瀏覽器只播放一次；系統設定減少動態時不播放
   function setupHeroPhoto() {
     var hero = $('#hero'), u = C.hero && C.hero.image;
     if (!u || hero.classList.contains('hero--photo')) return;
@@ -581,7 +590,7 @@
 
   function playIntro() {
     setupHeroPhoto();
-    var hero = $('#hero'), gate = $('#gateFig');
+    var hero = $('#hero');
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var seen = false;
     try { seen = sessionStorage.getItem('fs30-intro') === '1'; sessionStorage.setItem('fs30-intro', '1'); } catch (e) { /* 忽略 */ }
@@ -589,11 +598,7 @@
     var h = $('#heroName');
     h.innerHTML = Array.prototype.map.call(h.textContent, function (ch, i) { return '<span style="--i:' + i + '">' + esc(ch) + '</span>'; }).join('');
     hero.classList.add('intro');
-    setTimeout(function () {
-      gate.classList.add('is-open');
-      var b = $('#gateBtn'); if (b) { b.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-label', '關門'); }
-    }, 1300);
-    setTimeout(function () { hero.classList.add('intro-done'); }, 2400);
+    setTimeout(function () { hero.classList.add('intro-done'); }, 1900);
   }
 
   function upcomingEvents(service) {
@@ -1070,14 +1075,6 @@
       var t = e.target;
       if (t.tagName === 'IMG' && t.getAttribute('data-ph')) t.remove();
     }, true);
-
-    // 古厝大門：點一下開門
-    var gb = $('#gateBtn'), gf = $('#gateFig');
-    if (gb) gb.addEventListener('click', function () {
-      var o = gf.classList.toggle('is-open');
-      gb.setAttribute('aria-pressed', o ? 'true' : 'false');
-      gb.setAttribute('aria-label', o ? '關門' : '開門');
-    });
 
     document.addEventListener('click', function (e) {
       // 子選單：點外面收起

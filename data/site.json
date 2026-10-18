@@ -8,9 +8,16 @@
  "goatcounter": "",
  "hero": {
   "primaryText": "看服務項目",
-  "secondaryText": "預約導覽"
+  "secondaryText": "預約導覽",
+  "image": ""
  },
  "sections": [
+  {
+   "key": "about",
+   "show": true,
+   "title": "關於番社參拾",
+   "intro": ""
+  },
   {
    "key": "services",
    "show": true,
@@ -30,40 +37,45 @@
    "intro": ""
   },
   {
-   "key": "towns",
+   "key": "explore",
    "show": true,
-   "title": "小鎮社區人文",
-   "intro": "走訪竹南沿海與中港周邊的社區，認識各地的人與故事。"
-  },
-  {
-   "key": "shanhaiji",
-   "show": true,
-   "title": "《山海集》",
-   "intro": ""
-  },
-  {
-   "key": "videos",
-   "show": true,
-   "title": "影片精選",
+   "title": "探索更多",
    "intro": ""
   },
   {
    "key": "posts",
-   "show": true,
+   "show": false,
    "title": "活動紀錄與在地觀察",
    "intro": ""
   },
   {
    "key": "media",
-   "show": true,
+   "show": false,
    "title": "媒體報導",
    "intro": "報章、電視與網路媒體對協會與陳家古厝的報導。",
-   "category": "媒體報導",
    "count": 3
   },
   {
+   "key": "towns",
+   "show": false,
+   "title": "小鎮社區人文",
+   "intro": "走訪竹南沿海與中港周邊的社區，認識各地的人與故事。"
+  },
+  {
+   "key": "shanhaiji",
+   "show": false,
+   "title": "《山海集》",
+   "intro": ""
+  },
+  {
+   "key": "videos",
+   "show": false,
+   "title": "影片精選",
+   "intro": ""
+  },
+  {
    "key": "visit",
-   "show": true,
+   "show": false,
    "title": "到訪陳家古厝",
    "intro": ""
   }
@@ -76,8 +88,7 @@
   "最新消息",
   "故事工坊",
   "公告訊息",
-  "活動記實",
-  "媒體報導"
+  "活動記實"
  ],
  "nav": [
   {
@@ -98,8 +109,7 @@
   },
   {
    "label": "媒體報導",
-   "type": "category",
-   "target": "媒體報導"
+   "type": "media"
   },
   {
    "label": "預約與到訪",
@@ -142,10 +152,6 @@
   "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
   "blogText": "閱讀部落格"
  },
- "importedVideoPages": [
-  {
-   "id": 592,
-   "slug": "%e5%bd%b1%e7%89%87%e7%b2%be%e9%81%b8"
-  }
- ]
+ "importedVideoPages": [],
+ "layoutVersion": 3
 }

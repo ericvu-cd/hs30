@@ -61,6 +61,8 @@
   <div class="modal-body">
     <label class="btn primary upload">上傳新照片<input type="file" accept="image/*" multiple hidden id="pickerFile"></label>
     <span class="muted">照片會自動縮小到適合網頁的大小。</span>
+    <div class="urlpick"><label>或貼上已有的照片網址（例如 WordPress 上的照片）<input id="pickerUrl" type="url" placeholder="https://…jpg"></label>
+      <button class="btn" type="button" data-act="pickUrl">使用這個網址</button></div>
     <div class="lib" id="pickerLib"></div>
   </div>
 </dialog>

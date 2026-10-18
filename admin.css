@@ -132,3 +132,6 @@ input:focus,select:focus,textarea:focus,.rich:focus{outline:2px solid var(--blue
 .notice{background:#FFF8E1;border:1px solid #EAD48E;border-radius:6px;padding:10px 14px;font-size:14px;margin:0 0 16px}
 .notice.ok{background:#E8F3EC;border-color:#A9CFB6}
 .notice.bad{background:#FBECE9;border-color:#E3B3AA}
+
+.urlpick{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px}
+.urlpick label{flex:1 1 280px}

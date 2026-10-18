@@ -727,3 +727,30 @@ h1.v{font-size:clamp(50px,14vw,132px);line-height:1.06}
   .booking{margin-top:128px}
 }
 @media (min-width:900px){.svc-row:nth-child(even){grid-template-columns:5fr 7fr}}
+
+/* 封面不放建築插畫：左邊大標題，右邊放地址與開放狀態；設定封面照片後改成滿版照片 */
+.hero-in{align-items:end}
+.hero-side{align-self:end;padding-bottom:clamp(24px,5vw,56px);display:grid;gap:6px;justify-items:start;max-width:30em}
+.hero-org{margin:0;font-size:13px;letter-spacing:.14em;opacity:.8}
+.hero-addr{margin:0;font-family:var(--serif);font-weight:700;font-size:clamp(19px,5vw,30px);line-height:1.5}
+.hero-hours{margin:0;font-size:clamp(15px,3.8vw,18px)}
+.hero-side .status{margin:8px 0 0;color:var(--on-gold)}
+.hero--photo .hero-side{display:none}
+@media (min-width:900px){.hero-in{grid-template-columns:5fr 7fr}.hero-side{padding-left:clamp(0px,4vw,64px)}}
+
+/* 封面：左邊直排標題，右邊是陳家古厝的示意插畫，房子「站」在封面底部的地面上 */
+.hero-in{align-items:end}
+.house{margin:0;align-self:end;width:100%;max-width:660px;justify-self:end}
+.house svg{display:block;width:100%;height:auto}
+.hero-side{padding:14px 0 clamp(20px,4vw,40px);display:grid;gap:4px;justify-items:start;max-width:none}
+.hero-addr{font-size:clamp(16px,4.2vw,20px)!important;line-height:1.5}
+.hero-hours{font-size:clamp(14px,3.6vw,16px)}
+.hero--photo .house{display:none}
+@media (max-width:899px){
+  .hero-in{grid-template-columns:1fr;gap:0}
+  .hero-title{padding-bottom:8px}
+  .house{max-width:none}
+}
+.hero.intro .house{opacity:0;transform:translateY(14px);animation:fs-up .9s cubic-bezier(.2,.7,.2,1) forwards .9s}
+.hero.intro-done .house{opacity:1;transform:none;animation:none}
+@keyframes fs-up{to{opacity:1;transform:none}}

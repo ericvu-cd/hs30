@@ -1,0 +1,63 @@
+/* 陳家古厝首頁：照片庫、服務與 ADMIN 繼續沿用原設定。 */
+#hero:not(.hero--photo){background:#f7f2e8;color:#302b25;overflow:hidden}
+#hero:not(.hero--photo) .hero-in{width:min(1440px,100% - 64px);display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.6fr);gap:24px;align-items:center;padding:48px 0 24px}
+#hero:not(.hero--photo) .hero-title{display:flex;flex-direction:column;gap:0;align-self:center;padding:0 0 28px}
+#hero:not(.hero--photo) .hero-title .v{writing-mode:horizontal-tb;animation:none;opacity:1;transform:none}
+#hero:not(.hero--photo) #heroName{font-size:clamp(32px,3.6vw,54px);line-height:1.4;letter-spacing:.08em;font-weight:900;margin:0}
+#hero:not(.hero--photo) #heroTag{font-size:clamp(21px,2.3vw,32px);line-height:1.6;letter-spacing:.12em;margin:16px 0 0!important}
+.heritage-intro{font-size:16px;line-height:1.9;letter-spacing:.04em;margin:18px 0 0;color:#645c50;text-wrap:balance}
+#hero:not(.hero--photo) .hero-cta{display:flex;flex-wrap:wrap;gap:12px;padding:28px 0 0;margin:0;opacity:1;animation:none}
+#hero:not(.hero--photo) .hero-cta .btn{min-height:48px;min-width:136px;width:auto;display:inline-flex;justify-content:center;align-items:center;background:#974b37;color:#fff;border:1px solid #974b37;box-shadow:none;border-radius:5px}
+#hero:not(.hero--photo) .hero-cta .ghost-dark{background:transparent;color:#86422f;border-color:#974b37}
+#hero:not(.hero--photo) .house{width:100%;max-width:none;align-self:center;margin:0;min-width:0;opacity:1;transform:none;animation:none}
+.heritage-scene{position:relative;isolation:isolate;container-type:inline-size;perspective:1100px}
+.heritage-art{position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:8px;transform:rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg));transition:transform .6s ease-out;transform-style:preserve-3d;background:#f4ecdc}
+.heritage-image{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain}
+.heritage-plaque,.heritage-year,.heritage-lintel{position:absolute;z-index:3;color:#29241b;font-family:'Noto Serif TC','PMingLiU',serif;text-shadow:0 .5px .3px #58412440;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1}
+.heritage-plaque{top:54%;height:20%;width:4.6%;display:block;text-align:center;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.08em;line-height:1.7;font-size:clamp(8px,2.7cqw,28px);font-weight:900;transform:translateX(-50%);white-space:nowrap}
+.heritage-plaque--left{left:22.3%}.heritage-plaque--right{left:77.5%}
+.heritage-year{top:76.1%;height:3.6%;width:4.7%;font-size:clamp(6px,1.65cqw,18px);font-weight:700;transform:translateX(-50%)}
+.heritage-year--left{left:22.3%}.heritage-year--right{left:77.5%}
+.heritage-lintel{left:46.1%;top:39.2%;width:8%;height:3.5%;font-size:clamp(9px,1.9cqw,20px);font-weight:900;direction:rtl;unicode-bidi:bidi-override;color:#274277;letter-spacing:.09em}
+.heritage-glow{position:absolute;z-index:1;left:44%;top:44%;width:12%;height:21%;background:radial-gradient(ellipse,#f9bf5565,transparent 68%);mix-blend-mode:screen;pointer-events:none;animation:heritage-warmth 7s ease-in-out infinite alternate}
+.heritage-shade{position:absolute;z-index:2;inset:0;background:radial-gradient(ellipse at 18% 17%,#44452b16 0,transparent 32%),radial-gradient(ellipse at 83% 73%,#55562e1c 0,transparent 24%);mix-blend-mode:multiply;pointer-events:none;animation:heritage-light 12s ease-in-out infinite alternate}
+.heritage-motion{position:relative;display:block;margin:8px 0 0 auto;z-index:4;border:1px solid #756b5550;border-radius:20px;padding:8px 14px;background:#fcf8efed;color:#514736;font:12px var(--sans);min-height:44px;cursor:pointer}
+.heritage-motion:hover{background:#fff}.heritage-motion:focus-visible{outline:3px solid #974b37;outline-offset:3px}
+.heritage-scene.is-paused .heritage-glow,.heritage-scene.is-paused .heritage-shade{animation-play-state:paused}
+.heritage-scene.is-paused .heritage-art{transform:none}
+#hero:not(.hero--photo) .hero-side{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 16px;text-align:center;padding:16px 0 8px;color:#62594d}
+#hero:not(.hero--photo) .hero-addr{font-family:var(--sans);font-size:14px!important;font-weight:400}
+#hero:not(.hero--photo) .hero-hours{font-size:14px}
+#hero:not(.hero--photo) .hero-side .status{color:#62594d;margin:0;font-size:13px}
+.hero--photo .heritage-intro{display:none}
+@keyframes heritage-warmth{from{opacity:.35}to{opacity:.85}}
+@keyframes heritage-light{from{opacity:.3;transform:translate(-1%,0)}to{opacity:.8;transform:translate(1%,1%)}}
+@media(min-width:900px){#hero:not(.hero--photo) .hero-title{padding-left:clamp(0px,2vw,24px)}}
+@media(max-width:899px){
+ .mast{flex-wrap:nowrap;gap:10px;align-items:center}
+ .mast .brand{font-size:clamp(11px,3.4vw,15px);letter-spacing:.02em;white-space:nowrap}
+ .mast .menu-btn{flex-shrink:0;white-space:nowrap;min-width:60px}
+ #hero:not(.hero--photo) .hero-in{width:min(680px,100% - 32px);grid-template-columns:1fr;gap:18px;padding:30px 0 20px}
+ #hero:not(.hero--photo) .hero-title{text-align:center;padding:0;align-items:center}
+ #hero:not(.hero--photo) #heroName{font-size:clamp(30px,7.5vw,42px)}
+ #hero:not(.hero--photo) #heroTag{font-size:clamp(20px,5vw,28px);margin-top:8px!important}
+ .heritage-intro{font-size:14px;margin-top:10px}
+ #hero:not(.hero--photo) .hero-cta{width:100%;justify-content:center;padding-top:20px}
+ #hero:not(.hero--photo) .hero-cta .btn{flex:1;min-width:0;max-width:260px;padding:10px 12px;font-size:15px}
+ #hero:not(.hero--photo) .house{display:contents}
+ #hero:not(.hero--photo) .heritage-scene{grid-row:2}
+ #hero:not(.hero--photo) .hero-title{display:contents}
+ #hero:not(.hero--photo) #heroName{grid-row:1;margin:0;text-align:center}
+ #hero:not(.hero--photo) #heroTag{grid-row:2;margin:0 0 8px!important;text-align:center}
+ #hero:not(.hero--photo) .heritage-scene{grid-row:3}
+ #hero:not(.hero--photo) .heritage-intro{grid-row:4;text-align:center;margin:0}
+ #hero:not(.hero--photo) .hero-cta{grid-row:5;padding-top:0}
+ #hero:not(.hero--photo) .hero-side{grid-row:6;padding:0;display:grid;gap:4px}
+ .heritage-motion{font-size:11px;padding:5px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+ .heritage-glow,.heritage-shade{animation:none!important}
+ .heritage-art{transform:none!important;transition:none}
+ .heritage-motion{display:none}
+}
+@media print{.heritage-motion{display:none}.heritage-art{transform:none!important}.heritage-glow,.heritage-shade{animation:none}}

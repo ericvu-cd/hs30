@@ -61,3 +61,35 @@
  .heritage-motion{display:none}
 }
 @media print{.heritage-motion{display:none}.heritage-art{transform:none!important}.heritage-glow,.heritage-shade{animation:none}}
+
+/* 第二版：金紙黃橫幅、透明水彩邊緣與自動播放的樹影日光。 */
+#hero:not(.hero--photo){background:var(--gold,#D9B450);color:#302b25}
+#hero:not(.hero--photo) .hero-in{padding-top:28px;padding-bottom:20px}
+.heritage-art{border-radius:0;overflow:visible;background:transparent;transform:translate3d(var(--pan-x,0px),var(--pan-y,0px),0) rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg));transition:transform .35s ease-out}
+.heritage-image{border-radius:0}
+.heritage-shade,.heritage-glow,.heritage-sunlight{border-radius:45%;overflow:hidden;-webkit-mask-image:radial-gradient(ellipse at 50% 52%,#000 25%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 52%,#000 25%,transparent 70%)}
+.heritage-shade{inset:34% 5% 4%;z-index:2;background:none;mix-blend-mode:multiply;animation:heritage-branches 6s ease-in-out infinite alternate;transform-origin:90% 0;filter:blur(2px)}
+.heritage-shade::before{content:"";position:absolute;inset:-15%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 520'%3E%3Cg fill='%232b341c' opacity='.85'%3E%3Cpath d='M940 15Q630 120 180 510L167 494Q570 120 930 0ZM690 110Q430 110 170 200L166 188Q400 85 690 90ZM580 230Q480 400 440 550L420 550Q460 370 560 230Z'/%3E%3Cellipse cx='610' cy='180' rx='72' ry='23' transform='rotate(-25 610 180)'/%3E%3Cellipse cx='480' cy='145' rx='65' ry='20' transform='rotate(20 480 145)'/%3E%3Cellipse cx='375' cy='247' rx='63' ry='22' transform='rotate(-38 375 247)'/%3E%3Cellipse cx='310' cy='170' rx='63' ry='22' transform='rotate(10 310 170)'/%3E%3Cellipse cx='470' cy='375' rx='74' ry='23' transform='rotate(-40 470 375)'/%3E%3Cellipse cx='705' cy='290' rx='78' ry='26' transform='rotate(-25 705 290)'/%3E%3Cellipse cx='250' cy='350' rx='63' ry='22' transform='rotate(-20 250 350)'/%3E%3C/g%3E%3C/svg%3E");background-size:100% 100%;background-repeat:no-repeat}
+.heritage-glow{left:0;top:0;width:100%;height:100%;z-index:1;background:radial-gradient(ellipse 5% 9% at 31% 50%,#ffc851c0,transparent),radial-gradient(ellipse 5% 9% at 68% 50%,#ffc851c0,transparent);animation:heritage-windowlight 4s ease-in-out infinite alternate;mix-blend-mode:screen}
+.heritage-sunlight{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(115deg,transparent 23%,#fff1b380 39%,#fff9d6a0 46%,transparent 59%);background-size:200% 100%;mix-blend-mode:soft-light;animation:heritage-sunpass 7s ease-in-out infinite alternate}
+.heritage-leaves{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;-webkit-mask-image:radial-gradient(ellipse,#000 48%,transparent 73%);mask-image:radial-gradient(ellipse,#000 48%,transparent 73%)}
+.heritage-leaves i{position:absolute;left:var(--leaf-x);top:7%;width:10px;height:5px;border-radius:100% 0 100% 0;background:#5e6c37;box-shadow:0 1px 2px #25301625;opacity:0;animation:heritage-leaffall var(--leaf-time) linear infinite;animation-delay:var(--leaf-delay)}
+.heritage-motion{background:#f8e6acb0;border-color:#4d43195c;color:#3b331d}
+#hero:not(.hero--photo) .hero-side,#hero:not(.hero--photo) .hero-side .status,.heritage-intro{color:#51421f}
+.heritage-scene.is-paused .heritage-sunlight,.heritage-scene.is-paused .heritage-leaves i{animation-play-state:paused}
+.heritage-scene.is-paused .heritage-art{transform:none}
+@keyframes heritage-branches{0%{opacity:.18;transform:translate(-4%,-3%) rotate(-5deg)}100%{opacity:.46;transform:translate(5%,3%) rotate(5deg)}}
+@keyframes heritage-windowlight{0%{opacity:.08}100%{opacity:.7}}
+@keyframes heritage-sunpass{0%{background-position:95% 0;opacity:.35}100%{background-position:5% 0;opacity:.85}}
+@keyframes heritage-leaffall{0%{opacity:0;transform:translate(0,-10px) rotate(0deg)}10%{opacity:.8}70%{opacity:.7}100%{opacity:0;transform:translate(50px,230px) rotate(250deg)}}
+@media(max-width:899px){
+ #hero:not(.hero--photo) .hero-in{width:min(680px,100% - 24px);gap:12px;padding-top:24px}
+ .heritage-leaves i{width:7px;height:4px}
+}
+@media(prefers-reduced-motion:reduce){
+ .heritage-sunlight,.heritage-leaves i{animation:none!important}
+ .heritage-leaves{display:none}
+ .heritage-shade{opacity:.2!important;transform:none!important}
+ .heritage-glow{opacity:.25!important}
+}
+@media print{.heritage-sunlight,.heritage-leaves{display:none}}

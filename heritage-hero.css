@@ -67,3 +67,17 @@
  .heritage-place-note{font-size:12px;margin-top:12px}
 }
 @media print{.heritage-entry-label{display:none}}
+
+/* 手機顯示修正：門額不換行，入口移至圖外，刪除重複介紹。 */
+.heritage-entry{aspect-ratio:auto}
+.heritage-entry .heritage-art{display:block;position:relative;aspect-ratio:3/2;background:transparent;border-radius:0;overflow:visible;transform:none;transition:none}
+.heritage-lintel{display:flex;flex-wrap:nowrap;white-space:nowrap;writing-mode:horizontal-tb;direction:ltr;unicode-bidi:normal;left:46%;width:8%;top:39.4%;height:3.5%;font-size:1.65cqw;line-height:1;letter-spacing:.02em}
+.heritage-entry-label{position:static;transform:none;display:flex;width:fit-content;min-height:44px;max-width:100%;margin:0 auto;padding:6px 4px;gap:8px;background:transparent;border:0;border-radius:0;box-shadow:none;color:#49331d;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px}
+.heritage-entry:hover .heritage-entry-label,.heritage-entry:focus-visible .heritage-entry-label{background:transparent;color:#68301c}
+.heritage-place-note{margin:4px 0 0}
+@media(max-width:899px){
+ .heritage-entry-label{font-size:12px;padding:6px 4px;gap:8px}
+ .heritage-place-note{margin-top:2px}
+ #hero:not(.hero--photo) .hero-cta{grid-row:4}
+ #hero:not(.hero--photo) .hero-side{grid-row:5}
+}

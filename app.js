@@ -970,8 +970,11 @@
 
   function shareHtml(t, u) {
     var eu = encodeURIComponent(u), et = encodeURIComponent(t);
+    var lineUrl = new URL(u, location.href);
+    lineUrl.searchParams.set('openExternalBrowser', '1');
+    var lineShareUrl = encodeURIComponent(lineUrl.href);
     return '<div class="share" role="group" aria-label="分享這篇文章"><p class="share-q">' + esc(ui('share', '分享')) + '</p>' +
-      '<a href="https://social-plugins.line.me/lineit/share?url=' + eu + '" target="_blank" rel="noopener">LINE</a>' +
+      '<a href="https://social-plugins.line.me/lineit/share?url=' + lineShareUrl + '" target="_blank" rel="noopener">LINE</a>' +
       '<a href="https://www.facebook.com/sharer/sharer.php?u=' + eu + '" target="_blank" rel="noopener">' + esc(ui('footerFacebook','Facebook')) + '</a>' +
       '<a href="https://twitter.com/intent/tweet?url=' + eu + '&text=' + et + '" target="_blank" rel="noopener">X</a>' +
       '<button type="button" data-copy="' + esc(u) + '">' + esc(ui('copyLink', '複製連結')) + '</button></div>';
@@ -1331,6 +1334,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

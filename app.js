@@ -299,6 +299,10 @@
     if (/^uploads\//.test(u)) return u;
     return ContentSettings.imagePath(u);
   }
+  function lineHref() {
+    var value = String(C.visit.line || '').trim();
+    return value ? (/^https?:\/\//i.test(value) ? value : 'https://line.me/R/ti/p/' + encodeURIComponent(value)) : '';
+  }
   function bookingUrl(svc) {
     return (svc && svc.bookingUrl) || C.visit.bookingUrl || '';
   }
@@ -337,6 +341,45 @@
   }
   function template(value, vars) {
     return String(value || '').replace(/\{(\w+)\}/g, function (all, key) { return vars[key] == null ? all : String(vars[key]); });
+  }
+  function counterCode() {
+    var value = String(C.goatcounter || '').trim().toLowerCase();
+    var match = value.match(/^(?:https?:\/\/)?([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.goatcounter\.com\/?)?$/);
+    return match ? match[1] : '';
+  }
+  function trackingAllowed() {
+    var hosts = (C.statistics || {}).allowedHosts || [];
+    return !hosts.length || hosts.some(function(host) {
+      return String(host).trim().toLowerCase() === location.hostname.toLowerCase();
+    });
+  }
+  function parseCounterValue(value) {
+    if (typeof value === 'string') {
+      if (!/^\d[\d,\s]*$/.test(value.trim())) return null;
+      value = Number(value.replace(/[,\s]/g, ''));
+    }
+    return Number.isSafeInteger(value) && value >= 0 ? value : null;
+  }
+  function renderHistoricalStats() {
+    var box = $('#siteStats'), S = C.statistics || {}, base = parseCounterValue(S.historicalViews);
+    if (!box) return Promise.resolve();
+    box.hidden = !S.show || base === null;
+    if (box.hidden) { box.innerHTML = ''; return Promise.resolve(); }
+    function draw(live) {
+      var combined = live !== null, total = combined ? base + live : base;
+      if (!Number.isSafeInteger(total)) { combined = false; total = base; }
+      var label = combined ? S.label : S.historicalLabel || '舊站累計';
+      box.innerHTML = '<span>' + esc([label, total.toLocaleString('zh-TW'), S.unit].filter(Boolean).join(' ')) + '</span>' +
+        (combined && S.breakdown ? '<small style="display:block">' + esc(template(S.breakdown,{base:base.toLocaleString('zh-TW'),live:live.toLocaleString('zh-TW')})) + '</small>' : '');
+    }
+    draw(null);
+    var code = counterCode();
+    if (S.mode !== 'combined' || !code) return Promise.resolve();
+    return fetch('https://' + code + '.goatcounter.com/counter/TOTAL.json').then(function(response) {
+      if (!response.ok) throw new Error('counter unavailable'); return response.json();
+    }).then(function(data) {
+      var live = parseCounterValue(data.count); if (live === null) throw new Error('invalid counter'); draw(live);
+    }).catch(function() { draw(null); });
   }
   function configureBrandAndHouse() {
     var B = C.brand || {}, H = C.hero || {}, F = C.footer || {};
@@ -384,10 +427,12 @@
 
     (C.visuals.placeholders || []).forEach(function(x,i){var path=img(x.image);document.documentElement.style.setProperty('--placeholder-image-'+(i+1),path?'url("'+path+'")':'none');});
     configureBrandAndHouse();
+    renderHistoricalStats();
     var V = C.visit;
     $('#contact').innerHTML = '<p>' + esc(V.address) + '</p><div class="foot-links">' +
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a>' : '') +
+      (V.line ? '<a href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
       (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerFacebook','Facebook')) + '</a>' : '') +
       (V.bookingUrl ? '<a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerBooking','預約導覽')) + '</a>' : '') +
       '<a href="?view=services">' + esc(ui('footerServices','服務項目')) + '</a><a href="?view=archives">' + esc(ui('footerPosts','所有文章')) + '</a><a href="?view=search">' + esc(ui('search','搜尋')) + '</a></div>';
@@ -461,10 +506,12 @@
       $('#subscribe').innerHTML = '<p><a class="more" href="https://' + esc(C.wordpressSite) + '/" target="_blank" rel="noopener">' + esc(ui('subscriptionFallback','到 WordPress 訂閱 Email 通知')) + '</a></p>';
     });
 
-    if (C.goatcounter) {
+    var code = counterCode();
+    if (code && trackingAllowed()) {
       var s = document.createElement('script');
       s.async = true; s.src = 'https://gc.zgo.at/count.js';
-      s.setAttribute('data-goatcounter', 'https://' + C.goatcounter + '.goatcounter.com/count');
+      s.setAttribute('data-goatcounter', 'https://' + code + '.goatcounter.com/count');
+      s.setAttribute('data-goatcounter-settings', JSON.stringify({no_session: !C.statistics || C.statistics.countEveryPageview !== false}));
       document.body.appendChild(s);
     }
   }
@@ -531,8 +578,8 @@
     var V = C.visit, book = bookingUrl(svc);
     return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">' + esc(ui('bookOnline', '線上預約')) + '</a>' : '') +
       (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? ui('phone', '打電話') : ui('phone', '打電話') + ' ' + esc(V.phone)) + '</a>' : '') +
-      (V.line ? '<a class="btn line" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
-      (!V.line && V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
+      (V.line ? '<a class="btn line" href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
+      (V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
   }
 
   // 預約與到訪：開放狀態、時間地址、預約按鈕，一個區塊講完
@@ -688,6 +735,7 @@
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a><br>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a><br>' : '') +
       (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook：' + esc(V.facebookLabel || '粉絲專頁') + '</a>' : '') +
+      (V.line ? '<br><a href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
       (V.bookingUrl ? '<br><a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('bookingForm', '填寫預約表單')) + '</a>' : '') + '</p></div></div></section>';
   }
 
@@ -1281,3 +1329,4 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+

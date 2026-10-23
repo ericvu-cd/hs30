@@ -133,6 +133,11 @@
   function normalize() {
     var s = state.site;
     ContentSettings.applyDefaults(s);
+    s.statistics = s.statistics || {show:false,historicalViews:0,label:'累計點閱',unit:'次點閱'};
+    if (!s.statistics.mode) s.statistics.mode='combined';
+    if (!Array.isArray(s.statistics.allowedHosts)) s.statistics.allowedHosts=[];
+    if (!s.statistics.historicalLabel) s.statistics.historicalLabel='舊站累計';
+    if (s.statistics.countEveryPageview == null) s.statistics.countEveryPageview=true;
     var icon = document.querySelector("#adminIcon"), iconPath = ContentSettings.imagePath(s.brand.icon);
     if (icon) { if (iconPath) { icon.setAttribute("href", iconPath); icon.removeAttribute("type"); } else icon.removeAttribute("href"); }
     ContentSettings.normalizeData(state);
@@ -220,6 +225,8 @@
       if (!/(youtu\.be\/|v=|embed\/|shorts\/|live\/)[\w-]{11}/.test(v.url || '')) errs.push('第 ' + (i + 1) + ' 部影片的 YouTube 網址看不懂。');
     });
     ContentSettings.normalizeData(state);
+    var historical = Number(state.site.statistics.historicalViews);
+    if (!Number.isSafeInteger(historical) || historical < 0) errs.push('歷史點閱數必須是零或正整數。');
     return errs.concat(ContentSettings.imageIssues(state));
   }
 
@@ -890,6 +897,14 @@
     return head('圖示與介面說明', '圖示從照片庫選取；按鈕、提示與頁尾文字在這裡設定。') +
       '<div class="panel"><h2>品牌與播放圖示</h2><div class="grid2">' + imgField('site.brand.logo','左上角標誌（留空顯示協會名稱）') + inp('site.brand.logoAlt','標誌替代文字') +
       imgField('site.brand.icon','瀏覽器分頁圖示') + imgField('site.visuals.playIcon','影片播放圖示（留空使用標準三角形）') + imgField('site.visuals.videoFallback','尚未設定影片封面時的預設圖') + state.site.visuals.placeholders.map(function(x,i){return imgField('site.visuals.placeholders.'+i+'.image','缺圖背景紋樣 '+(i+1));}).join('') + '</div></div>' +
+      '<div class="panel"><h2>點閱統計與歷史基數</h2><p class="muted">累計＝搬站前基數＋GoatCounter 新站實際點閱。未填代碼或讀取失敗時只顯示舊站紀錄。公開數字可能因供應商快取延遲最多四小時。</p><div class="grid2">' +
+      chk('site.statistics.show','顯示點閱數') + inp('site.statistics.historicalViews','搬站前歷史基數',{type:'number'}) +
+      inp('site.statistics.mode','顯示方式',{select:[['combined','歷史基數＋新站實際點閱'],['historical','只顯示舊站歷史紀錄']]}) +
+      inp('site.goatcounter','GoatCounter 站台代碼',{hint:'例如 mysite.goatcounter.com 填 mysite。另需在 GoatCounter 啟用 Allow adding visitor counts on your website。'}) +
+      inp('site.statistics.allowedHosts','開始記錄點閱的網域（每行一個）',{lines:true,full:true,hint:'填 hs30.org.tw 與 www.hs30.org.tw，可避免 GitHub 測試流量混入。留空將不限制網域。'}) +
+      chk('site.statistics.countEveryPageview','每次實際載入頁面均計一次（點閱次數，非不重複訪客）') +
+      inp('site.statistics.label','累計標題') + inp('site.statistics.historicalLabel','舊站紀錄標題') + inp('site.statistics.unit','單位') +
+      inp('site.statistics.breakdown','數字來源說明（可用 {base}、{live}）',{full:true}) + '</div></div>' +
       '<div class="panel"><h2>頁尾與訂閱</h2><div class="grid2">' + [
       ['subscribeTitle','訂閱標題'],['subscribeIntro','訂閱介紹'],['subscribeHint','訂閱說明'],['subscribeButton','訂閱按鈕'],['subscribePlaceholder','Email 欄位提示'],['contactTitle','聯絡標題'],['copyright','版權文字（可用 {year}、{org}）']
       ].map(function(x){return inp('site.footer.'+x[0],x[1]);}).join('') + '</div></div>' +
@@ -1183,3 +1198,4 @@
     $('#login').hidden = false;
   })();
 })();
+

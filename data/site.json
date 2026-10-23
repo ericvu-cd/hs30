@@ -5,7 +5,7 @@
   "description": "苗栗縣在地文化推廣協會以竹南中港的陳家古厝（番社30號）為據點，提供文化導覽、藝文策展、古厝市集與在地教育。",
   "wordpressSite": "huansia30.home.blog",
   "wordpressBlogId": "",
-  "goatcounter": "",
+  "goatcounter": "hs30",
   "hero": {
     "primaryText": "看服務項目",
     "secondaryText": "預約導覽",
@@ -150,7 +150,7 @@
     "email": "cnhuansia30@gmail.com",
     "facebookLabel": "蕃社30",
     "facebookUrl": "https://www.facebook.com/huansia",
-    "line": "",
+    "line": "@701zmxgz",
     "bookingUrl": "",
     "transport": ""
   },
@@ -188,9 +188,9 @@
   ],
   "layoutVersion": 3,
   "brand": {
-    "logo": "",
-    "logoAlt": "番社參拾",
-    "icon": "uploads/2026/10/site-icon.svg"
+    "logo": "uploads/2026/10/fanshe30-logo.png",
+    "logoAlt": "蕃社30 No.30 Huan Siá",
+    "icon": "uploads/2026/10/fanshe30-site-icon.png"
   },
   "visuals": {
     "playIcon": "",
@@ -288,7 +288,7 @@
     "bookOnline": "線上預約",
     "phone": "打電話",
     "facebook": "Facebook 私訊",
-    "line": "LINE 詢問",
+    "line": "LINE 官方客服",
     "email": "Email 詢問",
     "map": "在地圖上看",
     "address": "地址",
@@ -329,5 +329,19 @@
     "subscriptionFallback": "到 WordPress 訂閱 Email 通知",
     "copyDone": "已複製連結",
     "postEmpty": "這裡目前沒有文章。"
+  },
+  "statistics": {
+    "show": true,
+    "historicalViews": 132595,
+    "label": "累計點閱",
+    "unit": "次",
+    "mode": "combined",
+    "historicalLabel": "舊站累計點閱",
+    "breakdown": "舊站 {base} ＋ 新站 {live}",
+    "countEveryPageview": true,
+    "allowedHosts": [
+      "hs30.org.tw",
+      "www.hs30.org.tw"
+    ]
   }
 }

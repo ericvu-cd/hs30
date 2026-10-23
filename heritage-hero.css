@@ -118,3 +118,14 @@
  .mast .brand>span,.mast .brand .brand-text{white-space:nowrap;word-break:keep-all;overflow-wrap:normal;text-wrap:nowrap;flex:0 0 auto;line-height:1.45}
  .mast .menu-btn{min-width:48px;padding:6px 10px;font-size:14px;flex-shrink:0}
 }
+
+
+/* 黑色透明原 Logo 使用固定淺底，避免深色模式下失去辨識。 */
+.mast .brand .brand-logo{
+ box-sizing:border-box;
+ padding:3px;
+ border:1px solid #d9d9d1;
+ border-radius:5px;
+ background-color:#fff;
+ color-scheme:only light;
+}

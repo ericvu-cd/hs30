@@ -81,3 +81,15 @@
  #hero:not(.hero--photo) .hero-cta{grid-row:4}
  #hero:not(.hero--photo) .hero-side{grid-row:5}
 }
+
+/* 協會名稱以可讀字級呈現，窄螢幕允許換行。 */
+.mast .brand{font-size:20px;font-weight:700;letter-spacing:.025em;line-height:1.45;white-space:normal;min-width:0}
+@media(min-width:900px){.mast{flex-wrap:wrap}.nav{gap:4px 18px}}
+@media(max-width:899px){.mast .brand{font-size:17px;flex:1;min-width:0;white-space:normal}.mast .menu-btn{flex-shrink:0}}
+
+.brand-logo{width:38px;height:38px;object-fit:contain;flex:none;margin-right:10px;vertical-align:middle}.brand:has(.brand-logo){display:flex;align-items:center}
+.tile-txt .tile-icon{position:static;display:block;width:30px;height:30px;object-fit:contain;margin-bottom:8px;opacity:1}
+.covers.issues-covers{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:16px;min-height:0;height:auto;align-items:start}
+.issue{margin:0;min-width:0}.issue img{width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:contain}.issue figcaption{font-size:13px;line-height:1.6;margin-top:8px;color:inherit}
+.vid .custom-play-icon{position:absolute;left:50%;top:50%;width:64px;height:64px;object-fit:contain;transform:translate(-50%,-50%)}
+.gallery-grid figcaption{font-size:14px;line-height:1.7;color:var(--muted);margin-top:8px}

@@ -16,7 +16,8 @@
   "hidden": false,
   "notes": "",
   "wpId": 1007,
-  "wpSlug": "%e6%96%87%e5%8c%96%e5%b0%8e%e8%a6%bd%e6%9c%8d%e5%8b%99"
+  "wpSlug": "%e6%96%87%e5%8c%96%e5%b0%8e%e8%a6%bd%e6%9c%8d%e5%8b%99",
+  "coverAlt": "文化導覽"
  },
  {
   "slug": "藝文策展",
@@ -35,7 +36,8 @@
   "hidden": false,
   "notes": "",
   "wpId": 1017,
-  "wpSlug": "%e8%97%9d%e6%96%87%e7%ad%96%e5%b1%95%e6%9c%8d%e5%8b%99"
+  "wpSlug": "%e8%97%9d%e6%96%87%e7%ad%96%e5%b1%95%e6%9c%8d%e5%8b%99",
+  "coverAlt": "藝文策展"
  },
  {
   "slug": "古厝市集",
@@ -54,7 +56,8 @@
   "hidden": false,
   "notes": "",
   "wpId": 1029,
-  "wpSlug": "%e5%8f%a4%e5%8e%9d%e5%b8%82%e9%9b%86"
+  "wpSlug": "%e5%8f%a4%e5%8e%9d%e5%b8%82%e9%9b%86",
+  "coverAlt": "古厝市集"
  },
  {
   "slug": "文化教育",
@@ -73,7 +76,8 @@
   "hidden": false,
   "notes": "",
   "wpId": 3287,
-  "wpSlug": "%e5%be%9e%e5%9c%9f%e5%9c%b0%e5%87%ba%e7%99%bc%ef%bc%8c%e8%ae%93%e6%96%87%e5%8c%96%e6%88%90%e7%82%ba%e6%95%99%e8%82%b2%e7%9a%84%e6%97%a5%e5%b8%b8"
+  "wpSlug": "%e5%be%9e%e5%9c%9f%e5%9c%b0%e5%87%ba%e7%99%bc%ef%bc%8c%e8%ae%93%e6%96%87%e5%8c%96%e6%88%90%e7%82%ba%e6%95%99%e8%82%b2%e7%9a%84%e6%97%a5%e5%b8%b8",
+  "coverAlt": "文化教育"
  },
  {
   "slug": "教學與課程",
@@ -92,7 +96,8 @@
   "hidden": false,
   "notes": "",
   "wpId": 1036,
-  "wpSlug": "%e5%b7%a5%e8%97%9d%e8%aa%b2%e7%a8%8b"
+  "wpSlug": "%e5%b7%a5%e8%97%9d%e8%aa%b2%e7%a8%8b",
+  "coverAlt": "教學與課程"
  },
  {
   "slug": "商品展售",
@@ -111,6 +116,7 @@
   "hidden": false,
   "notes": "",
   "wpId": 1048,
-  "wpSlug": "%e8%8b%97%e6%a0%97%e7%b8%a3%e5%9c%a8%e5%9c%b0%e6%96%87%e5%8c%96%e6%8e%a8%e5%bb%a3%e5%8d%94%e6%9c%83-%e5%95%86%e5%93%81%e5%b1%95%e5%94%ae"
+  "wpSlug": "%e8%8b%97%e6%a0%97%e7%b8%a3%e5%9c%a8%e5%9c%b0%e6%96%87%e5%8c%96%e6%8e%a8%e5%bb%a3%e5%8d%94%e6%9c%83-%e5%95%86%e5%93%81%e5%b1%95%e5%94%ae",
+  "coverAlt": "商品展售"
  }
 ]

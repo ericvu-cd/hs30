@@ -11,7 +11,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2477,
-  "wpSlug": "%e6%b5%b7%e5%8f%a3%e7%a4%be%e5%8d%80"
+  "wpSlug": "%e6%b5%b7%e5%8f%a3%e7%a4%be%e5%8d%80",
+  "coverAlt": "海口社區"
  },
  {
   "slug": "塭內社區",
@@ -25,7 +26,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2481,
-  "wpSlug": "%e5%a1%ad%e5%85%a7%e7%a4%be%e5%8d%80"
+  "wpSlug": "%e5%a1%ad%e5%85%a7%e7%a4%be%e5%8d%80",
+  "coverAlt": "塭內社區"
  },
  {
   "slug": "山佳社區",
@@ -39,7 +41,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2484,
-  "wpSlug": "%e5%b1%b1%e4%bd%b3%e7%a4%be%e5%8d%80"
+  "wpSlug": "%e5%b1%b1%e4%bd%b3%e7%a4%be%e5%8d%80",
+  "coverAlt": "山佳社區"
  },
  {
   "slug": "聖福社區",
@@ -53,7 +56,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2488,
-  "wpSlug": "%e8%81%96%e7%a6%8f%e7%a4%be%e5%8d%80"
+  "wpSlug": "%e8%81%96%e7%a6%8f%e7%a4%be%e5%8d%80",
+  "coverAlt": "聖福社區"
  },
  {
   "slug": "公館社區",
@@ -67,7 +71,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2490,
-  "wpSlug": "%e5%85%ac%e9%a4%a8%e7%a4%be%e5%8d%80"
+  "wpSlug": "%e5%85%ac%e9%a4%a8%e7%a4%be%e5%8d%80",
+  "coverAlt": "公館社區"
  },
  {
   "slug": "龍鳳觀光文化發展協會",
@@ -81,7 +86,8 @@
   "relatedTag": "",
   "hidden": false,
   "wpId": 2492,
-  "wpSlug": "%e9%be%8d%e9%b3%b3%e8%a7%80%e5%85%89%e6%96%87%e5%8c%96%e7%99%bc%e5%b1%95%e5%8d%94%e6%9c%83"
+  "wpSlug": "%e9%be%8d%e9%b3%b3%e8%a7%80%e5%85%89%e6%96%87%e5%8c%96%e7%99%bc%e5%b1%95%e5%8d%94%e6%9c%83",
+  "coverAlt": "龍鳳觀光文化發展協會"
  },
  {
   "slug": "在地文化推廣協會",
@@ -95,6 +101,7 @@
   "cover": "uploads/2026/10/wp-8e41592c526f6f8fc2c3.jpg",
   "body": "\n\n\n<p>中港地區是過去百年來本地文化、政治、經濟、教育中心，曾經中港金紙更是聞名全台的蓬勃產業。</p>\n\n\n\n<p>自日治時期起，本地手工金銀紙業興盛，街區內加工廠林立，許多當地居民自小就幫忙家裡金銀紙工作，加工過程中，貼好錫箔或是染色後的紙張要經日曬，於是街上、騎樓、稻埕全曬滿一疊疊金色紙張，素有「金色中港」盛名。</p>\n\n\n\n<p>如今台灣手工金紙業步入夕陽，產業外移及機械化取代人工，庄內僅剩少數兩、三家仍堅持手工製作，寄望手作金紙精緻的心意繼續為人們傳達對信仰的誠意。</p>\n\n\n\n<p>聚落內有一日治時期閩式三合院，經屋主整修後現開放作為地方文化教育之場域。</p>\n\n\n\n\n\n<figure><img src=\"uploads/2026/10/wp-8e41592c526f6f8fc2c3.jpg\" alt=\"\"></figure>\n\n\n\n<figure><img src=\"uploads/2026/10/wp-a1cbb9028d09c4e320df.jpg\" alt=\"\"></figure>\n\n\n",
   "wpId": 2494,
-  "wpSlug": "%e5%9c%a8%e5%9c%b0%e6%96%87%e5%8c%96%e6%8e%a8%e5%bb%a3%e5%8d%94%e6%9c%83"
+  "wpSlug": "%e5%9c%a8%e5%9c%b0%e6%96%87%e5%8c%96%e6%8e%a8%e5%bb%a3%e5%8d%94%e6%9c%83",
+  "coverAlt": "在地文化推廣協會"
  }
 ]

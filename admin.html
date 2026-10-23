@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>管理程式｜番社參拾</title>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="admin.css">
+<link id="adminIcon" rel="icon" type="image/svg+xml">
+<link rel="stylesheet" href="admin.css?v=20261023-cms-final">
 </head>
 <body>
 
@@ -61,7 +61,7 @@
   <div class="modal-body">
     <label class="btn primary upload">上傳新照片<input type="file" accept="image/*" multiple hidden id="pickerFile"></label>
     <span class="muted">照片會自動縮小到適合網頁的大小。</span>
-    <div class="urlpick"><label>或貼上已有的照片網址（例如 WordPress 上的照片）<input id="pickerUrl" type="url" placeholder="https://…jpg"></label>
+    <div class="urlpick"><label>或貼上照片庫的相對路徑（uploads/...）<input id="pickerUrl" type="text" placeholder="uploads/2026/10/example.jpg"></label>
       <button class="btn" type="button" data-act="pickUrl">使用這個網址</button></div>
     <div class="lib" id="pickerLib"></div>
   </div>
@@ -75,6 +75,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="admin.js"></script>
+<script src="content-settings.js?v=20261023-cms-final"></script>
+<script src="admin.js?v=20261023-cms-final"></script>
 </body>
 </html>

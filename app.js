@@ -237,7 +237,7 @@
     setTitle(notFound ? '找不到這個頁面' : '暫時讀不到內容');
     view.innerHTML = '<div class="wrap err"><h1>' + (notFound ? '找不到這個頁面' : '暫時讀不到內容') + '</h1>' +
       (notFound
-        ? '<p>網址可能打錯，或' + (what || '文章') + '已經移除。可以 <a href="?view=search">搜尋</a> 找找看，或看 <a href="?view=archives">所有文章</a>。</p>'
+        ? '<p>網址可能打錯，或' + (what || '文章') + '已經移除。可以 <a href="?view=search">' + esc(ui('search','搜尋')) + '</a> 找找看，或看 <a href="?view=archives">' + esc(ui('footerPosts','所有文章')) + '</a>。</p>'
         : '<p>文章存放在 WordPress，現在連不上。請稍後重新整理，或直接到 <a href="https://' + esc(C.wordpressSite) + '/">原網站</a> 閱讀。</p>') +
       '<p><a class="more" href="./">回到首頁</a></p></div>';
     if (err && !notFound && window.console) console.error(err);
@@ -262,7 +262,7 @@
 
   function listHtml(posts, cats, offset) {
     posts = hideImported(posts);
-    if (!posts.length) return '<p class="c-empty">這裡目前沒有文章。<a href="?view=archives">看所有文章</a></p>';
+    if (!posts.length) return '<p class="c-empty">' + esc(ui('postEmpty','這裡目前沒有文章。')) + '<a href="?view=archives">' + esc(ui('allPosts', '看所有文章')) + '</a></p>';
     return posts.map(function (p, i) {
       var c = catsById(p.categories, cats)[0];
       return '<article class="post"><div class="p-date"><span>' + dotDate(p.date) + '</span>' + (c ? '<span>' + esc(c.name) + '</span>' : '') + '</div>' +
@@ -297,7 +297,7 @@
   function img(u, w) {
     if (!u) return '';
     if (/^uploads\//.test(u)) return u;
-    return sized(u, w);
+    return ContentSettings.imagePath(u);
   }
   function bookingUrl(svc) {
     return (svc && svc.bookingUrl) || C.visit.bookingUrl || '';
@@ -332,18 +332,65 @@
 
   /* ---------- 頁首、頁尾 ---------- */
 
+  function ui(key, fallback) {
+    return C.ui && C.ui[key] != null ? String(C.ui[key]) : fallback;
+  }
+  function template(value, vars) {
+    return String(value || '').replace(/\{(\w+)\}/g, function (all, key) { return vars[key] == null ? all : String(vars[key]); });
+  }
+  function configureBrandAndHouse() {
+    var B = C.brand || {}, H = C.hero || {}, F = C.footer || {};
+    var logo = ContentSettings.imagePath(B.logo), icon = ContentSettings.imagePath(B.icon);
+    if (logo) $('#brand').innerHTML = '<img class="brand-logo" src="' + esc(logo) + '" alt="' + esc(B.logoAlt || '') + '"><span>' + esc(C.org) + '</span>';
+    var siteIcon = $('#siteIcon');
+    if (siteIcon) { if (icon) { siteIcon.href = icon; siteIcon.removeAttribute('type'); } else siteIcon.removeAttribute('href'); }
+    var entry = $('.heritage-entry'), label = $('.heritage-entry-label'), picture = $('.heritage-image');
+    if (picture) picture.alt = H.illustrationAlt || '';
+    if (entry) {
+      var href = ContentSettings.linkPath(H.entryHref);
+      if (href) entry.setAttribute('href', href); else entry.removeAttribute('href');
+      entry.setAttribute('aria-label', H.entryText || H.illustrationAlt || C.name);
+    }
+    if (label) { label.textContent = H.entryText || ''; label.hidden = !H.entryText; }
+    var note = $('.heritage-place-note');
+    if (note) { note.textContent = H.note || ''; note.hidden = !H.note; }
+    [['.heritage-lintel', Array.from(H.lintel || '').reverse().join('')], ['.heritage-plaque--left', H.leftPlaque], ['.heritage-plaque--right', H.rightPlaque], ['.heritage-year--left', H.leftYear], ['.heritage-year--right', H.rightYear]].forEach(function (pair) {
+      var el = $(pair[0]); if (el) el.textContent = pair[1] || '';
+    });
+    $('#subscribeTitle').textContent = F.subscribeTitle || '';
+    $('#contactTitle').textContent = F.contactTitle || '';
+    $('#copy').textContent = template(F.copyright, {year:new Date().getFullYear(),org:C.org,name:C.name});
+    $('[data-lb="prev"]').textContent = ui('previousImage', '上一張');
+    $('[data-lb="next"]').textContent = ui('nextImage', '下一張');
+    $('[data-lb="close"]').textContent = ui('close', '關閉');
+  }
+
   function renderChrome() {
     $('#brand').textContent = C.org;
     $('#heroName').textContent = C.name;
     $('#heroTag').textContent = C.tagline;
-    $('#copy').textContent = '© ' + new Date().getFullYear() + ' ' + C.org;
+    $('#menuBtn').textContent = ui('menu','選單');
+    $('.skip').textContent = ui('skip','跳到主要內容');
+    // 首頁圖片都由 data/site.json 設定，沿用 ADMIN 的 uploads 照片庫。
+    var houseImage = $('.heritage-image'), houseEntry = $('.heritage-entry'), H = C.hero || {};
+    if (houseImage) {
+      houseImage.hidden = !H.illustration;
+      if (H.illustration) houseImage.src = img(H.illustration, 1600);
+      if (houseEntry) houseEntry.hidden = !H.illustration;
+      $$('.heritage-lintel,.heritage-plaque,.heritage-year').forEach(function (el) {
+        el.hidden = !H.illustration || H.illustrationLabels === false;
+      });
+    }
+
+    (C.visuals.placeholders || []).forEach(function(x,i){var path=img(x.image);document.documentElement.style.setProperty('--placeholder-image-'+(i+1),path?'url("'+path+'")':'none');});
+    configureBrandAndHouse();
     var V = C.visit;
     $('#contact').innerHTML = '<p>' + esc(V.address) + '</p><div class="foot-links">' +
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a>' : '') +
-      (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook</a>' : '') +
-      (V.bookingUrl ? '<a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">預約導覽</a>' : '') +
-      '<a href="?view=services">服務項目</a><a href="?view=archives">所有文章</a><a href="?view=search">搜尋</a></div>';
+      (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerFacebook','Facebook')) + '</a>' : '') +
+      (V.bookingUrl ? '<a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerBooking','預約導覽')) + '</a>' : '') +
+      '<a href="?view=services">' + esc(ui('footerServices','服務項目')) + '</a><a href="?view=archives">' + esc(ui('footerPosts','所有文章')) + '</a><a href="?view=search">' + esc(ui('search','搜尋')) + '</a></div>';
 
     var here = location.search || './';
     $('#nav').innerHTML = (C.nav || []).map(function (n) {
@@ -379,7 +426,7 @@
       var setOpen = function (o) {
         document.body.classList.toggle('menu-open', o);
         mb.setAttribute('aria-expanded', o ? 'true' : 'false');
-        mb.textContent = o ? '關閉' : '選單';
+        mb.textContent = o ? ui('close', '關閉') : ui('menu', '選單');
       };
       mb.addEventListener('click', function () { setOpen(!document.body.classList.contains('menu-open')); });
       nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
@@ -390,8 +437,9 @@
     var hb = $('#heroBtns');
     if (hb) {
       var H = C.hero || {};
-      var book = bookingUrl();
-      hb.innerHTML = '<a class="btn" href="?view=services">' + esc(H.primaryText || '看服務項目') + '</a>' +
+      var book = ContentSettings.linkPath(H.secondaryHref || bookingUrl());
+      var primary = ContentSettings.linkPath(H.primaryHref || '?view=services');
+      hb.innerHTML = '<a class="btn" href="' + esc(primary) + '">' + esc(H.primaryText || '看服務項目') + '</a>' +
         '<a class="btn ghost-dark" href="' + esc(book || './#visit') + '"' + (book ? ' target="_blank" rel="noopener"' : '') + '>' + esc(H.secondaryText || '預約導覽') + '</a>';
     }
 
@@ -403,14 +451,14 @@
         });
     blogId.then(function (id) {
       if (!id) throw new Error('no id');
-      $('#subscribe').innerHTML = '<p>留下 Email，有新文章時會寄信通知你。訂閱由 WordPress.com 處理，需要到信箱點確認信。</p>' +
+      $('#subscribe').innerHTML = '<p>' + esc([C.footer.subscribeIntro, C.footer.subscribeHint].filter(Boolean).join(' ')) + '</p>' +
         '<form class="sub-form" action="https://subscribe.wordpress.com" method="post" accept-charset="utf-8" target="_blank">' +
         '<input type="hidden" name="action" value="subscribe"><input type="hidden" name="blog_id" value="' + esc(id) + '">' +
         '<input type="hidden" name="source" value="' + esc(location.origin + location.pathname) + '"><input type="hidden" name="sub-type" value="widget">' +
-        '<label class="sr" for="subEmail">Email</label><input id="subEmail" type="email" name="email" required placeholder="你的 Email" autocomplete="email">' +
-        '<button class="btn" type="submit">訂閱</button></form>';
+        '<label class="sr" for="subEmail">Email</label><input id="subEmail" type="email" name="email" required placeholder="' + esc(C.footer.subscribePlaceholder || '') + '" autocomplete="email">' +
+        '<button class="btn" type="submit">' + esc(C.footer.subscribeButton || '') + '</button></form>';
     }).catch(function () {
-      $('#subscribe').innerHTML = '<p><a class="more" href="https://' + esc(C.wordpressSite) + '/" target="_blank" rel="noopener">到 WordPress 訂閱 Email 通知</a></p>';
+      $('#subscribe').innerHTML = '<p><a class="more" href="https://' + esc(C.wordpressSite) + '/" target="_blank" rel="noopener">' + esc(ui('subscriptionFallback','到 WordPress 訂閱 Email 通知')) + '</a></p>';
     });
 
     if (C.goatcounter) {
@@ -433,7 +481,7 @@
     var src = img(x.cover, 900);
     var chips = [x.duration, x.audience, x.fee].filter(Boolean).slice(0, 2);
     return '<a class="svc-card" href="' + serviceUrl(x) + '"><div class="svc-photo ph t' + (i % 3 + 1) + '">' +
-      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="' + (i < 2 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</div>' +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="' + (i < 2 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</div>' +
       '<div class="svc-text"><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
       (chips.length ? '<ul class="chips">' + chips.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>' : '') + '</div></a>';
   }
@@ -443,21 +491,21 @@
     return '<div class="svc-rows">' + list.map(svcRow).join('') + '</div>';
   }
   function factsOf(x) {
-    return [['適合對象', x.audience], ['所需時間', x.duration], ['人數', x.capacity], ['費用', x.fee]].filter(function (r) { return r[1]; });
+    return [[ui('audience', '適合對象'), x.audience], [ui('duration', '所需時間'), x.duration], [ui('capacity', '人數'), x.capacity], [ui('fee', '費用'), x.fee]].filter(function (r) { return r[1]; });
   }
   // 服務列：照片佔大面積，文字只放名稱、一句話、服務資訊
   function svcRow(x, i) {
     var src = img(x.cover, 1400), href = serviceUrl(x), f = factsOf(x);
     return '<article class="svc-row"><a class="svc-row-photo ph t' + (i % 3 + 1) + '" href="' + href + '" tabindex="-1" aria-hidden="true">' +
-      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="' + (i < 1 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</a>' +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="' + (i < 1 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</a>' +
       '<div class="svc-row-text"><h3><a href="' + href + '">' + esc(x.title) + '</a></h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
       (f.length ? '<dl class="mini-facts">' + f.slice(0, 3).map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
-      '<a class="more" href="' + href + '">了解與預約</a></div></article>';
+      '<a class="more" href="' + href + '">' + esc(ui('serviceMore', '了解與預約')) + '</a></div></article>';
   }
   function cardHtml(x, href, i) {
     var src = img(x.cover, 800);
     return '<a class="card" href="' + href + '"><div class="ph t' + (i % 3 + 1) + '" aria-hidden="true">' +
-      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
+      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
       '</div><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '</a>';
   }
   function townsHtml() {
@@ -471,19 +519,20 @@
     return m ? m[1] : '';
   }
   function videoCard(v) {
-    var id = ytId(v.url);
-    if (!id) return '';
-    return '<figure class="vid"><button type="button" class="vid-play" data-yt="' + id + '" aria-label="播放：' + esc(v.title) + '">' +
-      '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="vid-btn" aria-hidden="true"></span></button>' +
+    var id = ytId(v.url); if (!id) return '';
+    var cover = img(v.cover || (C.visuals || {}).videoFallback, 800), play = img((C.visuals || {}).playIcon, 100);
+    return '<figure class="vid"><button type="button" class="vid-play" data-yt="' + id + '" aria-label="' + esc(template(ui('playVideo', '播放：{title}'), {title:v.title})) + '">' +
+      (cover ? '<img src="' + esc(cover) + '" alt="' + esc(v.coverAlt || '') + '" loading="lazy" decoding="async">' : '') +
+      (play ? '<img class="custom-play-icon" src="' + esc(play) + '" alt="">' : '<span class="vid-btn" aria-hidden="true"></span>') + '</button>' +
       '<figcaption><strong>' + esc(v.title) + '</strong>' + (v.description ? '<span>' + esc(v.description) + '</span>' : '') + '</figcaption></figure>';
   }
 
   function bookingActs(svc, compact) {
     var V = C.visit, book = bookingUrl(svc);
-    return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">線上預約</a>' : '') +
-      (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? '打電話' : '打電話 ' + esc(V.phone)) + '</a>' : '') +
-      (V.line ? '<a class="btn line" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">LINE 詢問</a>' : '') +
-      (!V.line && V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook 私訊</a>' : '');
+    return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">' + esc(ui('bookOnline', '線上預約')) + '</a>' : '') +
+      (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? ui('phone', '打電話') : ui('phone', '打電話') + ' ' + esc(V.phone)) + '</a>' : '') +
+      (V.line ? '<a class="btn line" href="' + esc(/^https?:/.test(V.line) ? V.line : 'https://line.me/R/ti/p/' + encodeURIComponent(V.line)) + '" target="_blank" rel="noopener">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
+      (!V.line && V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
   }
 
   // 預約與到訪：開放狀態、時間地址、預約按鈕，一個區塊講完
@@ -493,35 +542,33 @@
     var map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(V.address);
     return '<section class="booking" id="visit" aria-labelledby="bkH"><div class="wrap booking-in"><div class="booking-head">' + secHead(key, 'bkH', '預約與到訪') +
       '<p class="status" data-status><span class="dot"></span><span class="status-text"></span></p></div>' +
-      '<dl class="booking-facts"><div><dt>開放時間</dt><dd>' + esc(V.openText) + ' ' + fmt(V.open) + '–' + fmt(V.close) + '</dd></div>' +
-      '<div><dt>地址</dt><dd><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address) + '</a>' + (V.transport ? '<small>' + esc(V.transport) + '</small>' : '') + '</dd></div></dl>' +
+      '<dl class="booking-facts"><div><dt>' + esc(ui('hours', '開放時間')) + '</dt><dd>' + esc(V.openText) + ' ' + fmt(V.open) + '–' + fmt(V.close) + '</dd></div>' +
+      '<div><dt>' + esc(ui('address', '地址')) + '</dt><dd><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address) + '</a>' + (V.transport ? '<small>' + esc(V.transport) + '</small>' : '') + '</dd></div></dl>' +
       '<div class="booking-acts">' + bookingActs() + '</div></div></section>';
   }
 
   // 探索更多：社區、媒體報導、影片、山海集、紀錄文章，各一張小圖卡
   function exploreHtml(key) {
-    var tiles = [];
-    var tw = shown(D.towns), md = mediaSorted(), vd = shown(D.videos);
-    if (tw.length) tiles.push(['?view=towns', '社區人文', tw.length + ' 個社區', img((tw.filter(function (x) { return x.cover; })[0] || {}).cover, 600)]);
-    if (md.length) tiles.push(['?view=media', '媒體報導', md.length + ' 則報導', img((md.filter(function (x) { return x.cover; })[0] || {}).cover, 600)]);
-    if (vd.length) { var id = ytId(vd[0].url); tiles.push(['?view=videos', '影片精選', vd.length + ' 部影片', id ? 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' : '']); }
-    if (C.shanhaiji && C.shanhaiji.text) tiles.push(['?view=shanhaiji', '《山海集》', '協會的地方刊物', '']);
-    tiles.push(['?view=archives', '紀錄文章', '活動紀錄與在地觀察', '']);
-    return '<section class="explore wrap" id="explore" aria-labelledby="exH">' + secHead(key, 'exH', '探索更多') + '<div class="tiles">' +
-      tiles.map(function (t, i) {
-        return '<a class="tile' + (t[3] ? ' has-img' : ' t' + (i % 3 + 1)) + '" href="' + t[0] + '">' +
-          (t[3] ? '<img data-ph="1" src="' + esc(t[3]) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
-          '<span class="tile-txt"><strong>' + esc(t[1]) + '</strong><small>' + esc(t[2]) + '</small></span></a>';
-      }).join('') + '</div></section>';
+    var counts = {towns:shown(D.towns).length,media:shown(D.media).length,videos:shown(D.videos).length};
+    var cards = (C.exploreCards || []).filter(function (card) { return !card.hidden && card.title; });
+    return '<section class="explore wrap" id="explore" aria-labelledby="exH">' + secHead(key, 'exH', '探索更多') + '<div class="tiles">' + cards.map(function (card, i) {
+      var cover = img(card.cover, 600), icon = img(card.icon, 100), href = ContentSettings.linkPath(card.href);
+      var tag = href ? 'a' : 'div';
+      return '<' + tag + ' class="tile' + (cover ? ' has-img' : ' t' + (i % 3 + 1)) + '"' + (href ? ' href="' + esc(href) + '"' : '') + '>' +
+        (cover ? '<img data-ph="1" src="' + esc(cover) + '" alt="' + esc(card.coverAlt || '') + '" loading="lazy" decoding="async">' : '') +
+        '<span class="tile-txt">' + (icon ? '<img class="tile-icon" src="' + esc(icon) + '" alt="">' : '') + '<strong>' + esc(card.title) + '</strong><small>' + esc(template(card.description, counts)) + '</small></span></' + tag + '>';
+    }).join('') + '</div></section>';
   }
 
   function shanhaijiHtml(sec) {
     var S = C.shanhaiji || {};
-    return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers" aria-hidden="true">' +
-      (S.covers || []).slice(0, 3).map(function (c, i) { return '<div class="mag m' + (i + 1) + '"><span class="mv">山海集</span><span class="my">' + esc(c) + '</span></div>'; }).join('') +
-      '</div><div><h2 id="sH">' + esc((sec && sec.title) || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
-      (S.buyUrl ? '<a class="btn" href="' + esc(S.buyUrl) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
-      (S.blogUrl ? '<a class="btn ghost" href="' + esc(S.blogUrl) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
+    return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers issues-covers">' +
+      (S.issues || []).filter(function (issue) { return !issue.hidden; }).map(function (issue) {
+        var image = img(issue.image, 800), href = ContentSettings.linkPath(issue.href), tag = href ? 'a' : 'div';
+        return '<figure class="issue"><' + tag + (href ? ' href="' + esc(href) + '"' : '') + '>' + (image ? '<img src="' + esc(image) + '" alt="' + esc(issue.alt || '') + '" loading="lazy">' : '') + '</' + tag + '><figcaption>' + esc(issue.title) + '</figcaption></figure>';
+      }).join('') + '</div><div><h2 id="sH">' + esc((sec && sec.title) || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
+      (S.buyUrl ? '<a class="btn" href="' + esc(ContentSettings.linkPath(S.buyUrl)) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
+      (S.blogUrl ? '<a class="btn ghost" href="' + esc(ContentSettings.linkPath(S.blogUrl)) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
       '</div></div></div></section>';
   }
 
@@ -554,12 +601,12 @@
         if (k === 'videos') {
           var vids = shown(D.videos).slice(0, 3).map(videoCard).join('');
           return vids ? '<section class="videos wrap" id="videos" aria-labelledby="vdH">' + secHead(k, 'vdH', '影片精選') +
-            '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">看所有影片</a></p></section>' : '';
+            '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">' + esc(ui('allVideos', '看所有影片')) + '</a></p></section>' : '';
         }
         if (k === 'posts') {
           if (posts === null) return '';
           return '<section class="journal wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
-            '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">看所有文章</a></div></section>';
+            '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">' + esc(ui('allPosts', '看所有文章')) + '</a></div></section>';
         }
         if (k === 'media') {
           var all = mediaSorted();
@@ -582,7 +629,7 @@
     if (!u || hero.classList.contains('hero--photo')) return;
     var box = document.createElement('div');
     box.className = 'hero-photo';
-    box.innerHTML = '<img src="' + esc(img(u, 2000)) + '" alt="" decoding="async" fetchpriority="high" referrerpolicy="no-referrer">';
+    box.innerHTML = '<img src="' + esc(img(u, 2000)) + '" alt="' + esc(C.hero.photoAlt || '') + '" decoding="async" fetchpriority="high" referrerpolicy="no-referrer">';
     box.querySelector('img').addEventListener('error', function () { hero.classList.remove('hero--photo'); box.remove(); });
     hero.insertBefore(box, hero.firstChild);
     hero.classList.add('hero--photo');
@@ -633,15 +680,15 @@
     var fmt = function (t) { return String(t || '').replace(/^0/, ''); };
     var map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(V.address);
     return '<section class="visit wrap" id="visit" aria-labelledby="vH">' + secHead(key, 'vH', '到訪陳家古厝') + '<div class="visit-grid">' +
-      '<div><p class="k">地址</p><p class="val"><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address.slice(0, 6)) + '<br>' + esc(V.address.slice(6)) + '</a></p>' +
+      '<div><p class="k">' + esc(ui('address', '地址')) + '</p><p class="val"><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address.slice(0, 6)) + '<br>' + esc(V.address.slice(6)) + '</a></p>' +
       (V.transport ? '<p class="visit-note">' + esc(V.transport) + '</p>' : '') + '</div>' +
-      '<div><p class="k">開放時間</p><p class="val">' + esc(V.openText) + '<br>' + fmt(V.open) + '–' + fmt(V.close) + '</p>' +
+      '<div><p class="k">' + esc(ui('hours', '開放時間')) + '</p><p class="val">' + esc(V.openText) + '<br>' + fmt(V.open) + '–' + fmt(V.close) + '</p>' +
       '<p class="status" data-status aria-live="polite"><span class="dot"></span><span class="status-text"></span></p></div>' +
-      '<div><p class="k">聯絡</p><p class="val">' +
+      '<div><p class="k">' + esc(ui('contact', '聯絡')) + '</p><p class="val">' +
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a><br>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a><br>' : '') +
       (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook：' + esc(V.facebookLabel || '粉絲專頁') + '</a>' : '') +
-      (V.bookingUrl ? '<br><a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">填寫預約表單</a>' : '') + '</p></div></div></section>';
+      (V.bookingUrl ? '<br><a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('bookingForm', '填寫預約表單')) + '</a>' : '') + '</p></div></div></section>';
   }
 
   // 依台北時間顯示現在是否開放
@@ -662,12 +709,12 @@
       var days = (V.openDays || []).map(Number);
       if (days.indexOf(d) >= 0 && m >= o && m < c) {
         open = true;
-        msg = '現在開放中，今天到 ' + V.close.replace(/^0/, '');
+        msg = template(ui('openStatus', '現在開放中，今天到 {time}'), {time:V.close.replace(/^0/, '')});
       } else {
         for (var i = 0; i <= 7; i++) {
           var dd = (d + i) % 7;
           if (days.indexOf(dd) < 0 || (i === 0 && m >= o)) continue;
-          msg = '目前休館，' + (i === 0 ? '今天' : i === 1 ? '明天' : names[dd]) + ' ' + V.open.replace(/^0/, '') + ' 開放';
+          msg = template(ui('closedStatus', '目前休館，{day} {time} 開放'), {day:i === 0 ? '今天' : i === 1 ? '明天' : names[dd],time:V.open.replace(/^0/, '')});
           break;
         }
       }
@@ -690,7 +737,7 @@
       var src = img(x.cover, 480);
       return '<article class="post"><div class="p-date"><span>' + esc(dotDate(x.date || '')) + '</span>' + (x.outlet ? '<span>' + esc(x.outlet) + '</span>' : '') + '</div>' +
         '<div><h3><a href="' + mediaUrl(x) + '">' + esc(x.title) + '</a></h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + '</div>' +
-        '<div class="ph thumb t' + (i % 3 + 1) + '" aria-hidden="true">' + (src ? '<img data-ph="1" src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '</div></article>';
+        '<div class="ph thumb t' + (i % 3 + 1) + '" aria-hidden="true">' + (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '</div></article>';
     }).join('');
   }
   function renderMediaIndex() {
@@ -700,7 +747,7 @@
     var list = mediaSorted();
     view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(t) + '</h1>' +
       (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
-      (list.length ? '<div class="feed">' + mediaListHtml(list) + '</div>' : '<p class="c-empty">目前還沒有媒體報導。</p>') + '</div>';
+      (list.length ? '<div class="feed">' + mediaListHtml(list) + '</div>' : '<p class="c-empty">' + esc(ui('emptyMedia', '目前還沒有媒體報導。')) + '</p>') + '</div>';
   }
   function renderMediaDetail(slug) {
     var x = findBy(D.media, slug);
@@ -710,26 +757,25 @@
     var body = clean(x.body || '');
     var first = (body.match(/<img[^>]+src="([^"]+)"/) || [])[1];
     var share = location.origin + location.pathname + mediaUrl(x);
-    view.innerHTML = '<article class="wrap art"><a class="back" href="?view=media">所有媒體報導</a><div class="art-grid">' +
+    view.innerHTML = '<article class="wrap art"><a class="back" href="?view=media">' + esc(ui('allMedia', '所有媒體報導')) + '</a><div class="art-grid">' +
       '<header class="art-head"><div class="meta"><span>媒體報導</span>' + (x.date ? '<time datetime="' + esc(x.date) + '">' + longDate(x.date) + '</time>' : '') +
       (x.outlet ? '<span>' + esc(x.outlet) + '</span>' : '') + '</div><h1>' + esc(x.title) + '</h1></header>' +
-      (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
+      (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
       '<div class="prose">' + (x.summary && !body ? '<p>' + esc(x.summary) + '</p>' : '') + '<div class="entry">' + body + '</div>' +
-      (x.url ? '<p style="margin-top:28px"><a class="btn" href="' + esc(x.url) + '" target="_blank" rel="noopener">閱讀原始報導' + (x.outlet ? '（' + esc(x.outlet) + '）' : '') + '</a></p>' : '') +
+      (x.url ? '<p style="margin-top:28px"><a class="btn" href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(ui('mediaOriginal','閱讀原始報導')) + (x.outlet ? '（' + esc(x.outlet) + '）' : '') + '</a></p>' : '') +
       '<div class="art-foot">' + shareHtml(x.title, share) + '</div></div></div></article>';
   }
 
   /* ---------- 服務、社區、影片 ---------- */
 
   function galleryHtml(list) {
-    list = (list || []).filter(Boolean);
-    if (!list.length) return '';
-    return '<div class="gallery-grid">' + list.map(function (u) {
-      return '<figure><img src="' + esc(img(u, 800)) + '" data-full="' + esc(img(u, 2000)) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>';
+    return '<div class="gallery-grid">' + (list || []).map(function (item) {
+      var photo = typeof item === 'string' ? {image:item,alt:'',caption:''} : item;
+      var image = img(photo.image, 1600); if (!image) return '';
+      return '<figure><img src="' + esc(image) + '" data-full="' + esc(image) + '" alt="' + esc(photo.alt || '') + '" loading="lazy" decoding="async">' + (photo.caption ? '<figcaption>' + esc(photo.caption) + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
   }
 
-  // 服務頁、社區頁下方的相關文章（依 WordPress 的分類或標籤）
   function loadRelatedPosts(x, box) {
     if (!x.relatedCategory && !x.relatedTag) return;
     var tagP = x.relatedTag ? api('tags', { slug: x.relatedTag, _fields: 'id' }).then(function (l) { return l[0] && l[0].id; }) : Promise.resolve(null);
@@ -741,8 +787,8 @@
       else return;
       return api('posts', query).then(function (posts) {
         if (!posts.length) return;
-        box.innerHTML = '<h2>相關紀錄</h2><div class="feed">' + listHtml(posts, r[0]) + '</div>' +
-          '<p class="list-more"><a class="more" href="' + (r[1] ? q({ tag: x.relatedTag }) : catUrl(cat)) + '">看更多</a></p>';
+        box.innerHTML = '<h2>' + esc(ui('related', '相關紀錄')) + '</h2><div class="feed">' + listHtml(posts, r[0]) + '</div>' +
+          '<p class="list-more"><a class="more" href="' + (r[1] ? q({ tag: x.relatedTag }) : catUrl(cat)) + '">' + esc(ui('more', '看更多')) + '</a></p>';
         box.hidden = false;
       });
     }).catch(function () {});
@@ -752,22 +798,22 @@
     var cover = img(x.cover, 1600);
     var info = '';
     if (kind === 'service') {
-      var rows = [['適合對象', x.audience], ['所需時間', x.duration], ['人數', x.capacity], ['費用', x.fee]].filter(function (r) { return r[1]; });
+      var rows = [[ui('audience', '適合對象'), x.audience], [ui('duration', '所需時間'), x.duration], [ui('capacity', '人數'), x.capacity], [ui('fee', '費用'), x.fee]].filter(function (r) { return r[1]; });
       var book = bookingUrl(x), V = C.visit;
       info = '<aside class="svc-info" aria-label="服務資訊">' +
-        (rows.length ? '<dl>' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : '') +
+        (rows.length ? '<dl>' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : '') +
         '<div class="svc-book">' + bookingActs(x) +
-        (V.email ? '<a class="more" href="mailto:' + esc(V.email) + '?subject=' + encodeURIComponent('詢問：' + x.title) + '">Email 詢問</a>' : '') +
+        (V.email ? '<a class="more" href="mailto:' + esc(V.email) + '?subject=' + encodeURIComponent('詢問：' + x.title) + '">' + esc(ui('email', 'Email 詢問')) + '</a>' : '') +
         '</div></aside>';
     } else if (x.mapUrl) {
-      info = '<aside class="svc-info"><div class="svc-book"><a class="btn" href="' + esc(x.mapUrl) + '" target="_blank" rel="noopener">在地圖上看</a></div></aside>';
+      info = '<aside class="svc-info"><div class="svc-book"><a class="btn" href="' + esc(x.mapUrl) + '" target="_blank" rel="noopener">' + esc(ui('map', '在地圖上看')) + '</a></div></aside>';
     }
     var evs = kind === 'service' ? upcomingEvents(x.slug || x.title) : [];
-    var back = kind === 'service' ? '<a class="back" href="?view=services">所有服務</a>' : '<a class="back" href="?view=towns">所有社區</a>';
+    var back = kind === 'service' ? '<a class="back" href="?view=services">' + esc(ui('allServices', '所有服務')) + '</a>' : '<a class="back" href="?view=towns">' + esc(ui('allTowns', '所有社區')) + '</a>';
     return '<article class="wrap detail">' + back +
       '<header class="detail-head"><p class="meta"><span>' + (kind === 'service' ? '協會服務' : '小鎮社區人文') + '</span></p><h1>' + esc(x.title) + '</h1>' +
       (x.summary ? '<p class="lead">' + esc(x.summary) + '</p>' : '') + '</header>' +
-      (cover ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
+      (cover ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
       '<div class="detail-grid"><div class="prose"><div class="entry">' + clean(x.body || '') + '</div>' + galleryHtml(x.gallery) + '</div>' + info + '</div>' +
       (evs.length ? '<section class="detail-sec" aria-labelledby="dEv"><h2 id="dEv">近期活動</h2>' + eventsListHtml(evs) + '</section>' : '') +
       '<section class="detail-sec" id="relPosts" hidden></section>' +
@@ -782,16 +828,16 @@
     var evs = upcomingEvents(x.slug || x.title);
     var others = shown(D.services).filter(function (o) { return o !== x; }).slice(0, 3);
     return '<article class="svc-page">' +
-      (cover ? '<div class="svc-hero ph t2"><img data-ph="1" src="' + esc(cover) + '" alt="" decoding="async" fetchpriority="high" referrerpolicy="no-referrer"></div>' : '') +
-      '<div class="wrap"><a class="back" href="?view=services">所有服務</a>' +
+      (cover ? '<div class="svc-hero ph t2"><img data-ph="1" src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" decoding="async" fetchpriority="high" referrerpolicy="no-referrer"></div>' : '') +
+      '<div class="wrap"><a class="back" href="?view=services">' + esc(ui('allServices', '所有服務')) + '</a>' +
       '<header class="svc-head"><h1>' + esc(x.title) + '</h1>' + (x.summary ? '<p class="lead">' + esc(x.summary) + '</p>' : '') + '</header>' +
       '<div class="svc-bar">' + (f.length ? '<dl class="facts">' + f.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
       '<div class="svc-bar-acts">' + bookingActs(x) + '</div></div>' +
       '<div class="prose svc-body"><div class="entry">' + clean(x.body || '') + '</div>' + galleryHtml(x.gallery) + '</div>' +
-      (notes.length ? '<section class="svc-sec" aria-labelledby="ntH"><h2 id="ntH">預約須知</h2><ul class="notes">' + notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></section>' : '') +
-      (evs.length ? '<section class="svc-sec" aria-labelledby="evH2"><h2 id="evH2">近期場次</h2>' + eventsListHtml(evs) + '</section>' : '') +
+      (notes.length ? '<section class="svc-sec" aria-labelledby="ntH"><h2 id="ntH">' + esc(ui('bookingNotes', '預約須知')) + '</h2><ul class="notes">' + notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></section>' : '') +
+      (evs.length ? '<section class="svc-sec" aria-labelledby="evH2"><h2 id="evH2">' + esc(ui('upcoming', '近期場次')) + '</h2>' + eventsListHtml(evs) + '</section>' : '') +
       '<section class="svc-sec" id="relPosts" hidden></section>' +
-      (others.length ? '<section class="svc-sec" aria-labelledby="otH"><h2 id="otH">其他服務</h2><div class="others">' + others.map(svcCard).join('') + '</div></section>' : '') +
+      (others.length ? '<section class="svc-sec" aria-labelledby="otH"><h2 id="otH">' + esc(ui('otherServices', '其他服務')) + '</h2><div class="others">' + others.map(svcCard).join('') + '</div></section>' : '') +
       '</div>' + bookingBarHtml('booking') +
       '<div class="m-book" role="region" aria-label="預約">' + bookingActs(x, true) + '</div></article>';
   }
@@ -811,7 +857,7 @@
     setTitle(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文'));
     view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || (isSvc ? '協會的服務' : '小鎮社區人文')) + '</h1>' +
       (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
-      ((isSvc ? servicesHtml() : townsHtml()) || '<p class="c-empty">目前沒有內容。</p>') + '</div>' +
+      ((isSvc ? servicesHtml() : townsHtml()) || '<p class="c-empty">' + esc(ui('empty', '目前沒有內容。')) + '</p>') + '</div>' +
       (isSvc ? bookingBarHtml('booking') : '');
     updateOpenStatus();
   }
@@ -822,7 +868,7 @@
     var vids = shown(D.videos).map(videoCard).join('');
     view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(conf.title || '影片精選') + '</h1>' +
       (conf.intro ? '<p>' + esc(conf.intro) + '</p>' : '') + '</header>' +
-      (vids ? '<div class="vid-grid">' + vids + '</div>' : '<p class="c-empty">目前還沒有影片。</p>') + '</div>';
+      (vids ? '<div class="vid-grid">' + vids + '</div>' : '<p class="c-empty">' + esc(ui('emptyVideos', '目前還沒有影片。')) + '</p>') + '</div>';
   }
 
   /* ---------- 文章 ---------- */
@@ -858,9 +904,9 @@
         '<div class="art-foot"><div class="tags" id="tags"></div>' + shareHtml(t, share) + '</div>' +
         '<section class="comments" aria-labelledby="chead"><h2 class="c-h" id="chead">留言</h2><div id="clist"><p class="loading">讀取留言…</p></div>' +
         (p.comment_status === 'open'
-          ? '<div class="c-write"><a class="btn" href="' + esc(https(p.link)) + '#respond" target="_blank" rel="noopener">我要留言</a>' +
-            '<p>會開啟原網站的留言表單，填暱稱和 Email 就能留言。送出後回到這裡重新整理，就會看到你的留言（有些留言需要審核後才會顯示）。</p></div>'
-          : '<p class="c-off">這篇文章已關閉留言。</p>') +
+          ? '<div class="c-write"><a class="btn" href="' + esc(https(p.link)) + '#respond" target="_blank" rel="noopener">' + esc(ui('writeComment', '我要留言')) + '</a>' +
+            '<p>' + esc(ui('commentHint', '會開啟原網站的留言表單，填暱稱和 Email 就能留言。送出後回到這裡重新整理，就會看到你的留言（有些留言需要審核後才會顯示）。')) + '</p></div>'
+          : '<p class="c-off">' + esc(ui('commentsClosed', '這篇文章已關閉留言。')) + '</p>') +
         '</section><section class="related" id="related" aria-labelledby="relH" hidden></section></div></div>' +
         '<nav class="pn" id="pn" aria-label="上下篇"></nav></article>';
 
@@ -874,11 +920,11 @@
 
   function shareHtml(t, u) {
     var eu = encodeURIComponent(u), et = encodeURIComponent(t);
-    return '<div class="share" role="group" aria-label="分享這篇文章"><p class="share-q">分享</p>' +
+    return '<div class="share" role="group" aria-label="分享這篇文章"><p class="share-q">' + esc(ui('share', '分享')) + '</p>' +
       '<a href="https://social-plugins.line.me/lineit/share?url=' + eu + '" target="_blank" rel="noopener">LINE</a>' +
-      '<a href="https://www.facebook.com/sharer/sharer.php?u=' + eu + '" target="_blank" rel="noopener">Facebook</a>' +
+      '<a href="https://www.facebook.com/sharer/sharer.php?u=' + eu + '" target="_blank" rel="noopener">' + esc(ui('footerFacebook','Facebook')) + '</a>' +
       '<a href="https://twitter.com/intent/tweet?url=' + eu + '&text=' + et + '" target="_blank" rel="noopener">X</a>' +
-      '<button type="button" data-copy="' + esc(u) + '">複製連結</button></div>';
+      '<button type="button" data-copy="' + esc(u) + '">' + esc(ui('copyLink', '複製連結')) + '</button></div>';
   }
 
   function loadComments(postId) {
@@ -893,10 +939,10 @@
             (c.children.length ? tree(c.children) : '') + '</li>';
         }).join('') + '</ul>';
       };
-      $('#chead').textContent = list.length ? '留言（' + list.length + '）' : '留言';
-      $('#clist').innerHTML = list.length ? '<div class="old-c" style="margin-top:0">' + tree(roots) + '</div>' : '<p class="c-empty">還沒有人留言，留下第一則吧。</p>';
+      $('#chead').textContent = ui('comments', '留言') + (list.length ? '（' + list.length + '）' : '');
+      $('#clist').innerHTML = list.length ? '<div class="old-c" style="margin-top:0">' + tree(roots) + '</div>' : '<p class="c-empty">' + esc(ui('noComments', '還沒有人留言，留下第一則吧。')) + '</p>';
     }).catch(function () {
-      $('#clist').innerHTML = '<p class="c-empty">暫時讀不到留言，請稍後重新整理。</p>';
+      $('#clist').innerHTML = '<p class="c-empty">' + esc(ui('commentUnavailable', '暫時讀不到留言，請稍後重新整理。')) + '</p>';
     });
   }
 
@@ -983,7 +1029,7 @@
         '<h1>' + esc(opts.title) + '</h1>' + (opts.note ? '<p>' + opts.note + '</p>' : '') + '</header>' +
         (opts.form || '') + (opts.local && (parseInt(params.get('paged'), 10) || 1) === 1 ? opts.local : '') +
         (opts.showFilter ? filterHtml(cats, opts.catId) : '') +
-        (opts.form && !posts.length ? (opts.local ? '' : '<p class="search-hint">找不到相關文章，換個關鍵字試試，或看 <a href="?view=archives">所有文章</a>。</p>')
+        (opts.form && !posts.length ? (opts.local ? '' : '<p class="search-hint">找不到相關文章，換個關鍵字試試，或看 <a href="?view=archives">' + esc(ui('footerPosts','所有文章')) + '</a>。</p>')
           : '<div class="feed" style="margin-top:20px">' + listHtml(posts, cats, n) + '</div>') +
         pagerHtml(n, hasMore, opts.keep || {}) + '</div>';
     }).catch(function (e) { showError(e); });
@@ -1007,19 +1053,19 @@
   }
 
   function searchForm(v) {
-    return '<form class="search-form" role="search" action="./" method="get"><label class="sr" for="sq">搜尋關鍵字</label>' +
-      '<input id="sq" name="s" type="search" value="' + esc(v || '') + '" placeholder="例如：金紙、慈裕宮、手抄紙" required>' +
-      '<button class="btn" type="submit">搜尋</button></form>';
+    return '<form class="search-form" role="search" action="./" method="get"><label class="sr" for="sq">' + esc(ui('searchLabel','搜尋關鍵字')) + '</label>' +
+      '<input id="sq" name="s" type="search" value="' + esc(v || '') + '" placeholder="' + esc(ui('searchPlaceholder','例如：金紙、慈裕宮、手抄紙')) + '" required>' +
+      '<button class="btn" type="submit">' + esc(ui('search','搜尋')) + '</button></form>';
   }
 
   function renderSearch(term) {
     if (!term) {
-      setTitle('搜尋');
-      view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>搜尋</h1><p>輸入關鍵字，找文章。</p></header>' + searchForm('') + '</div>';
+      setTitle(ui('search','搜尋'));
+      view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(ui('search','搜尋')) + '</h1><p>' + esc(ui('searchIntro','輸入關鍵字，找文章。')) + '</p></header>' + searchForm('') + '</div>';
       var i = $('#sq'); if (i) i.focus();
       return;
     }
-    renderList({ title: '搜尋「' + term + '」', label: '搜尋結果', query: { search: term }, keep: { s: term }, form: searchForm(term), local: localMatches(term) });
+    renderList({ title: template(ui('searchResultsTitle','搜尋「{term}」'),{term:term}), label: ui('searchResultsLabel','搜尋結果'), query: { search: term }, keep: { s: term }, form: searchForm(term), local: localMatches(term) });
   }
 
   // 在服務、社區、媒體報導、影片裡找關鍵字（這些內容不在 WordPress，WordPress 搜尋找不到）
@@ -1035,13 +1081,13 @@
     mediaSorted().filter(has).forEach(function (x) { out.push(['媒體報導', x.title, mediaUrl(x)]); });
     shown(D.videos).filter(has).forEach(function (x) { out.push(['影片', x.title, '?view=videos']); });
     if (!out.length) return '';
-    return '<section class="related" style="margin:28px 0 8px"><h2>網站頁面</h2><ul>' + out.map(function (o) {
+    return '<section class="related" style="margin:28px 0 8px"><h2>' + esc(ui('localResultsTitle','網站頁面')) + '</h2><ul>' + out.map(function (o) {
       return '<li><small>' + o[0] + '</small><a href="' + esc(o[2]) + '">' + esc(o[1]) + '</a></li>';
     }).join('') + '</ul></section>';
   }
 
   function renderArchives() {
-    setTitle('所有文章');
+    setTitle(ui('allPosts','所有文章'));
     Promise.all([allPages('posts', { _fields: 'id,date,title,categories' }), categoriesP]).then(function (r) {
       var posts = hideImported(r[0]), cats = r[1];
       var years = {}, order = [];
@@ -1050,7 +1096,7 @@
         if (!years[y]) { years[y] = []; order.push(y); }
         years[y].push(p);
       });
-      view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>所有文章</h1><p>共 ' + posts.length + ' 篇，由新到舊排列。</p>' +
+      view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(ui('allPosts','所有文章')) + '</h1><p>' + esc(template(ui('archivesIntro','共 {count} 篇，由新到舊排列。'),{count:posts.length})) + '</p>' +
         '<nav class="arch-cats" aria-label="分類">' + cats.filter(function (c) { return c.count > 0; }).sort(function (a, b) { return b.count - a.count; })
           .map(function (c) { return '<a href="' + catUrl(c) + '">' + esc(c.name) + '（' + c.count + '）</a>'; }).join('') + '</nav></header>' +
         order.map(function (y) {
@@ -1083,7 +1129,7 @@
       var b = e.target.closest && e.target.closest('[data-copy]');
       if (b) {
         var link = b.getAttribute('data-copy');
-        var done = function () { b.textContent = '已複製連結'; setTimeout(function () { b.textContent = '複製連結'; }, 2400); };
+        var done = function () { b.textContent = ui('copyDone','已複製連結'); setTimeout(function () { b.textContent = ui('copyLink','複製連結'); }, 2400); };
         if (navigator.share && window.matchMedia('(pointer:coarse)').matches) navigator.share({ url: link, title: document.title }).catch(function () {});
         else if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, function () { window.prompt('複製這個連結：', link); });
         else window.prompt('複製這個連結：', link);
@@ -1217,7 +1263,8 @@
   }
   loading();
   loadData().then(function () {
-    C = D.site;
+    C = D.site; ContentSettings.applyDefaults(C);
+    ContentSettings.normalizeData(D);
     C.sections = C.sections || [];
     migrateLayout(C);
     if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {

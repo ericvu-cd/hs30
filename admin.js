@@ -58,12 +58,9 @@
     for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     return new TextDecoder('utf-8').decode(bytes);
   }
-  function imgSrc(u, w) {
-    if (!u) return '';
-    if (pending[u]) return pending[u].url;
-    if (/^uploads\//.test(u)) return u;
-    if (/wordpress\.com\/|wp\.com\/|\/wp-content\/uploads\//.test(u)) return u.replace(/\?.*$/, '') + '?w=' + (w || 400);
-    return u;
+  function imgSrc(value) {
+    var path = ContentSettings.imagePath(value);
+    return path && pending[path] ? pending[path].url : path;
   }
 
   /* ---------- GitHub API ---------- */
@@ -115,7 +112,7 @@
       tree.tree.forEach(function (t) {
         if (t.type !== 'blob') return;
         if (/^data\/\w+\.json$/.test(t.path)) shas[t.path] = t.sha;
-        if (/^uploads\/.+\.(jpe?g|png|gif|webp)$/i.test(t.path)) uploads.push(t.path);
+        if (/^uploads\/.+\.(jpe?g|png|gif|webp|avif|svg)$/i.test(t.path)) uploads.push(t.path);
       });
       uploads.sort().reverse();
       return Promise.all(FILES.map(function (f) {
@@ -135,11 +132,17 @@
   // 補齊舊資料可能缺少的欄位
   function normalize() {
     var s = state.site;
+    ContentSettings.applyDefaults(s);
+    var icon = document.querySelector("#adminIcon"), iconPath = ContentSettings.imagePath(s.brand.icon);
+    if (icon) { if (iconPath) { icon.setAttribute("href", iconPath); icon.removeAttribute("type"); } else icon.removeAttribute("href"); }
+    ContentSettings.normalizeData(state);
     s.sections = s.sections || [];
     s.nav = s.nav || [];
     s.visit = s.visit || {};
     s.shanhaiji = s.shanhaiji || {};
     s.hero = s.hero || {};
+    delete s.exploreImages;
+    if (s.hero.illustrationLabels == null) s.hero.illustrationLabels = true;
     s.featuredCategories = s.featuredCategories || [];
     s.importedVideoPages = s.importedVideoPages || [];
     ['services', 'towns', 'videos', 'events', 'media'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
@@ -216,7 +219,8 @@
     state.videos.forEach(function (v, i) {
       if (!/(youtu\.be\/|v=|embed\/|shorts\/|live\/)[\w-]{11}/.test(v.url || '')) errs.push('第 ' + (i + 1) + ' 部影片的 YouTube 網址看不懂。');
     });
-    return errs;
+    ContentSettings.normalizeData(state);
+    return errs.concat(ContentSettings.imageIssues(state));
   }
 
   function publish() {
@@ -323,11 +327,15 @@
         c.width = Math.round(w * k);
         c.height = Math.round(h * k);
         var ctx = c.getContext('2d');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, c.width, c.height);
+        // 保留透明插畫的羽化邊緣；一般 JPG 照片維持原縮圖流程。
+        var keepAlpha = /image\/(png|webp|svg\+xml|avif)/i.test(file.type || '') || /\.(png|webp)$/i.test(file.name || '');
+        if (!keepAlpha) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+        }
         ctx.drawImage(im, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
-        var data = c.toDataURL('image/jpeg', 0.84);
+        var data = keepAlpha ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.84);
         ok(data);
       };
       im.onerror = function () { URL.revokeObjectURL(url); fail(new Error('看不懂這個檔案，請用 JPG 或 PNG 照片。')); };
@@ -339,7 +347,7 @@
     var dir = 'uploads/' + d.slice(0, 4) + '/' + d.slice(5, 7) + '/';
     return Promise.all(Array.prototype.map.call(files, function (f, i) {
       return resizeImage(f).then(function (dataUrl) {
-        var name = d.slice(0, 10).replace(/-/g, '') + '-' + d.slice(11, 19).replace(/:/g, '') + '-' + i + Math.random().toString(36).slice(2, 6) + '.jpg';
+        var name = d.slice(0, 10).replace(/-/g, '') + '-' + d.slice(11, 19).replace(/:/g, '') + '-' + i + Math.random().toString(36).slice(2, 6) + (dataUrl.indexOf('data:image/png;') === 0 ? '.png' : '.jpg');
         var p = dir + name;
         pending[p] = { b64: dataUrl.split(',')[1], url: dataUrl };
         return p;
@@ -530,12 +538,51 @@
       $('#dlgBody').innerHTML = '<p class="notice bad">讀不到 WordPress 的頁面清單，請確認網路，或到「基本資料」確認 WordPress 網址。</p>';
     });
   }
+  function localizeImportImages(list, target) {
+    if (target === 'videos') return Promise.resolve(list);
+    var prior = Object.keys(pending), cache = {};
+    function localImage(src) {
+      if (!src) return Promise.resolve('');
+      var local = ContentSettings.imagePath(src);
+      if (local) return Promise.resolve(local);
+      var address;
+      try { address = new URL(src, 'https://' + state.site.wordpressSite + '/').href; } catch(e) { return Promise.reject(new Error('無法辨識圖片網址')); }
+      if (!/^https:\/\//i.test(address)) return Promise.reject(new Error('匯入圖片必須來自 https 網址'));
+      if (!cache[address]) cache[address] = fetch(address).then(function(response) {
+        if (!response.ok) throw new Error('圖片下載失敗：' + response.status);
+        return response.blob();
+      }).then(function(blob) {
+        if (!/^image\//.test(blob.type)) throw new Error('下載的檔案不是圖片');
+        var name = new URL(address).pathname.split('/').pop() || 'import.jpg';
+        return addUploads([new File([blob], name, {type:blob.type})]);
+      }).then(function(paths) { return paths[0]; });
+      return cache[address];
+    }
+    return Promise.allSettled(list.map(function(post) {
+      var page = document.createElement('template'); page.innerHTML = sanitize(post.content && post.content.rendered || '');
+      return Promise.allSettled(Array.prototype.map.call(page.content.querySelectorAll('img'),function(image) {
+        var original = image.getAttribute('src');
+        return localImage(original).then(function(path) {
+          image.setAttribute('src',path);
+          var link=image.closest('a'); if(link && /\.(jpe?g|png|webp|gif)([?#]|$)/i.test(link.getAttribute('href')||'')) link.setAttribute('href',path);
+        });
+      }).concat([localImage(post.jetpack_featured_media_url).then(function(path){post.jetpack_featured_media_url=path;})])).then(function(results) {
+        var failed=results.filter(function(result){return result.status==='rejected';}); if(failed.length) throw failed[0].reason;
+        post.content={rendered:page.innerHTML}; return post;
+      });
+    })).then(function(results) {
+      var failed=results.filter(function(result){return result.status==='rejected';});
+      if(failed.length) {Object.keys(pending).forEach(function(path){if(prior.indexOf(path)<0) delete pending[path];}); throw failed[0].reason;}
+      return results.map(function(result){return result.value;});
+    });
+  }
+
   function doImport(target) {
     var ids = $$('#dlgBody input[type=checkbox]:checked').map(function (i) { return i.value; });
     if (!ids.length) { toast('請先勾選頁面'); return; }
     $('#dlgBody').innerHTML = '<p class="muted">匯入中…</p>';
     var type = target === 'media' ? 'posts/' : 'pages/';
-    Promise.all(ids.map(function (id) { return wpApi(type + id + '?_fields=id,slug,date,title,content,excerpt,jetpack_featured_media_url'); })).then(function (list) {
+    Promise.all(ids.map(function (id) { return wpApi(type + id + '?_fields=id,slug,date,title,content,excerpt,jetpack_featured_media_url'); })).then(function(list) { return localizeImportImages(list,target); }).then(function (list) {
       var tmp = document.createElement('div');
       var text = function (h) { tmp.innerHTML = h || ''; return (tmp.textContent || '').replace(/\s+/g, ' ').trim(); };
       var n = 0;
@@ -548,7 +595,7 @@
             var id = m.slice(-11);
             if (seen[id] || state.videos.some(function (v) { return (v.url || '').indexOf(id) >= 0; })) return;
             seen[id] = 1;
-            state.videos.push({ title: title + '（' + (Object.keys(seen).length) + '）', url: 'https://www.youtube.com/watch?v=' + id, description: '', hidden: false });
+            state.videos.push({ title: title + '（' + (Object.keys(seen).length) + '）', url: 'https://www.youtube.com/watch?v=' + id, cover: state.site.visuals.videoFallback, coverAlt: title, description: '', hidden: false });
             n++;
           });
           state.site.importedVideoPages.push({ id: p.id, slug: p.slug });
@@ -565,12 +612,12 @@
           if (state.media.some(function (x) { return (x.slug || x.title) === sl; })) sl = title + '-' + (p.date || '').slice(0, 10);
           state.media.push({ slug: sl, title: title, outlet: '', date: (p.date || '').slice(0, 10), url: ext,
             summary: summary.length > 80 ? summary.slice(0, 80) + '…' : summary,
-            cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), hidden: false, wpId: p.id, wpSlug: p.slug });
+            coverAlt: title, cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), hidden: false, wpId: p.id, wpSlug: p.slug });
           n++;
           return;
         }
         var item = { slug: title, title: title, summary: summary.length > 60 ? summary.slice(0, 60) + '…' : summary,
-          cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), gallery: [],
+          coverAlt: title, cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), gallery: [],
           relatedCategory: '', relatedTag: '', hidden: false, wpId: p.id, wpSlug: p.slug };
         if (target === 'services') { item.audience = ''; item.duration = ''; item.capacity = ''; item.fee = ''; item.bookingUrl = ''; }
         else item.mapUrl = '';
@@ -584,8 +631,8 @@
       render();
       $('#dlg').close();
       toast('已匯入 ' + n + ' 項，檢查無誤後按「發布」。', 4000);
-    }).catch(function () {
-      $('#dlgBody').innerHTML = '<p class="notice bad">匯入失敗，請稍後再試。</p>';
+    }).catch(function (error) {
+      $('#dlgBody').innerHTML = '<p class="notice bad">匯入失敗：' + esc(error.message || '') + '。圖片必須一併搬入照片庫，這次尚未新增內容。若來源不允許下載，請先下載照片，再從照片庫上傳。</p>';
     });
   }
 
@@ -594,7 +641,7 @@
   var TABS = [
     ['services', '協會服務'], ['towns', '社區人文'], ['videos', '影片精選'], ['media', '媒體報導'], ['events', '近期活動'], ['sep'],
     ['home', '首頁'], ['nav', '選單'], ['visit', '到訪與預約'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
-    ['photos', '照片庫'], ['history', '版本紀錄'],
+    ['content', '圖示與介面說明'], ['photos', '照片庫'], ['history', '版本紀錄'],
   ];
 
   function render() {
@@ -602,7 +649,7 @@
       return t[0] === 'sep' ? '<div class="sep"></div>' : '<button type="button" data-tab="' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</button>';
     }).join('');
     var fn = { services: viewItems, towns: viewItems, media: viewItems, videos: viewVideos, events: viewEvents, home: viewHome, nav: viewNav,
-      visit: viewVisit, shanhaiji: viewShanhaiji, basic: viewBasic, photos: viewPhotos, history: viewHistory }[tab];
+      visit: viewVisit, shanhaiji: viewShanhaiji, basic: viewBasic, content: viewContent, photos: viewPhotos, history: viewHistory }[tab];
     $('#main').innerHTML = fn();
     if (tab === 'history') loadHistory();
     markDirty();
@@ -633,13 +680,16 @@
   }
   function galleryField(path) {
     var list = getPath(state, path) || [];
-    return '<div class="field-full"><label>照片集<span class="hint">顯示在內文下方，點照片可放大</span></label><div class="gal">' +
-      list.map(function (p, i) {
-        return '<figure><img src="' + esc(imgSrc(p)) + '" alt=""><button class="btn icon small" type="button" title="移除" data-act="galDel" data-path="' + path + '" data-i="' + i + '">✕</button>' +
-          '<span class="mv"><button class="btn small" type="button" data-act="galMove" data-d="-1" data-path="' + path + '" data-i="' + i + '">←</button>' +
-          '<button class="btn small" type="button" data-act="galMove" data-d="1" data-path="' + path + '" data-i="' + i + '">→</button></span></figure>';
-      }).join('') + '<button class="btn" type="button" data-act="galAdd" data-path="' + path + '">＋ 加入照片</button></div></div>';
+    return '<div class="field-full"><label>照片集與圖片說明</label><div class="list">' + list.map(function (photo, i) {
+      if (typeof photo === 'string') photo = list[i] = { image: photo, alt: '', caption: '' };
+      var p = path + '.' + i;
+      return '<div class="panel"><div class="grid2">' + imgField(p + '.image', '照片') + inp(p + '.alt', '替代文字') + inp(p + '.caption', '照片下方說明') +
+        '<div><button class="btn small" type="button" data-act="galMove" data-d="-1" data-path="' + path + '" data-i="' + i + '">上移</button> ' +
+        '<button class="btn small" type="button" data-act="galMove" data-d="1" data-path="' + path + '" data-i="' + i + '">下移</button> ' +
+        '<button class="btn danger small" type="button" data-act="galDel" data-path="' + path + '" data-i="' + i + '">移除</button></div></div></div>';
+    }).join('') + '<button class="btn" type="button" data-act="galAdd" data-path="' + path + '">＋ 加入照片</button></div></div>';
   }
+
   function moveBtns(list, i) {
     return '<button class="btn icon small" type="button" title="上移" data-act="move" data-list="' + list + '" data-i="' + i + '" data-d="-1">↑</button>' +
       '<button class="btn icon small" type="button" title="下移" data-act="move" data-list="' + list + '" data-i="' + i + '" data-d="1">↓</button>';
@@ -688,7 +738,7 @@
       (isMedia ? inp(p + '.outlet', '媒體名稱', { placeholder: '例如：聯合報、客家電視台' }) + inp(p + '.date', '報導日期', { type: 'date' }) +
         inp(p + '.url', '原始報導網址（選填）', { full: true, hint: '有填的話，頁面上會出現「閱讀原始報導」按鈕。', placeholder: 'https://' }) : '') +
       inp(p + '.summary', isMedia ? '摘要' : '一句話介紹', { full: true, hint: isMedia ? '顯示在列表上，約 30 到 60 字。' : '顯示在首頁卡片與頁面標題下方，約 20 到 40 字。' }) +
-      imgField(p + '.cover', '封面照片') + '</div>' +
+      inp(p + '.coverAlt', '封面圖片說明（替代文字）') + imgField(p + '.cover', '封面照片') + '</div>' +
       '<div class="row-acts">' + chk(p + '.hidden', '暫時隱藏（不在網站上顯示）') + '</div></div>' +
       (isMedia ? '' : isSvc ? '<div class="panel"><h2>服務資訊</h2><p class="muted">顯示在服務頁右側，沒有的可以留空。</p><div class="grid2">' +
         inp(p + '.audience', '適合對象', { placeholder: '例如：國小以上、團體 10 人起' }) +
@@ -709,17 +759,17 @@
   }
 
   function viewVideos() {
-    return head('影片精選', '貼上 YouTube 網址就好。首頁會顯示前 3 部，影片精選頁顯示全部。') +
+    return head('影片精選', '影片網址與封面分別管理；封面上傳至照片庫，播放時才連到 YouTube。') +
       '<div class="row-acts" style="margin:0 0 16px"><button class="btn primary" type="button" data-act="addVideo">＋ 新增影片</button>' +
       '<button class="btn" type="button" data-act="import" data-target="videos">從 WordPress 匯入</button></div>' +
       (state.videos.length ? '<div class="list">' + state.videos.map(function (v, i) {
         var id = (String(v.url || '').match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([\w-]{11})/) || [])[1];
         return '<div class="item" data-list="videos" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
-          '<div class="item-main">' + (id ? '<img class="thumb" src="https://i.ytimg.com/vi/' + id + '/default.jpg" alt="">' : '<span class="thumb"></span>') +
+          '<div class="item-main">' + '<img class="thumb" src="' + esc(imgSrc(v.cover || state.site.visuals.videoFallback)) + '" alt="' + esc(v.coverAlt || v.title) + '">' +
           '<div class="item-body"><div class="title">' + esc(v.title || '（未命名）') + (v.hidden ? '<span class="badge off">隱藏中</span>' : '') + (id ? '' : '<span class="badge warn">網址待填</span>') + '</div></div></div>' +
           '<div class="acts">' + moveBtns('videos', i) + '<button class="btn danger small" type="button" data-act="delRow" data-list="videos" data-i="' + i + '">刪除</button></div>' +
           '<div class="item-form grid2">' + inp('videos.' + i + '.title', '標題') + inp('videos.' + i + '.url', 'YouTube 網址') +
-          inp('videos.' + i + '.description', '說明（選填）', { full: true }) + chk('videos.' + i + '.hidden', '暫時隱藏') + '</div></div>';
+          imgField('videos.' + i + '.cover', '影片封面（存於照片庫）') + inp('videos.' + i + '.coverAlt', '封面圖片說明') + inp('videos.' + i + '.description', '說明（選填）', { full: true }) + chk('videos.' + i + '.hidden', '暫時隱藏') + '</div></div>';
       }).join('') + '</div>' : '<p class="empty">還沒有影片。</p>');
   }
 
@@ -746,10 +796,20 @@
   function viewHome() {
     return head('首頁', '最上面固定是「番社參拾」封面，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
       '<div class="panel"><h2>封面</h2><div class="grid2">' +
-      imgField('site.hero.image', '封面照片（選填）') +
-      '<p class="muted field-full" style="margin:0">設定封面照片後，首頁最上面會改成滿版照片，建議用橫式、清楚的古厝照片。沒有設定時，封面右邊顯示陳家古厝的示意插畫。</p>' +
-      inp('site.hero.primaryText', '第一個按鈕文字（連到服務項目）') +
-      inp('site.hero.secondaryText', '第二個按鈕文字（連到預約）') + '</div></div>' +
+      imgField('site.hero.illustration', '古厝場域圖（首頁右側）') + inp('site.hero.illustrationAlt', '古厝圖的替代文字') +
+      chk('site.hero.illustrationLabels', '顯示門額、門柱名稱與年份（留白插畫適用）') +
+      inp('site.hero.lintel', '門額（正常閱讀順序，例如：潁川堂）') + inp('site.hero.leftPlaque', '左門柱文字') + inp('site.hero.leftYear', '左門柱年份') +
+      inp('site.hero.rightPlaque', '右門柱文字') + inp('site.hero.rightYear', '右門柱年份') +
+      inp('site.hero.entryText', '古厝故事入口文字') + inp('site.hero.entryHref', '古厝故事連結', {hint:'站內頁使用 ?p=3320 這類相對連結。'}) +
+      inp('site.hero.note', '古厝圖下方說明', {full:true}) + imgField('site.hero.image', '滿版封面照片（選填）') + inp('site.hero.photoAlt', '滿版照片替代文字') +
+      inp('site.hero.primaryText', '第一個按鈕文字') + inp('site.hero.primaryHref', '第一個按鈕連結') +
+      inp('site.hero.secondaryText', '第二個按鈕文字') + inp('site.hero.secondaryHref', '第二個按鈕連結（留空使用預約設定）') + '</div></div>' +
+      '<div class="panel"><h2>探索更多入口</h2><p class="muted">各入口的圖片、圖示、標題、說明、連結及順序都可設定。圖示可留空。</p>' +
+      state.site.exploreCards.map(function(x,i){var p='site.exploreCards.'+i;return '<div class="panel"><div class="acts">'+moveBtns('site.exploreCards',i)+
+      '<button class="btn danger small" type="button" data-act="delRow" data-list="site.exploreCards" data-i="'+i+'">刪除</button></div><div class="grid2">'+
+      inp(p+'.title','入口標題')+inp(p+'.description','入口說明',{hint:'可使用 {towns}、{media}、{videos} 自動帶入數量。'})+inp(p+'.href','連結')+
+      imgField(p+'.cover','入口配圖')+inp(p+'.coverAlt','配圖替代文字')+imgField(p+'.icon','自訂圖示（選填）')+chk(p+'.hidden','暫時隱藏')+'</div></div>';}).join('')+
+      '<button class="btn" type="button" data-act="addExplore">＋ 新增入口</button></div>' +
       '<div class="panel"><h2>首頁段落</h2><div class="list">' + state.site.sections.map(function (s, i) {
         var p = 'site.sections.' + i;
         return '<div class="item" data-list="site.sections" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
@@ -806,11 +866,13 @@
   }
 
   function viewShanhaiji() {
-    return head('山海集', '首頁《山海集》段落的內容。') +
-      '<div class="panel"><div class="grid2">' + inp('site.shanhaiji.text', '介紹文字', { textarea: true, full: true, rows: 4 }) +
-      inp('site.shanhaiji.covers', '封面上的期別（一行一期，最多顯示 3 期）', { lines: true, full: true, rows: 3 }) +
-      inp('site.shanhaiji.buyText', '購買按鈕文字') + inp('site.shanhaiji.buyUrl', '購買網址') +
-      inp('site.shanhaiji.blogText', '第二個按鈕文字') + inp('site.shanhaiji.blogUrl', '第二個按鈕網址') + '</div></div>';
+    return head('山海集', '刊物介紹、封面照片、期別與各期連結。') + '<div class="panel"><div class="grid2">' +
+      inp('site.shanhaiji.text', '介紹文字', {textarea:true,full:true}) + inp('site.shanhaiji.buyText','購買按鈕文字') + inp('site.shanhaiji.buyUrl','購買連結') +
+      inp('site.shanhaiji.blogText','第二個按鈕文字') + inp('site.shanhaiji.blogUrl','第二個按鈕連結') + '</div></div>' +
+      state.site.shanhaiji.issues.map(function(x,i){var p='site.shanhaiji.issues.'+i;return '<div class="panel"><div class="acts">'+moveBtns('site.shanhaiji.issues',i)+
+      '<button class="btn danger small" type="button" data-act="delRow" data-list="site.shanhaiji.issues" data-i="'+i+'">刪除</button></div><div class="grid2">'+
+      inp(p+'.title','期別標題')+inp(p+'.href','本期連結')+imgField(p+'.image','刊物封面')+inp(p+'.alt','封面替代文字')+'</div></div>';}).join('')+
+      '<button class="btn" type="button" data-act="addIssue">＋ 新增一期</button>';
   }
 
   function viewBasic() {
@@ -822,6 +884,17 @@
       inp('site.wordpressBlogId', 'WordPress 網站 ID（選填）', { hint: 'Email 訂閱用，留空會自動查詢。' }) +
       inp('site.featuredCategories', '文章列表篩選列要顯示的分類（一行一個）', { lines: true, full: true, rows: 5 }) +
       inp('site.perPage', '文章列表每頁幾篇', { type: 'number' }) + inp('site.goatcounter', 'GoatCounter 訪客統計代碼（選填）') + '</div></div>';
+  }
+
+  function viewContent() {
+    return head('圖示與介面說明', '圖示從照片庫選取；按鈕、提示與頁尾文字在這裡設定。') +
+      '<div class="panel"><h2>品牌與播放圖示</h2><div class="grid2">' + imgField('site.brand.logo','左上角標誌（留空顯示協會名稱）') + inp('site.brand.logoAlt','標誌替代文字') +
+      imgField('site.brand.icon','瀏覽器分頁圖示') + imgField('site.visuals.playIcon','影片播放圖示（留空使用標準三角形）') + imgField('site.visuals.videoFallback','尚未設定影片封面時的預設圖') + state.site.visuals.placeholders.map(function(x,i){return imgField('site.visuals.placeholders.'+i+'.image','缺圖背景紋樣 '+(i+1));}).join('') + '</div></div>' +
+      '<div class="panel"><h2>頁尾與訂閱</h2><div class="grid2">' + [
+      ['subscribeTitle','訂閱標題'],['subscribeIntro','訂閱介紹'],['subscribeHint','訂閱說明'],['subscribeButton','訂閱按鈕'],['subscribePlaceholder','Email 欄位提示'],['contactTitle','聯絡標題'],['copyright','版權文字（可用 {year}、{org}）']
+      ].map(function(x){return inp('site.footer.'+x[0],x[1]);}).join('') + '</div></div>' +
+      '<div class="panel"><h2>按鈕與介面說明</h2><p class="muted">{time}、{day}、{title} 會依內容自動代入。</p><div class="grid2">' +
+      ContentSettings.uiFields.map(function(x){return inp('site.ui.'+x[0],x[1],{textarea:x[0]==='commentHint'});}).join('') + '</div></div>';
   }
 
   function viewPhotos() {
@@ -970,6 +1043,8 @@
         render();
         break;
       case 'move': move(t.getAttribute('data-list'), i, +t.getAttribute('data-d')); break;
+      case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',hidden:false}); render(); break;
+      case 'addIssue': state.site.shanhaiji.issues.push({title:'新一期',image:'',alt:'',href:''}); render(); break;
       case 'addVideo': state.videos.unshift({ title: '', url: '', description: '', hidden: false }); render(); break;
       case 'addEvent': state.events.unshift({ title: '', date: today(), end: '', time: '', place: '陳家古厝', note: '', link: '', service: '' }); render(); break;
       case 'sortEvents': state.events.sort(function (a, b) { return (a.date || '') < (b.date || '') ? -1 : 1; }); render(); break;
@@ -982,14 +1057,15 @@
       case 'addNavChild': listAt(path).push({ label: '', type: 'service', target: '' }); render(); break;
       case 'pickUrl': {
         var u = ($('#pickerUrl').value || '').trim();
-        if (!/^https:\/\/.+\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(u)) { toast('請貼上 https:// 開頭、結尾是 .jpg 或 .png 的照片網址'); break; }
+        var local = ContentSettings.imagePath(u);
+        if (!local) { toast('請使用 uploads/ 開頭的照片庫相對路徑，或先上傳照片'); break; }
         $('#picker').close();
-        if (pickerCb) pickerCb([u.replace(/\?.*$/, '')]);
+        if (pickerCb) pickerCb([local]);
         break;
       }
       case 'pickImg': openPicker(function (ps) { setPath(state, path, ps[0]); render(); }); break;
       case 'clearImg': setPath(state, path, ''); render(); break;
-      case 'galAdd': openPicker(function (ps) { listAt(path).push.apply(listAt(path), ps); render(); }, true); break;
+      case 'galAdd': openPicker(function (ps) { listAt(path).push.apply(listAt(path), ps.map(function(image){return {image:image,alt:'',caption:''};})); render(); }, true); break;
       case 'galDel': listAt(path).splice(i, 1); render(); break;
       case 'galMove': move(path, i, +t.getAttribute('data-d')); break;
       case 'import': importDialog(t.getAttribute('data-target')); break;

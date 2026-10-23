@@ -11,13 +11,13 @@
 <meta property="og:description" content="老屋裡的在地學。苗栗縣在地文化推廣協會以竹南中港的陳家古厝為據點，記錄在地文史、推廣文化導覽與地方教育。">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_TW">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link id="siteIcon" rel="icon" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://public-api.wordpress.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&display=swap">
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="heritage-hero.css?v=20261023-fix">
+<link rel="stylesheet" href="style.css?v=20261023-cms-final">
+<link rel="stylesheet" href="heritage-hero.css?v=20261023-cms-final">
 </head>
 <body>
 <a class="skip" href="#view">跳到主要內容</a>
@@ -38,16 +38,16 @@
     </div>
     <figure class="house" id="houseFig">
 <div class="heritage-scene" id="heritageScene">
-        <a class="heritage-entry" href="#visit" aria-label="走進陳家古厝，查看到訪與預約資訊">
+        <a class="heritage-entry" href="?p=3320" aria-label="走進陳家古厝，閱讀老屋與聚落的故事">
         <div class="heritage-art">
-          <img class="heritage-image" src="assets/chen-house-place.png?v=20261023-fix" width="1536" height="1024" alt="陳家古厝文化推廣據點：灰綠色正廳雙門、灰色中庭與門外紅磚地，兩側入口標示陳家古厝2015、蕃社參拾1937" fetchpriority="high" decoding="async">
+          <img class="heritage-image" hidden width="1536" height="1024" alt="陳家古厝文化推廣據點：灰綠色正廳雙門、灰色中庭與門外紅磚地，兩側入口標示陳家古厝2015、蕃社參拾1937" fetchpriority="high" decoding="async">
           <span class="heritage-lintel" aria-hidden="true">堂川潁</span>
           <span class="heritage-plaque heritage-plaque--left" aria-hidden="true">陳家古厝</span>
           <span class="heritage-plaque heritage-plaque--right" aria-hidden="true">蕃社參拾</span>
           <span class="heritage-year heritage-year--left" aria-hidden="true">2015</span>
           <span class="heritage-year heritage-year--right" aria-hidden="true">1937</span>
         </div>
-          <span class="heritage-entry-label">走進陳家古厝 <span aria-hidden="true">→</span></span>
+          <span class="heritage-entry-label">走進陳家古厝 · 讀老屋的故事 <span aria-hidden="true">→</span></span>
         </a>
         <p class="heritage-place-note">文化導覽、展覽與工藝體驗，從這座老屋出發。</p>
       </div>
@@ -62,11 +62,11 @@
 <div class="wrap">
   <section class="foot-grid" aria-label="訂閱與聯絡">
     <div>
-      <h2>訂閱新文章</h2>
+      <h2 id="subscribeTitle">訂閱新文章</h2>
       <div id="subscribe"><p>留下 Email，有新文章時會寄信通知你。</p></div>
     </div>
     <div>
-      <h2>聯絡協會</h2>
+      <h2 id="contactTitle">聯絡協會</h2>
       <div id="contact"></div>
     </div>
   </section>
@@ -82,6 +82,7 @@
   </div>
 </dialog>
 
-<script src="app.js"></script>
+<script src="content-settings.js?v=20261023-cms-final"></script>
+<script src="app.js?v=20261023-cms-final"></script>
 </body>
 </html>

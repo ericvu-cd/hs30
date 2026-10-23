@@ -301,7 +301,7 @@
   }
   function lineHref() {
     var value = String(C.visit.line || '').trim();
-    return value ? (/^https?:\/\//i.test(value) ? value : 'https://line.me/R/ti/p/' + encodeURIComponent(value)) : '';
+    return value ? (/^https?:\/\//i.test(value) ? value : 'https://line.me/R/oaMessage/' + encodeURIComponent(value)) : '';
   }
   function bookingUrl(svc) {
     return (svc && svc.bookingUrl) || C.visit.bookingUrl || '';
@@ -434,7 +434,7 @@
     $('#contact').innerHTML = '<p>' + esc(V.address) + '</p><div class="foot-links">' +
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a>' : '') +
-      (V.line ? '<a href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
+      (V.line ? '<a href="' + esc(lineHref()) + '">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
       (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerFacebook','Facebook')) + '</a>' : '') +
       (V.bookingUrl ? '<a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('footerBooking','預約導覽')) + '</a>' : '') +
       '<a href="?view=services">' + esc(ui('footerServices','服務項目')) + '</a><a href="?view=archives">' + esc(ui('footerPosts','所有文章')) + '</a><a href="?view=search">' + esc(ui('search','搜尋')) + '</a></div>';
@@ -580,7 +580,7 @@
     var V = C.visit, book = bookingUrl(svc);
     return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">' + esc(ui('bookOnline', '線上預約')) + '</a>' : '') +
       (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? ui('phone', '打電話') : ui('phone', '打電話') + ' ' + esc(V.phone)) + '</a>' : '') +
-      (V.line ? '<a class="btn line" href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
+      (V.line ? '<a class="btn line" href="' + esc(lineHref()) + '">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
       (V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
   }
 
@@ -737,7 +737,7 @@
       (V.phone ? '<a href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + esc(V.phone) + '</a><br>' : '') +
       (V.email ? '<a href="mailto:' + esc(V.email) + '">' + esc(V.email) + '</a><br>' : '') +
       (V.facebookUrl ? '<a href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">Facebook：' + esc(V.facebookLabel || '粉絲專頁') + '</a>' : '') +
-      (V.line ? '<br><a href="' + esc(lineHref()) + '" target="_blank" rel="noopener">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
+      (V.line ? '<br><a href="' + esc(lineHref()) + '">' + esc(ui('line','LINE 官方客服')) + (V.line.charAt(0) === '@' ? ' ' + esc(V.line) : '') + '</a>' : '') +
       (V.bookingUrl ? '<br><a href="' + esc(V.bookingUrl) + '" target="_blank" rel="noopener">' + esc(ui('bookingForm', '填寫預約表單')) + '</a>' : '') + '</p></div></div></section>';
   }
 
@@ -1331,5 +1331,6 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 

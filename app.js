@@ -370,7 +370,8 @@
       if (!Number.isSafeInteger(total)) { combined = false; total = base; }
       var label = combined ? S.label : S.historicalLabel || '舊站累計';
       box.innerHTML = '<span>' + esc([label, total.toLocaleString('zh-TW'), S.unit].filter(Boolean).join(' ')) + '</span>' +
-        (combined && S.breakdown ? '<small style="display:block">' + esc(template(S.breakdown,{base:base.toLocaleString('zh-TW'),live:live.toLocaleString('zh-TW')})) + '</small>' : '');
+        (combined && S.breakdown ? '<small style="display:block">' + esc(template(S.breakdown,{base:base.toLocaleString('zh-TW'),live:live.toLocaleString('zh-TW')})) + '</small>' : '') +
+        (S.mode === 'combined' && counterCode() && !trackingAllowed() ? '<small class="stats-host-note" style="display:block">' + esc(S.inactiveHostText == null ? '此網域不記錄點閱；正式網站開放後開始計數。' : S.inactiveHostText) + '</small>' : '');
     }
     draw(null);
     var code = counterCode();
@@ -384,7 +385,8 @@
   function configureBrandAndHouse() {
     var B = C.brand || {}, H = C.hero || {}, F = C.footer || {};
     var logo = ContentSettings.imagePath(B.logo), icon = ContentSettings.imagePath(B.icon);
-    if (logo) $('#brand').innerHTML = '<img class="brand-logo" src="' + esc(logo) + '" alt="' + esc(B.logoAlt || '') + '"><span>' + esc(C.org) + '</span>';
+    $('#brand').classList.toggle('brand-with-logo', !!logo);
+    if (logo) $('#brand').innerHTML = '<img class="brand-logo" src="' + esc(logo) + '" alt="' + esc(B.logoAlt || '') + '" width="56" height="50" loading="eager" decoding="async"><span class="brand-text">' + esc(C.org) + '</span>';
     var siteIcon = $('#siteIcon');
     if (siteIcon) { if (icon) { siteIcon.href = icon; siteIcon.removeAttribute('type'); } else siteIcon.removeAttribute('href'); }
     var entry = $('.heritage-entry'), label = $('.heritage-entry-label'), picture = $('.heritage-image');
@@ -1329,4 +1331,5 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 

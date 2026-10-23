@@ -87,7 +87,7 @@
 @media(min-width:900px){.mast{flex-wrap:wrap}.nav{gap:4px 18px}}
 @media(max-width:899px){.mast .brand{font-size:17px;flex:1;min-width:0;white-space:normal}.mast .menu-btn{flex-shrink:0}}
 
-.brand-logo{width:56px;height:50px;object-fit:contain;flex:none;margin-right:10px;vertical-align:middle}.brand:has(.brand-logo){display:flex;align-items:center}
+.brand-logo{width:56px;height:50px;object-fit:contain;flex:none;margin-right:10px;vertical-align:middle}.brand.brand-with-logo{display:flex;align-items:center}
 .tile-txt .tile-icon{position:static;display:block;width:30px;height:30px;object-fit:contain;margin-bottom:8px;opacity:1}
 .covers.issues-covers{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:16px;min-height:0;height:auto;align-items:start}
 .issue{margin:0;min-width:0}.issue img{width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:contain}.issue figcaption{font-size:13px;line-height:1.6;margin-top:8px;color:inherit}
@@ -96,3 +96,25 @@
 
 
 @media(max-width:899px){.brand-logo{width:44px;height:40px;margin-right:8px}}
+
+
+/* 原站細線 Logo：手機固定顯示較大的圖框，名稱可換行。 */
+.mast .brand.brand-with-logo{display:flex;align-items:center;gap:10px;min-width:0}
+.mast .brand-with-logo .brand-logo{display:block;flex-shrink:0;margin-right:0;opacity:1;visibility:visible}
+.mast .brand-text{min-width:0;white-space:normal}
+@media(max-width:899px){
+ .mast .brand-with-logo .brand-logo{width:64px;height:58px;flex:0 0 64px}
+ .mast .brand.brand-with-logo{gap:10px;align-items:center}
+ .mast .brand-text{flex:1 1 0;line-height:1.45;text-wrap:balance;overflow-wrap:anywhere}
+}
+
+/* 協會全名維持一行：以手機頁首留白、Logo 圖框與選單寬度配合。 */
+@media(max-width:899px){
+ .topbar>.wrap{width:calc(100% - 24px)}
+ .mast{gap:6px}
+ .mast .brand{display:flex;align-items:center;gap:6px;font-size:clamp(14px,4.3vw,17px);white-space:nowrap;min-width:0;flex:1 1 auto}
+ .mast .brand.brand-with-logo{gap:6px}
+ .mast .brand .brand-logo{display:block;visibility:visible;opacity:1;width:clamp(52px,16vw,64px);height:clamp(47px,14.5vw,58px);flex:0 0 clamp(52px,16vw,64px);margin:0}
+ .mast .brand>span,.mast .brand .brand-text{white-space:nowrap;word-break:keep-all;overflow-wrap:normal;text-wrap:nowrap;flex:0 0 auto;line-height:1.45}
+ .mast .menu-btn{min-width:48px;padding:6px 10px;font-size:14px;flex-shrink:0}
+}

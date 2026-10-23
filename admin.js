@@ -136,6 +136,7 @@
     s.statistics = s.statistics || {show:false,historicalViews:0,label:'累計點閱',unit:'次點閱'};
     if (!s.statistics.mode) s.statistics.mode='combined';
     if (!Array.isArray(s.statistics.allowedHosts)) s.statistics.allowedHosts=[];
+    if (s.statistics.inactiveHostText == null) s.statistics.inactiveHostText='此網域不記錄點閱；正式網站開放後開始計數。';
     if (!s.statistics.historicalLabel) s.statistics.historicalLabel='舊站累計';
     if (s.statistics.countEveryPageview == null) s.statistics.countEveryPageview=true;
     var icon = document.querySelector("#adminIcon"), iconPath = ContentSettings.imagePath(s.brand.icon);
@@ -902,6 +903,7 @@
       inp('site.statistics.mode','顯示方式',{select:[['combined','歷史基數＋新站實際點閱'],['historical','只顯示舊站歷史紀錄']]}) +
       inp('site.goatcounter','GoatCounter 站台代碼',{hint:'例如 mysite.goatcounter.com 填 mysite。另需在 GoatCounter 啟用 Allow adding visitor counts on your website。'}) +
       inp('site.statistics.allowedHosts','開始記錄點閱的網域（每行一個）',{lines:true,full:true,hint:'填 hs30.org.tw 與 www.hs30.org.tw，可避免 GitHub 測試流量混入。留空將不限制網域。'}) +
+      inp('site.statistics.inactiveHostText','未計數網域的說明（可留空）',{full:true}) +
       chk('site.statistics.countEveryPageview','每次實際載入頁面均計一次（點閱次數，非不重複訪客）') +
       inp('site.statistics.label','累計標題') + inp('site.statistics.historicalLabel','舊站紀錄標題') + inp('site.statistics.unit','單位') +
       inp('site.statistics.breakdown','數字來源說明（可用 {base}、{live}）',{full:true}) + '</div></div>' +
@@ -1198,4 +1200,5 @@
     $('#login').hidden = false;
   })();
 })();
+
 

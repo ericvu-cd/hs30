@@ -256,7 +256,7 @@
   // 已經匯入管理程式的 WordPress 文章（媒體報導），不在文章列表重複出現
   function hideImported(posts) {
     var ids = {};
-    (D.media || []).forEach(function (x) { if (x.wpId) ids[x.wpId] = 1; });
+    (D.media || []).concat(D.shanhaiji || []).forEach(function (x) { if (x.wpId) ids[x.wpId] = 1; });
     return posts.filter(function (p) { return !ids[p.id]; });
   }
 
@@ -612,9 +612,9 @@
   function shanhaijiHtml(sec) {
     var S = C.shanhaiji || {};
     return '<section class="band" id="shanhaiji" aria-labelledby="sH"><div class="wrap band-in"><div class="covers issues-covers">' +
-      (S.issues || []).filter(function (issue) { return !issue.hidden; }).map(function (issue) {
-        var image = img(issue.image, 800), href = ContentSettings.linkPath(issue.href), tag = href ? 'a' : 'div';
-        return '<figure class="issue"><' + tag + (href ? ' href="' + esc(href) + '"' : '') + '>' + (image ? '<img src="' + esc(image) + '" alt="' + esc(issue.alt || '') + '" loading="lazy">' : '') + '</' + tag + '><figcaption>' + esc(issue.title) + '</figcaption></figure>';
+      shown(D.shanhaiji).map(function (issue) {
+        var image = img(issue.cover, 800), href = issueUrl(issue), tag = href ? 'a' : 'div';
+        return '<figure class="issue"><' + tag + (href ? ' href="' + esc(href) + '"' : '') + '>' + (image ? '<img src="' + esc(image) + '" alt="' + esc(issue.coverAlt || '') + '" loading="lazy">' : '') + '</' + tag + '><figcaption>' + esc(issue.cardTitle || issue.title) + '</figcaption></figure>';
       }).join('') + '</div><div><h2 id="sH">' + esc((sec && sec.title) || '《山海集》') + '</h2><p>' + esc(S.text) + '</p><div class="btns">' +
       (S.buyUrl ? '<a class="btn" href="' + esc(ContentSettings.linkPath(S.buyUrl)) + '" target="_blank" rel="noopener">' + esc(S.buyText || '購買') + '</a>' : '') +
       (S.blogUrl ? '<a class="btn ghost" href="' + esc(ContentSettings.linkPath(S.blogUrl)) + '" target="_blank" rel="noopener">' + esc(S.blogText || '閱讀部落格') + '</a>' : '') +
@@ -794,6 +794,8 @@
       (list.length ? '<div class="feed">' + mediaListHtml(list) + '</div>' : '<p class="c-empty">' + esc(ui('emptyMedia', '目前還沒有媒體報導。')) + '</p>') + '</div>';
   }
   function renderMediaDetail(slug) {
+    var issue = shown(D.shanhaiji).filter(function (x) { return x.slug === slug || (x.legacyMediaSlugs || []).indexOf(slug) >= 0; })[0];
+    if (issue) return renderIssueDetail(issue.slug);
     var x = findBy(D.media, slug);
     if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, '報導'); }
     setTitle(x.title, x.summary || C.description);
@@ -807,6 +809,23 @@
       (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><div class="ph t2" style="aspect-ratio:16/9"><img data-ph="1" src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" decoding="async" referrerpolicy="no-referrer"></div></div>' : '') +
       '<div class="prose">' + (x.summary && !body ? '<p>' + esc(x.summary) + '</p>' : '') + '<div class="entry">' + body + '</div>' +
       (x.url ? '<p style="margin-top:28px"><a class="btn" href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(ui('mediaOriginal','閱讀原始報導')) + (x.outlet ? '（' + esc(x.outlet) + '）' : '') + '</a></p>' : '') +
+      '<div class="art-foot">' + shareHtml(x.title, share) + '</div></div></div></article>';
+  }
+
+  function issueUrl(x) { return q({issue:x.slug || x.title}); }
+  function renderIssueDetail(slug) {
+    var x = findBy(D.shanhaiji, slug);
+    if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, '山海集'); }
+    setTitle(x.title, x.summary || C.description);
+    var cover = img(x.cover, 1600), body = clean(x.body || '');
+    var first = (body.match(/<img[^>]+src="([^"]+)"/) || [])[1];
+    var share = location.origin + location.pathname + issueUrl(x);
+    view.innerHTML = '<article class="wrap art"><a class="back" href="?view=shanhaiji">' + esc(ui('allIssues','所有山海集')) + '</a><div class="art-grid">' +
+      '<header class="art-head"><div class="meta"><span>' + esc(ui('issueLabel','山海集')) + '</span>' + (x.date ? '<time datetime="' + esc(x.date) + '">' + longDate(x.date) + '</time>' : '') +
+      '</div><h1>' + esc(x.title) + '</h1></header>' +
+      (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><img src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" style="display:block;width:100%;max-height:640px;object-fit:contain" decoding="async"></div>' : '') +
+      '<div class="prose">' + (x.summary && !body ? '<p>' + esc(x.summary) + '</p>' : '') + '<div class="entry">' + body + '</div>' + galleryHtml(x.gallery) +
+      (x.url ? '<p><a class="btn" href="' + esc(ContentSettings.linkPath(x.url)) + '" target="_blank" rel="noopener">' + esc(ui('issueReadMore','延伸閱讀')) + '</a></p>' : '') +
       '<div class="art-foot">' + shareHtml(x.title, share) + '</div></div></div></article>';
   }
 
@@ -1125,6 +1144,7 @@
     };
     shown(D.services).filter(has).forEach(function (x) { out.push(['協會服務', x.title, serviceUrl(x)]); });
     shown(D.towns).filter(has).forEach(function (x) { out.push(['社區人文', x.title, townUrl(x)]); });
+    shown(D.shanhaiji).filter(has).forEach(function (x) { out.push([ui('issueLabel','山海集'), x.title, issueUrl(x)]); });
     mediaSorted().filter(has).forEach(function (x) { out.push(['媒體報導', x.title, mediaUrl(x)]); });
     shown(D.videos).filter(has).forEach(function (x) { out.push(['影片', x.title, '?view=videos']); });
     if (!out.length) return '';
@@ -1226,6 +1246,8 @@
   // 已經用管理程式搬過來的 WordPress 頁面，舊連結改顯示新頁面
   function importedTarget(idOrSlug) {
     var hit = function (x) { return x && (String(x.wpId) === idOrSlug || (x.wpSlug && decodeSlug(x.wpSlug) === idOrSlug)); };
+    var issue = shown(D.shanhaiji).filter(hit)[0];
+    if (issue) return function () { renderIssueDetail(issue.slug || issue.title); };
     var m = shown(D.media).filter(hit)[0];
     if (m) return function () { renderMediaDetail(m.slug || m.title); };
     var s = shown(D.services).filter(hit)[0];
@@ -1244,6 +1266,7 @@
     if (g('view') === 'towns') return renderIndex('towns');
     if (g('view') === 'videos') return renderVideos();
     if (g('view') === 'shanhaiji') { setTitle('山海集'); view.innerHTML = shanhaijiHtml(sectionConf('shanhaiji')); return; }
+    if (g('issue')) return renderIssueDetail(g('issue'));
     if (g('media')) return renderMediaDetail(g('media'));
     if (g('view') === 'media') return renderMediaIndex();
     var post = g('p') || g('name');
@@ -1297,7 +1320,7 @@
         return r.json();
       });
     };
-    var names = ['site', 'services', 'towns', 'videos', 'events', 'media'];
+    var names = ['site', 'services', 'towns', 'videos', 'events', 'media', 'shanhaiji'];
     return Promise.all(names.map(function (n) {
       return get(n).catch(function (e) { if (n === 'site') throw e; console.warn(e); return []; });
     })).then(function (r) { names.forEach(function (n, i) { D[n] = r[i]; }); });
@@ -1331,6 +1354,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

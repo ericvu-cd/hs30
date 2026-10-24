@@ -167,63 +167,10 @@
   },
   "shanhaiji": {
     "text": "協會自 2018 年創刊的地方刊物，介紹在地文化、歷史風俗與人物故事，至今持續發行，已出版到第七期。近年的主題包括飲食、地名與地方信仰。",
-    "covers": [
-      "2024 小鎮眾神會",
-      "2023 秋季號・走尋地方名",
-      "2022 秋季號",
-      "2021 秋季號・南青故事",
-      "2020 秋季特刊・金秋別冊",
-      "2020 夏季號",
-      "2018 創刊號"
-    ],
     "buyUrl": "https://www.huansiaeshop.com/",
     "buyText": "到好事集市購買",
     "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
-    "blogText": "閱讀部落格",
-    "issues": [
-      {
-        "title": "2024 小鎮眾神會",
-        "image": "uploads/2026/10/wp-6623701479baf71c4662.jpg",
-        "alt": "2024 小鎮眾神會封面",
-        "href": "?media=2024%E5%B1%B1%E6%B5%B7%E9%9B%86-%E5%B0%8F%E9%8E%AE%E7%9C%BE%E7%A5%9E%E6%9C%83"
-      },
-      {
-        "title": "2023 秋季號・走尋地方名",
-        "image": "uploads/2026/10/shanhaiji-1dd90ec769aafc07.jpeg",
-        "alt": "2023 秋季號・走尋地方名封面",
-        "href": "?media=2023%E5%B1%B1%E6%B5%B7%E9%9B%86%E7%A7%8B%E5%AD%A3%E8%99%9F"
-      },
-      {
-        "title": "2022 秋季號",
-        "image": "uploads/2026/10/shanhaiji-32d101824e627fc1.png",
-        "alt": "2022 秋季號封面",
-        "href": "?media=2022%E5%B1%B1%E6%B5%B7%E9%9B%86%E7%A7%8B%E5%AD%A3%E8%99%9F"
-      },
-      {
-        "title": "2021 秋季號・南青故事",
-        "image": "uploads/2026/10/shanhaiji-695012e75b296fb6.jpg",
-        "alt": "2021 秋季號・南青故事封面",
-        "href": "?media=%E5%85%AC%E5%91%8A%EF%BC%9A%E5%B1%B1%E6%B5%B7%E9%9B%862021%E7%A7%8B%E5%AD%A3%E8%99%9F"
-      },
-      {
-        "title": "2020 秋季特刊・金秋別冊",
-        "image": "uploads/2026/10/shanhaiji-a280c6fa364503c4.jpg",
-        "alt": "2020 秋季特刊・金秋別冊封面",
-        "href": "?media=%E5%B1%B1%E6%B5%B7%E9%9B%862020%E7%A7%8B%E5%AD%A3%E8%99%9F%E7%89%B9%E5%88%8A"
-      },
-      {
-        "title": "2020 夏季號",
-        "image": "uploads/2026/10/shanhaiji-0604b2a5a838148b.jpg",
-        "alt": "2020 夏季號封面",
-        "href": "?media=%E5%B1%B1%E6%B5%B7%E9%9B%862020%E5%A4%8F%E5%AD%A3%E8%99%9F"
-      },
-      {
-        "title": "2018 創刊號",
-        "image": "uploads/2026/10/shanhaiji-6e1bc848e9f174da.jpg",
-        "alt": "山海集2018創刊號封面",
-        "href": "?media=2018%E5%B1%B1%E6%B5%B7%E9%9B%86%E5%89%B5%E5%88%8A%E8%99%9F"
-      }
-    ]
+    "blogText": "閱讀部落格"
   },
   "importedVideoPages": [
     {

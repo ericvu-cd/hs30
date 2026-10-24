@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var FILES = ['site', 'services', 'towns', 'videos', 'events', 'media'];
+  var FILES = ['site', 'services', 'towns', 'videos', 'events', 'media', 'shanhaiji'];
   var GH = 'https://api.github.com';
   var auth = null;          // { owner, repo, token, branch }
   var state = {};           // 目前編輯中的資料
@@ -153,13 +153,13 @@
     if (s.hero.illustrationLabels == null) s.hero.illustrationLabels = true;
     s.featuredCategories = s.featuredCategories || [];
     s.importedVideoPages = s.importedVideoPages || [];
-    ['services', 'towns', 'videos', 'events', 'media'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
+    ['services', 'towns', 'videos', 'events', 'media', 'shanhaiji'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
     // 媒體報導改由管理程式管理：舊的「WordPress 分類」選單項目換成新的媒體報導頁
     s.nav.forEach(function (n) { if (n.type === 'category' && n.target === '媒體報導') { n.type = 'media'; delete n.target; } });
     s.sections.forEach(function (x) { if (x.key === 'media') delete x.category; });
     s.featuredCategories = s.featuredCategories.filter(function (c) { return c !== '媒體報導'; });
     migrateLayout(s);
-    state.services.concat(state.towns).forEach(function (x) { x.gallery = x.gallery || []; });
+    state.services.concat(state.towns, state.shanhaiji).forEach(function (x) { x.gallery = x.gallery || []; });
     // 舊版資料沒有「媒體報導」段落時補上
     if (!s.sections.some(function (x) { return x.key === 'media'; })) {
       var at = s.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
@@ -209,8 +209,8 @@
 
   function validate() {
     var errs = VisitHours.validate(state.site.visit || {});
-    ['services', 'towns', 'media'].forEach(function (k) {
-      var name = { services: '服務', towns: '社區', media: '媒體報導' }[k];
+    ['services', 'towns', 'media', 'shanhaiji'].forEach(function (k) {
+      var name = { services: '服務', towns: '社區', media: '媒體報導', shanhaiji:'山海集' }[k];
       var seen = {};
       state[k].forEach(function (x, i) {
         if (!x.title) errs.push(name + '第 ' + (i + 1) + ' 項沒有名稱。');
@@ -278,7 +278,7 @@
       });
     }).then(function (t) {
       tree = t;
-      var what = changed.map(function (f) { return { site: '網站設定', services: '服務', towns: '社區', videos: '影片', events: '活動', media: '媒體報導' }[f]; });
+      var what = changed.map(function (f) { return { site: '網站設定', services: '服務', towns: '社區', videos: '影片', events: '活動', media: '媒體報導', shanhaiji:'山海集' }[f]; });
       if (Object.keys(pending).length) what.push('照片 ' + Object.keys(pending).length + ' 張');
       if (Object.keys(removed).length) what.push('刪除照片 ' + Object.keys(removed).length + ' 張');
       return gh(repoPath() + '/git/commits', { method: 'POST', body: { message: '管理程式：更新' + what.join('、'), tree: tree.sha, parents: [cur] } });
@@ -531,7 +531,7 @@
       var done = {};
       state.services.concat(state.towns).forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
       state.site.importedVideoPages.forEach(function (p) { done[p.id] = 1; });
-      state.media.forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
+      state.media.concat(state.shanhaiji).forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
       var tmp = document.createElement('div');
       var t = function (h) { tmp.innerHTML = h; return tmp.textContent; };
       $('#dlgBody').innerHTML = '<p class="muted">' + (target === 'videos'
@@ -893,13 +893,34 @@
   }
 
   function viewShanhaiji() {
-    return head('山海集', '刊物介紹、封面照片、期別與各期連結。') + '<div class="panel"><div class="grid2">' +
-      inp('site.shanhaiji.text', '介紹文字', {textarea:true,full:true}) + inp('site.shanhaiji.buyText','購買按鈕文字') + inp('site.shanhaiji.buyUrl','購買連結') +
+    var list = state.shanhaiji;
+    if (editing && editing.list === 'shanhaiji' && list[editing.i]) {
+      var i = editing.i, x = list[i], p = 'shanhaiji.' + i;
+      var live = (saved.shanhaiji || []).some(function (s) { return s.slug === x.slug; });
+      return head(x.cardTitle || x.title || '新增一期山海集', '封面、期別與完整內文都在這裡編輯，發布後更新網站。') +
+        '<div class="row-acts"><button class="btn" type="button" data-act="back">← 回到山海集</button>' +
+        (live ? '<a class="btn" href="./?issue=' + encodeURIComponent(x.slug) + '" target="_blank" rel="noopener">在網站上看</a>' : '') + '</div>' +
+        '<div class="panel"><h2>期別與封面</h2><div class="grid2">' +
+        inp(p + '.cardTitle','期別名稱（封面下方）') + inp(p + '.title','內容頁標題') +
+        inp(p + '.slug','網址代稱',{hint:'建立後盡量不要修改，避免已分享的新連結失效。'}) + inp(p + '.date','出版日期',{type:'date'}) +
+        inp(p + '.summary','內容摘要',{textarea:true,full:true}) + imgField(p + '.cover','刊物封面') + inp(p + '.coverAlt','封面替代文字') +
+        chk(p + '.hidden','暫時隱藏這一期') + '</div></div>' +
+        '<div class="panel"><h2>各期內文</h2>' + richHtml(p + '.body') + '</div>' +
+        '<div class="panel"><h2>補充照片與說明</h2>' + galleryField(p + '.gallery') + '</div>' +
+        '<div class="panel">' + inp(p + '.url','延伸閱讀連結（選填）') + '</div>' +
+        '<div class="row-acts"><button class="btn" type="button" data-act="back">← 回到山海集</button><button class="btn danger" type="button" data-act="delIssue" data-i="' + i + '">刪除此期</button></div>';
+    }
+    return head('山海集', '獨立管理各期刊物。按「編輯內容」修改封面、內文及照片；按箭頭調整網站的顯示順序。') +
+      '<div class="panel"><h2>刊物整體介紹</h2><div class="grid2">' +
+      inp('site.shanhaiji.text','介紹文字',{textarea:true,full:true}) + inp('site.shanhaiji.buyText','購買按鈕文字') + inp('site.shanhaiji.buyUrl','購買連結') +
       inp('site.shanhaiji.blogText','第二個按鈕文字') + inp('site.shanhaiji.blogUrl','第二個按鈕連結') + '</div></div>' +
-      state.site.shanhaiji.issues.map(function(x,i){var p='site.shanhaiji.issues.'+i;return '<div class="panel"><div class="acts">'+moveBtns('site.shanhaiji.issues',i)+
-      '<button class="btn danger small" type="button" data-act="delRow" data-list="site.shanhaiji.issues" data-i="'+i+'">刪除</button></div><div class="grid2">'+
-      inp(p+'.title','期別標題')+inp(p+'.href','本期連結')+imgField(p+'.image','刊物封面')+inp(p+'.alt','封面替代文字')+'</div></div>';}).join('')+
-      '<button class="btn" type="button" data-act="addIssue">＋ 新增一期</button>';
+      '<button class="btn primary" type="button" data-act="addIssue">＋ 新增一期</button>' +
+      '<div class="list">' + list.map(function (x, i) {
+        return '<div class="item"><div class="item-main">' + (x.cover ? '<img class="thumb" src="' + esc(imgSrc(x.cover)) + '" alt="">' : '') +
+          '<div class="item-body"><div class="title">' + esc(x.cardTitle || x.title || '（未命名）') + (x.hidden ? '<span class="badge off">隱藏中</span>' : '') +
+          '</div><div class="sub">' + esc(x.title || '') + '</div></div></div><div class="acts">' + moveBtns('shanhaiji',i) +
+          '<button class="btn small" type="button" data-act="editIssue" data-i="' + i + '">編輯內容</button></div></div>';
+      }).join('') + '</div>';
   }
 
   function viewBasic() {
@@ -1081,7 +1102,13 @@
         break;
       case 'move': move(t.getAttribute('data-list'), i, +t.getAttribute('data-d')); break;
       case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',hidden:false}); render(); break;
-      case 'addIssue': state.site.shanhaiji.issues.push({title:'新一期',image:'',alt:'',href:''}); render(); break;
+      case 'editIssue': editing = {list:'shanhaiji',i:i}; render(); window.scrollTo(0,0); break;
+      case 'addIssue':
+        state.shanhaiji.push({title:'新一期山海集',cardTitle:'新一期',slug:'',date:'',summary:'',cover:'',coverAlt:'',body:'',gallery:[],url:'',hidden:false});
+        editing = {list:'shanhaiji',i:state.shanhaiji.length-1}; render(); window.scrollTo(0,0); break;
+      case 'delIssue':
+        if (!window.confirm('確定刪除這一期山海集？發布後才會更新網站。')) return;
+        state.shanhaiji.splice(i,1); editing=null; render(); break;
       case 'addVideo': state.videos.unshift({ title: '', url: '', description: '', hidden: false }); render(); break;
       case 'addClosure':
         var date = new Date(Date.now() + 28800000).toISOString().slice(0, 10);
@@ -1120,7 +1147,7 @@
       case 'restore': restore(t.getAttribute('data-sha')); break;
       case 'reload': $('#dlg').close(); boot(); break;
     }
-    if (act !== 'edit' && act !== 'back') markDirty();
+    if (act !== 'edit' && act !== 'editIssue' && act !== 'back') markDirty();
   });
 
   // 清單拖曳排序
@@ -1226,6 +1253,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

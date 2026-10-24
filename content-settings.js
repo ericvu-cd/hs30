@@ -32,7 +32,7 @@
         var url = new URL(input), current = new URL(base || (root.location && root.location.href) || 'https://example.invalid/');
         var folder = new URL('.', current).pathname;
         if (url.origin === current.origin && url.pathname.indexOf(folder) === 0) return './' + url.pathname.slice(folder.length) + url.search + url.hash;
-        if (/\.github\.io$/i.test(url.hostname) && /[?&](p|name|view|service|town|media|page_id|category_name|tag|s)=/.test(url.search)) return url.search + url.hash;
+        if (/\.github\.io$/i.test(url.hostname) && /[?&](p|name|view|service|town|media|issue|page_id|category_name|tag|s)=/.test(url.search)) return url.search + url.hash;
         return url.href;
       } catch (e) { return ''; }
     }
@@ -103,3 +103,15 @@ ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[["skip", "跳到�
 
 ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[["searchIntro", "搜尋頁說明", "輸入關鍵字，找文章。"], ["searchPlaceholder", "搜尋欄位範例", "例如：金紙、慈裕宮、手抄紙"], ["searchLabel", "搜尋欄位替代標籤", "搜尋關鍵字"], ["searchResultsTitle", "搜尋結果標題（{term} 為關鍵字）", "搜尋「{term}」"], ["searchResultsLabel", "搜尋結果標籤", "搜尋結果"], ["localResultsTitle", "站內搜尋結果標題", "網站頁面"], ["archivesIntro", "文章總覽說明（{count} 為篇數）", "共 {count} 篇，由新到舊排列。"], ["subscriptionFallback", "訂閱備用連結文字", "到 WordPress 訂閱 Email 通知"], ["copyDone", "複製成功提示", "已複製連結"], ["postEmpty", "尚無文章說明", "這裡目前沒有文章。"]]);
 ContentSettings.defaults.ui={"serviceMore": "了解與預約", "allServices": "所有服務", "allTowns": "所有社區", "allMedia": "所有媒體報導", "allPosts": "看所有文章", "allVideos": "看所有影片", "mediaOriginal": "閱讀原始報導", "more": "看更多", "related": "相關紀錄", "bookingNotes": "預約須知", "upcoming": "近期場次", "otherServices": "其他服務", "audience": "適合對象", "duration": "所需時間", "capacity": "人數", "fee": "費用", "bookOnline": "線上預約", "phone": "打電話", "facebook": "Facebook 私訊", "line": "LINE 詢問", "email": "Email 詢問", "map": "在地圖上看", "address": "地址", "hours": "開放時間", "contact": "聯絡", "bookingForm": "填寫預約表單", "menu": "選單", "close": "關閉", "search": "搜尋", "empty": "目前沒有內容。", "emptyMedia": "目前還沒有媒體報導。", "emptyVideos": "目前還沒有影片。", "openStatus": "現在開放中，今天到 {time}", "closedStatus": "目前休館，{day} {time} 開放", "playVideo": "播放：{title}", "previousImage": "上一張", "nextImage": "下一張", "share": "分享", "copyLink": "複製連結", "comments": "留言", "writeComment": "我要留言", "commentHint": "會開啟原網站的留言表單，填暱稱和 Email 就能留言。送出後回到這裡重新整理，就會看到你的留言（有些留言需要審核後才會顯示）。", "commentsClosed": "這篇文章已關閉留言。", "noComments": "還沒有人留言，留下第一則吧。", "commentUnavailable": "暫時讀不到留言，請稍後重新整理。", "skip": "跳到主要內容", "footerFacebook": "Facebook", "footerBooking": "預約導覽", "footerServices": "服務項目", "footerPosts": "所有文章", "searchIntro": "輸入關鍵字，找文章。", "searchPlaceholder": "例如：金紙、慈裕宮、手抄紙", "searchLabel": "搜尋關鍵字", "searchResultsTitle": "搜尋「{term}」", "searchResultsLabel": "搜尋結果", "localResultsTitle": "網站頁面", "archivesIntro": "共 {count} 篇，由新到舊排列。", "subscriptionFallback": "到 WordPress 訂閱 Email 通知", "copyDone": "已複製連結", "postEmpty": "這裡目前沒有文章。"};
+
+
+// Periodicals are stored independently in data/shanhaiji.json.
+ContentSettings.defaults.shanhaiji.issues = [];
+ContentSettings.uiFields.push.apply(ContentSettings.uiFields, [
+  ['allIssues','山海集返回連結','所有山海集'],
+  ['issueLabel','山海集內容頁分類文字','山海集'],
+  ['issueReadMore','山海集延伸閱讀按鈕','延伸閱讀']
+]);
+ContentSettings.defaults.ui.allIssues = '所有山海集';
+ContentSettings.defaults.ui.issueLabel = '山海集';
+ContentSettings.defaults.ui.issueReadMore = '延伸閱讀';

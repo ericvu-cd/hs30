@@ -744,34 +744,28 @@
   // 依台北時間顯示現在是否開放
   function updateOpenStatus() {
     var els = $$('[data-status]');
-    if (!els.length) return;
-    var msg = '', open = false;
-    try {
-      var V = C.visit;
-      var toMin = function (t) { var a = t.split(':'); return +a[0] * 60 + +a[1]; };
-      var o = toMin(V.open), c = toMin(V.close);
-      var parts = {};
-      new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
-        .formatToParts(new Date()).forEach(function (x) { parts[x.type] = x.value; });
-      var d = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[parts.weekday];
-      var m = (+parts.hour % 24) * 60 + +parts.minute;
-      var names = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
-      var days = (V.openDays || []).map(Number);
-      if (days.indexOf(d) >= 0 && m >= o && m < c) {
-        open = true;
-        msg = template(ui('openStatus', '現在開放中，今天到 {time}'), {time:V.close.replace(/^0/, '')});
-      } else {
-        for (var i = 0; i <= 7; i++) {
-          var dd = (d + i) % 7;
-          if (days.indexOf(dd) < 0 || (i === 0 && m >= o)) continue;
-          msg = template(ui('closedStatus', '目前休館，{day} {time} 開放'), {day:i === 0 ? '今天' : i === 1 ? '明天' : names[dd],time:V.open.replace(/^0/, '')});
-          break;
-        }
-      }
-    } catch (e) { msg = ''; }
+    if (!els.length || !C || !C.visit) return;
+    var state = VisitHours.status(C.visit);
+    var now = Date.now(), today = new Date(now + 28800000).toISOString().slice(0, 10);
+    function clock(n) {
+      return new Intl.DateTimeFormat('zh-TW', {timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(n));
+    }
+    function nextText(n) {
+      var day = new Date(n + 28800000).toISOString().slice(0, 10);
+      var tomorrow = new Date(now + 28800000 + 86400000).toISOString().slice(0, 10);
+      var label = day === today ? '今天' : day === tomorrow ? '明天' : new Intl.DateTimeFormat('zh-TW', {timeZone:'Asia/Taipei',month:'numeric',day:'numeric',weekday:'short',year:'numeric'}).format(new Date(n));
+      return template(ui('closedStatus', '目前休館，{day} {time} 開放'), {day:label,time:clock(n)});
+    }
+    var msg;
+    if (state.open) msg = template(ui('openStatus', '現在開放中，今天到 {time}'), {time:clock(state.until)});
+    else if (state.exceptional) {
+      msg = ui('temporaryClosedStatus', '臨時休館') + (state.reason ? '：' + state.reason : '');
+      if (state.next) msg += '。' + nextText(state.next);
+      else if ((C.visit.temporaryClosure || {}).active) msg += '。' + ui('reopeningPending', '恢復開放時間另行公告');
+    } else msg = state.next ? nextText(state.next) : ui('closedNoSchedule', '目前休館，開放時間請洽協會');
     els.forEach(function (el) {
-      if (!msg) { el.hidden = true; return; }
-      el.classList.toggle('open', open);
+      el.hidden = false;
+      el.classList.toggle('open', state.open);
       el.querySelector('.status-text').textContent = msg;
     });
   }
@@ -1309,6 +1303,9 @@
     })).then(function (r) { names.forEach(function (n, i) { D[n] = r[i]; }); });
   }
 
+  // Keep an already-open page correct when a closure begins or ends.
+  setInterval(function () { if (C && C.visit) updateOpenStatus(); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && C && C.visit) updateOpenStatus(); });
   bindInteractions();
   if (!window.fetch || !window.Promise) {
     view.innerHTML = '<div class="wrap err"><h1>瀏覽器版本太舊</h1><p>請更新瀏覽器後再開啟。</p></div>';
@@ -1334,6 +1331,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

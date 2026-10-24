@@ -145,6 +145,8 @@
     s.sections = s.sections || [];
     s.nav = s.nav || [];
     s.visit = s.visit || {};
+    if (!Array.isArray(s.visit.closures)) s.visit.closures = [];
+    s.visit.temporaryClosure = s.visit.temporaryClosure || {active:false,reason:''};
     s.shanhaiji = s.shanhaiji || {};
     s.hero = s.hero || {};
     delete s.exploreImages;
@@ -206,7 +208,7 @@
   /* ---------- 發布 ---------- */
 
   function validate() {
-    var errs = [];
+    var errs = VisitHours.validate(state.site.visit || {});
     ['services', 'towns', 'media'].forEach(function (k) {
       var name = { services: '服務', towns: '社區', media: '媒體報導' }[k];
       var seen = {};
@@ -857,6 +859,22 @@
       }).join('') + '</div>';
   }
 
+  function closureSettings() {
+    var rows = state.site.visit.closures || [];
+    return '<div class="panel"><h2>臨時休館與指定期間</h2><p class="muted">全部採台灣時間，優先於每週固定開放時間。儲存或匯出後，仍需依原本方式發布至網站才會生效。</p>' +
+      chk('site.visit.temporaryClosure.active', '立即休館，直到手動解除（優先於所有日期設定）') +
+      inp('site.visit.temporaryClosure.reason', '立即休館原因（選填）', {placeholder:'例如：颱風影響，暫停開放'}) +
+      '<h3>指定期間休館</h3><p class="muted">可設定單日、多日或部分時段。整天休館請設當天 00:00 至隔天 00:00；到達結束時間即恢復原本時段。保留已到期紀錄不會影響開放。</p>' +
+      rows.map(function (x, i) {
+        var p = 'site.visit.closures.' + i;
+        return '<div class="panel"><div class="grid2">' +
+          inp(p + '.start', '休館開始（台灣時間）', {type:'datetime-local'}) +
+          inp(p + '.end', '休館結束（台灣時間）', {type:'datetime-local'}) +
+          inp(p + '.reason', '休館原因（選填）', {full:true,placeholder:'例如：場地維修'}) +
+          '</div><button class="btn danger small" type="button" data-act="delRow" data-list="site.visit.closures" data-i="' + i + '">刪除此休館設定</button></div>';
+      }).join('') + '<button class="btn" type="button" data-act="addClosure">＋ 新增休館期間</button></div>';
+  }
+
   function viewVisit() {
     var days = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
     var on = state.site.visit.openDays || [];
@@ -866,6 +884,7 @@
       }).join('') + '</div><div class="grid3">' + inp('site.visit.openText', '開放日文字', { placeholder: '週三至週日' }) +
       inp('site.visit.open', '開門時間', { type: 'time' }) + inp('site.visit.close', '關門時間', { type: 'time' }) + '</div>' +
       '<p class="muted">網站會依台北時間自動顯示「現在開放中」或「目前休館」。</p></div>' +
+      closureSettings() +
       '<div class="panel"><h2>地址與交通</h2><div class="grid2">' + inp('site.visit.address', '地址', { full: true }) +
       inp('site.visit.transport', '交通方式（選填）', { textarea: true, full: true, rows: 3 }) + '</div></div>' +
       '<div class="panel"><h2>聯絡與預約</h2><div class="grid2">' + inp('site.visit.phone', '電話') + inp('site.visit.email', 'Email', { type: 'email' }) +
@@ -896,6 +915,7 @@
 
   function viewContent() {
     return head('圖示與介面說明', '圖示從照片庫選取；按鈕、提示與頁尾文字在這裡設定。') +
+      '<div class="panel"><h2>休館狀態文字</h2><div class="grid2">' + inp('site.ui.temporaryClosedStatus','臨時休館標題',{placeholder:'臨時休館'}) + inp('site.ui.reopeningPending','未定恢復時間提示',{placeholder:'恢復開放時間另行公告'}) + inp('site.ui.closedNoSchedule','未設定開放日提示',{placeholder:'目前休館，開放時間請洽協會'}) + '</div></div>' +
       '<div class="panel"><h2>品牌與播放圖示</h2><div class="grid2">' + imgField('site.brand.logo','左上角標誌（留空顯示協會名稱）') + inp('site.brand.logoAlt','標誌替代文字') +
       imgField('site.brand.icon','瀏覽器分頁圖示') + imgField('site.visuals.playIcon','影片播放圖示（留空使用標準三角形）') + imgField('site.visuals.videoFallback','尚未設定影片封面時的預設圖') + state.site.visuals.placeholders.map(function(x,i){return imgField('site.visuals.placeholders.'+i+'.image','缺圖背景紋樣 '+(i+1));}).join('') + '</div></div>' +
       '<div class="panel"><h2>點閱統計與歷史基數</h2><p class="muted">累計＝搬站前基數＋GoatCounter 新站實際點閱。未填代碼或讀取失敗時只顯示舊站紀錄。公開數字可能因供應商快取延遲最多四小時。</p><div class="grid2">' +
@@ -1063,6 +1083,12 @@
       case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',hidden:false}); render(); break;
       case 'addIssue': state.site.shanhaiji.issues.push({title:'新一期',image:'',alt:'',href:''}); render(); break;
       case 'addVideo': state.videos.unshift({ title: '', url: '', description: '', hidden: false }); render(); break;
+      case 'addClosure':
+        var date = new Date(Date.now() + 28800000).toISOString().slice(0, 10);
+        var nextDate = new Date(Date.parse(date + 'T00:00:00+08:00') + 86400000 + 28800000).toISOString().slice(0, 10);
+        state.site.visit.closures.push({start:date + 'T00:00',end:nextDate + 'T00:00',reason:''});
+        render();
+        break;
       case 'addEvent': state.events.unshift({ title: '', date: today(), end: '', time: '', place: '陳家古厝', note: '', link: '', service: '' }); render(); break;
       case 'sortEvents': state.events.sort(function (a, b) { return (a.date || '') < (b.date || '') ? -1 : 1; }); render(); break;
       case 'clearPast':
@@ -1200,5 +1226,6 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 

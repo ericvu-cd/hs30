@@ -907,7 +907,7 @@
         chk(p + '.hidden','暫時隱藏這一期') + '</div></div>' +
         '<div class="panel"><h2>各期內文</h2>' + richHtml(p + '.body') + '</div>' +
         '<div class="panel"><h2>補充照片與說明</h2>' + galleryField(p + '.gallery') + '</div>' +
-        '<div class="panel">' + inp(p + '.url','延伸閱讀連結（選填）') + '</div>' +
+        '<div class="panel"><h2>本期相關連結</h2><div class="grid2">' + inp(p + '.buyUrl','購買本期連結（選填）',{hint:'填商品頁網址；留空不顯示購買按鈕。'}) + inp(p + '.readingUrl','電子版／延伸閱讀連結（選填）',{hint:'填本期電子版或補充閱讀網址；留空不顯示。'}) + '</div></div>' +
         '<div class="row-acts"><button class="btn" type="button" data-act="back">← 回到山海集</button><button class="btn danger" type="button" data-act="delIssue" data-i="' + i + '">刪除此期</button></div>';
     }
     return head('山海集', '獨立管理各期刊物。按「編輯內容」修改封面、內文及照片；按箭頭調整網站的顯示順序。') +
@@ -1104,7 +1104,7 @@
       case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',hidden:false}); render(); break;
       case 'editIssue': editing = {list:'shanhaiji',i:i}; render(); window.scrollTo(0,0); break;
       case 'addIssue':
-        state.shanhaiji.push({title:'新一期山海集',cardTitle:'新一期',slug:'',date:'',summary:'',cover:'',coverAlt:'',body:'',gallery:[],url:'',hidden:false});
+        state.shanhaiji.push({title:'新一期山海集',cardTitle:'新一期',slug:'',date:'',summary:'',cover:'',coverAlt:'',body:'',gallery:[],buyUrl:'',readingUrl:'',hidden:false});
         editing = {list:'shanhaiji',i:state.shanhaiji.length-1}; render(); window.scrollTo(0,0); break;
       case 'delIssue':
         if (!window.confirm('確定刪除這一期山海集？發布後才會更新網站。')) return;
@@ -1253,6 +1253,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

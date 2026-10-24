@@ -57,7 +57,7 @@
           obj[key] = value.replace(/(<img\b[^>]*\bsrc\s*=\s*)(["'])(.*?)\2/gi, function (all, before, quote, src) {
             return before + quote + (imagePath(src) || src) + quote;
           });
-        } else if (/^(href|link|bookingUrl|mapUrl|buyUrl|blogUrl|url)$/.test(key) && typeof value === 'string') {
+        } else if (/^(href|link|bookingUrl|mapUrl|buyUrl|readingUrl|blogUrl|url)$/.test(key) && typeof value === 'string') {
           obj[key] = linkPath(value);
         } else walk(value, key);
       });
@@ -110,8 +110,13 @@ ContentSettings.defaults.shanhaiji.issues = [];
 ContentSettings.uiFields.push.apply(ContentSettings.uiFields, [
   ['allIssues','山海集返回連結','所有山海集'],
   ['issueLabel','山海集內容頁分類文字','山海集'],
-  ['issueReadMore','山海集延伸閱讀按鈕','延伸閱讀']
+  ['issueReadMore','山海集電子版／延伸閱讀按鈕','電子版／延伸閱讀'],
+  ['issueBuy','山海集購買按鈕','購買本期'],
+  ['otherIssues','其他期刊連結標題','其他期山海集']
 ]);
 ContentSettings.defaults.ui.allIssues = '所有山海集';
 ContentSettings.defaults.ui.issueLabel = '山海集';
-ContentSettings.defaults.ui.issueReadMore = '延伸閱讀';
+ContentSettings.defaults.ui.issueReadMore = '電子版／延伸閱讀';
+ContentSettings.defaults.ui.issueBuy = '購買本期';
+ContentSettings.defaults.ui.otherIssues = '其他期山海集';
+

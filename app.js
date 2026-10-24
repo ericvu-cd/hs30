@@ -813,6 +813,25 @@
   }
 
   function issueUrl(x) { return q({issue:x.slug || x.title}); }
+  function issueActionsHtml(x) {
+    var buy = ContentSettings.linkPath(x.buyUrl || ''), read = ContentSettings.linkPath(x.readingUrl || '');
+    if (!buy && !read) return '';
+    return '<div class="issue-actions">' +
+      (buy ? '<a class="btn" href="' + esc(buy) + '" target="_blank" rel="noopener">' + esc(ui('issueBuy','購買本期')) + '</a>' : '') +
+      (read ? '<a class="btn" href="' + esc(read) + '" target="_blank" rel="noopener">' + esc(ui('issueReadMore','電子版／延伸閱讀')) + '</a>' : '') + '</div>';
+  }
+  function otherIssuesHtml(current) {
+    var list = shown(D.shanhaiji).filter(function (x) { return x.slug !== current.slug; });
+    if (!list.length) return '';
+    return '<nav class="issue-related" aria-labelledby="otherIssuesTitle"><h2 id="otherIssuesTitle">' + esc(ui('otherIssues','其他期山海集')) + '</h2>' +
+      '<div class="issue-related-grid">' + list.map(function (x) {
+        var cover = img(x.cover, 480);
+        return '<a class="issue-related-card" href="' + esc(issueUrl(x)) + '">' +
+          (cover ? '<img src="' + esc(cover) + '" alt="' + esc(x.coverAlt || x.cardTitle || x.title) + '" loading="lazy" decoding="async">' : '') +
+          '<span>' + esc(x.cardTitle || x.title) + '</span></a>';
+      }).join('') + '</div></nav>';
+  }
+
   function renderIssueDetail(slug) {
     var x = findBy(D.shanhaiji, slug);
     if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, '山海集'); }
@@ -825,8 +844,8 @@
       '</div><h1>' + esc(x.title) + '</h1></header>' +
       (cover && imageKey(cover) !== imageKey(first) ? '<div class="art-cover"><img src="' + esc(cover) + '" alt="' + esc(x.coverAlt || '') + '" style="display:block;width:100%;max-height:640px;object-fit:contain" decoding="async"></div>' : '') +
       '<div class="prose">' + (x.summary && !body ? '<p>' + esc(x.summary) + '</p>' : '') + '<div class="entry">' + body + '</div>' + galleryHtml(x.gallery) +
-      (x.url ? '<p><a class="btn" href="' + esc(ContentSettings.linkPath(x.url)) + '" target="_blank" rel="noopener">' + esc(ui('issueReadMore','延伸閱讀')) + '</a></p>' : '') +
-      '<div class="art-foot">' + shareHtml(x.title, share) + '</div></div></div></article>';
+      issueActionsHtml(x) +
+      '<div class="art-foot">' + shareHtml(x.title, share) + '</div>' + otherIssuesHtml(x) + '</div></div></article>';
   }
 
   /* ---------- 服務、社區、影片 ---------- */
@@ -1354,6 +1373,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

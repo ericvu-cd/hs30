@@ -821,15 +821,19 @@
       (read ? '<a class="btn" href="' + esc(read) + '" target="_blank" rel="noopener">' + esc(ui('issueReadMore','電子版／延伸閱讀')) + '</a>' : '') + '</div>';
   }
   function otherIssuesHtml(current) {
-    var list = shown(D.shanhaiji).filter(function (x) { return x.slug !== current.slug; });
-    if (!list.length) return '';
+    var list = shown(D.shanhaiji), at = list.map(function (x) { return x.slug; }).indexOf(current.slug);
+    var neighbors = [];
+    if (at > 0) neighbors.push({item:list[at - 1],label:ui('previousIssue','前一期'),rel:'prev'});
+    if (at >= 0 && at + 1 < list.length) neighbors.push({item:list[at + 1],label:ui('nextIssue','後一期'),rel:'next'});
     return '<nav class="issue-related" aria-labelledby="otherIssuesTitle"><h2 id="otherIssuesTitle">' + esc(ui('otherIssues','其他期山海集')) + '</h2>' +
-      '<div class="issue-related-grid">' + list.map(function (x) {
-        var cover = img(x.cover, 480);
-        return '<a class="issue-related-card" href="' + esc(issueUrl(x)) + '">' +
+      (neighbors.length ? '<div class="issue-related-grid">' + neighbors.map(function (neighbor) {
+        var x = neighbor.item, cover = img(x.cover, 480);
+        return '<a class="issue-related-card" rel="' + neighbor.rel + '" href="' + esc(issueUrl(x)) + '">' +
+          '<small>' + esc(neighbor.label) + '</small>' +
           (cover ? '<img src="' + esc(cover) + '" alt="' + esc(x.coverAlt || x.cardTitle || x.title) + '" loading="lazy" decoding="async">' : '') +
           '<span>' + esc(x.cardTitle || x.title) + '</span></a>';
-      }).join('') + '</div></nav>';
+      }).join('') + '</div>' : '') +
+      '<p class="issue-all"><a class="btn" href="?view=shanhaiji">' + esc(ui('allIssueLink','看全部山海集')) + '</a></p></nav>';
   }
 
   function renderIssueDetail(slug) {
@@ -1373,6 +1377,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

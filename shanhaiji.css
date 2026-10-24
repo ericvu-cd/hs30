@@ -2,9 +2,13 @@
 .issue-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}
 .issue-related{margin-top:40px;padding-top:28px;border-top:1px solid var(--line,#ccc)}
 .issue-related h2{margin:0 0 20px;font-size:1.35rem}
-.issue-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 16px}
+.issue-related-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px}
 .issue-related-card{display:flex;flex-direction:column;gap:10px;min-width:0;text-decoration:none;line-height:1.6;font-size:14px;font-weight:700}
 .issue-related-card img{display:block;width:100%;height:180px;object-fit:contain;margin:0}
 .issue-related-card:hover span{text-decoration:underline;text-underline-offset:4px}
 .issue-related-card:focus-visible{outline:2px solid currentColor;outline-offset:5px}
 @media(max-width:600px){.issue-related-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}.issue-related-card img{height:170px}}
+
+.issue-related-card small{font-size:13px;font-weight:400}
+.issue-all{margin-top:24px}
+

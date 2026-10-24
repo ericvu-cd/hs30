@@ -120,3 +120,9 @@ ContentSettings.defaults.ui.issueReadMore = '電子版／延伸閱讀';
 ContentSettings.defaults.ui.issueBuy = '購買本期';
 ContentSettings.defaults.ui.otherIssues = '其他期山海集';
 
+
+ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[['previousIssue','山海集前一期標籤','前一期'],['nextIssue','山海集後一期標籤','後一期'],['allIssueLink','山海集完整列表按鈕','看全部山海集']]);
+ContentSettings.defaults.ui.previousIssue='前一期';
+ContentSettings.defaults.ui.nextIssue='後一期';
+ContentSettings.defaults.ui.allIssueLink='看全部山海集';
+

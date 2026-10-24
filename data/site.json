@@ -1,359 +1,393 @@
 {
- "name": "番社參拾",
- "org": "苗栗縣在地文化推廣協會",
- "tagline": "老屋裡的在地學",
- "description": "苗栗縣在地文化推廣協會以竹南中港的陳家古厝（番社30號）為據點，提供文化導覽、藝文策展、古厝市集與在地教育。",
- "wordpressSite": "huansia30.home.blog",
- "wordpressBlogId": "",
- "goatcounter": "hs30",
- "hero": {
-  "primaryText": "看服務項目",
-  "secondaryText": "預約導覽",
-  "image": "",
-  "illustration": "uploads/2026/10/chen-house-place.png",
-  "illustrationLabels": true,
-  "illustrationAlt": "陳家古厝，灰綠色正廳雙門、灰色中庭與門外紅磚地。",
-  "entryText": "走進陳家古厝 · 讀老屋的故事",
-  "entryHref": "?p=3320",
-  "note": "文化導覽、展覽與工藝體驗，從這座老屋出發。",
-  "lintel": "潁川堂",
-  "leftPlaque": "陳家古厝",
-  "rightPlaque": "蕃社參拾",
-  "leftYear": "2015",
-  "rightYear": "1937",
-  "primaryHref": "?view=services",
-  "secondaryHref": "",
-  "photoAlt": "陳家古厝文化推廣據點"
- },
- "sections": [
-  {
-   "key": "about",
-   "show": true,
-   "title": "關於番社參拾",
-   "intro": ""
+  "name": "番社參拾",
+  "org": "苗栗縣在地文化推廣協會",
+  "tagline": "老屋裡的在地學",
+  "description": "苗栗縣在地文化推廣協會以竹南中港的陳家古厝（番社30號）為據點，提供文化導覽、藝文策展、古厝市集與在地教育。",
+  "wordpressSite": "huansia30.home.blog",
+  "wordpressBlogId": "",
+  "goatcounter": "hs30",
+  "hero": {
+    "primaryText": "看服務項目",
+    "secondaryText": "預約導覽",
+    "image": "",
+    "illustration": "uploads/2026/10/chen-house-place.png",
+    "illustrationLabels": true,
+    "illustrationAlt": "陳家古厝，灰綠色正廳雙門、灰色中庭與門外紅磚地。",
+    "entryText": "走進陳家古厝 · 讀老屋的故事",
+    "entryHref": "?p=3320",
+    "note": "文化導覽、展覽與工藝體驗，從這座老屋出發。",
+    "lintel": "潁川堂",
+    "leftPlaque": "陳家古厝",
+    "rightPlaque": "蕃社參拾",
+    "leftYear": "2015",
+    "rightYear": "1937",
+    "primaryHref": "?view=services",
+    "secondaryHref": "",
+    "photoAlt": "陳家古厝文化推廣據點"
   },
-  {
-   "key": "services",
-   "show": true,
-   "title": "協會的服務",
-   "intro": "以陳家古厝為據點，做導覽、展覽、課程與市集。"
-  },
-  {
-   "key": "booking",
-   "show": true,
-   "title": "預約與到訪",
-   "intro": "團體導覽與手作課程請先預約，我們會回覆可安排的時間。"
-  },
-  {
-   "key": "events",
-   "show": true,
-   "title": "近期活動",
-   "intro": ""
-  },
-  {
-   "key": "explore",
-   "show": true,
-   "title": "探索更多",
-   "intro": ""
-  },
-  {
-   "key": "posts",
-   "show": false,
-   "title": "活動紀錄與在地觀察",
-   "intro": ""
-  },
-  {
-   "key": "media",
-   "show": false,
-   "title": "媒體報導",
-   "intro": "報章、電視與網路媒體對協會與陳家古厝的報導。",
-   "count": 3
-  },
-  {
-   "key": "towns",
-   "show": false,
-   "title": "小鎮社區人文",
-   "intro": "走訪竹南沿海與中港周邊的社區，認識各地的人與故事。"
-  },
-  {
-   "key": "shanhaiji",
-   "show": false,
-   "title": "《山海集》",
-   "intro": ""
-  },
-  {
-   "key": "videos",
-   "show": false,
-   "title": "影片精選",
-   "intro": ""
-  },
-  {
-   "key": "visit",
-   "show": false,
-   "title": "到訪陳家古厝",
-   "intro": ""
-  }
- ],
- "homePostCount": 4,
- "perPage": 12,
- "featuredCategories": [
-  "在地微觀",
-  "文史記錄",
-  "最新消息",
-  "故事工坊",
-  "公告訊息",
-  "活動記實"
- ],
- "nav": [
-  {
-   "label": "服務項目",
-   "type": "auto-services"
-  },
-  {
-   "label": "社區人文",
-   "type": "auto-towns"
-  },
-  {
-   "label": "影片精選",
-   "type": "videos"
-  },
-  {
-   "label": "紀錄文章",
-   "type": "posts"
-  },
-  {
-   "label": "媒體報導",
-   "type": "media"
-  },
-  {
-   "label": "預約與到訪",
-   "type": "visit"
-  },
-  {
-   "label": "搜尋",
-   "type": "search"
-  }
- ],
- "visit": {
-  "address": "苗栗縣竹南鎮中港里番社30號",
-  "openDays": [
-   0,
-   3,
-   4,
-   5,
-   6
+  "sections": [
+    {
+      "key": "about",
+      "show": true,
+      "title": "關於番社參拾",
+      "intro": ""
+    },
+    {
+      "key": "services",
+      "show": true,
+      "title": "協會的服務",
+      "intro": "以陳家古厝為據點，做導覽、展覽、課程與市集。"
+    },
+    {
+      "key": "booking",
+      "show": true,
+      "title": "預約與到訪",
+      "intro": "團體導覽與手作課程請先預約，我們會回覆可安排的時間。"
+    },
+    {
+      "key": "events",
+      "show": true,
+      "title": "近期活動",
+      "intro": ""
+    },
+    {
+      "key": "explore",
+      "show": true,
+      "title": "探索更多",
+      "intro": ""
+    },
+    {
+      "key": "posts",
+      "show": false,
+      "title": "活動紀錄與在地觀察",
+      "intro": ""
+    },
+    {
+      "key": "media",
+      "show": false,
+      "title": "媒體報導",
+      "intro": "報章、電視與網路媒體對協會與陳家古厝的報導。",
+      "count": 3
+    },
+    {
+      "key": "towns",
+      "show": false,
+      "title": "小鎮社區人文",
+      "intro": "走訪竹南沿海與中港周邊的社區，認識各地的人與故事。"
+    },
+    {
+      "key": "shanhaiji",
+      "show": false,
+      "title": "《山海集》",
+      "intro": ""
+    },
+    {
+      "key": "videos",
+      "show": false,
+      "title": "影片精選",
+      "intro": ""
+    },
+    {
+      "key": "visit",
+      "show": false,
+      "title": "到訪陳家古厝",
+      "intro": ""
+    }
   ],
-  "openText": "週三至週日",
-  "open": "09:00",
-  "close": "16:30",
-  "phone": "0953-118-143",
-  "email": "cnhuansia30@gmail.com",
-  "facebookLabel": "蕃社30",
-  "facebookUrl": "https://www.facebook.com/huansia",
-  "line": "@701zmxgz",
-  "bookingUrl": "",
-  "transport": "",
-  "closures": [
-   {
-    "start": "2026-10-23T09:00",
-    "end": "2026-10-24T16:30",
-    "reason": "颱風影響"
-   }
+  "homePostCount": 4,
+  "perPage": 12,
+  "featuredCategories": [
+    "在地微觀",
+    "文史記錄",
+    "最新消息",
+    "故事工坊",
+    "公告訊息",
+    "活動記實"
   ],
-  "temporaryClosure": {
-   "active": false,
-   "reason": ""
-  }
- },
- "shanhaiji": {
-  "text": "協會自 2018 年創刊的地方刊物，介紹在地文化、歷史風俗與人物故事，至今持續發行，已出版到第七期。近年的主題包括飲食、地名與地方信仰。",
-  "covers": [
-   "2020 夏季號",
-   "2022 秋季號",
-   "2024 小鎮眾神會"
+  "nav": [
+    {
+      "label": "服務項目",
+      "type": "auto-services"
+    },
+    {
+      "label": "社區人文",
+      "type": "auto-towns"
+    },
+    {
+      "label": "影片精選",
+      "type": "videos"
+    },
+    {
+      "label": "紀錄文章",
+      "type": "posts"
+    },
+    {
+      "label": "媒體報導",
+      "type": "media"
+    },
+    {
+      "label": "預約與到訪",
+      "type": "visit"
+    },
+    {
+      "label": "搜尋",
+      "type": "search"
+    }
   ],
-  "buyUrl": "https://www.huansiaeshop.com/",
-  "buyText": "到好事集市購買",
-  "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
-  "blogText": "閱讀部落格",
-  "issues": [
-   {
-    "title": "2022 秋季號",
-    "image": "uploads/2026/10/wp-32d101824e627fc1a7b4.jpg",
-    "alt": "山海集2022秋季號封面",
-    "href": "?media=2022%E5%B1%B1%E6%B5%B7%E9%9B%86%E7%A7%8B%E5%AD%A3%E8%99%9F"
-   },
-   {
-    "title": "2024 小鎮眾神會",
-    "image": "uploads/2026/10/wp-6623701479baf71c4662.jpg",
-    "alt": "山海集2024小鎮眾神會封面",
-    "href": "?media=2024%E5%B1%B1%E6%B5%B7%E9%9B%86-%E5%B0%8F%E9%8E%AE%E7%9C%BE%E7%A5%9E%E6%9C%83"
-   }
-  ]
- },
- "importedVideoPages": [
-  {
-   "id": 592,
-   "slug": "%e5%bd%b1%e7%89%87%e7%b2%be%e9%81%b8"
-  }
- ],
- "layoutVersion": 3,
- "brand": {
-  "logo": "uploads/2026/10/fanshe30-logo.png",
-  "logoAlt": "蕃社30 No.30 Huan Siá",
-  "icon": "uploads/2026/10/fanshe30-site-icon.png"
- },
- "visuals": {
-  "playIcon": "",
-  "videoFallback": "uploads/2026/10/video-placeholder.svg",
-  "placeholders": [
-   {
-    "image": "uploads/2026/10/placeholder-1.svg"
-   },
-   {
-    "image": "uploads/2026/10/placeholder-2.svg"
-   },
-   {
-    "image": "uploads/2026/10/placeholder-3.svg"
-   }
-  ]
- },
- "exploreCards": [
-  {
-   "key": "towns",
-   "title": "社區人文",
-   "description": "{towns} 個社區",
-   "href": "?view=towns",
-   "cover": "uploads/2026/10/wp-41d8fa39bacd9c4085a5.jpg",
-   "coverAlt": "社區人文",
-   "icon": "",
-   "hidden": false
+  "visit": {
+    "address": "苗栗縣竹南鎮中港里番社30號",
+    "openDays": [
+      0,
+      3,
+      4,
+      5,
+      6
+    ],
+    "openText": "週三至週日",
+    "open": "09:00",
+    "close": "16:30",
+    "phone": "0953-118-143",
+    "email": "cnhuansia30@gmail.com",
+    "facebookLabel": "蕃社30",
+    "facebookUrl": "https://www.facebook.com/huansia",
+    "line": "@701zmxgz",
+    "bookingUrl": "",
+    "transport": "",
+    "closures": [
+      {
+        "start": "2026-10-23T09:00",
+        "end": "2026-10-24T16:30",
+        "reason": "颱風影響"
+      }
+    ],
+    "temporaryClosure": {
+      "active": false,
+      "reason": ""
+    }
   },
-  {
-   "key": "media",
-   "title": "媒體報導",
-   "description": "{media} 則報導",
-   "href": "?view=media",
-   "cover": "uploads/2026/10/wp-6623701479baf71c4662.jpg",
-   "coverAlt": "媒體報導",
-   "icon": "",
-   "hidden": false
+  "shanhaiji": {
+    "text": "協會自 2018 年創刊的地方刊物，介紹在地文化、歷史風俗與人物故事，至今持續發行，已出版到第七期。近年的主題包括飲食、地名與地方信仰。",
+    "covers": [
+      "2024 小鎮眾神會",
+      "2023 秋季號・走尋地方名",
+      "2022 秋季號",
+      "2021 秋季號・南青故事",
+      "2020 秋季特刊・金秋別冊",
+      "2020 夏季號",
+      "2018 創刊號"
+    ],
+    "buyUrl": "https://www.huansiaeshop.com/",
+    "buyText": "到好事集市購買",
+    "blogUrl": "https://shanhaiji2020summer.blogspot.com/",
+    "blogText": "閱讀部落格",
+    "issues": [
+      {
+        "title": "2024 小鎮眾神會",
+        "image": "uploads/2026/10/wp-6623701479baf71c4662.jpg",
+        "alt": "2024 小鎮眾神會封面",
+        "href": "?media=2024%E5%B1%B1%E6%B5%B7%E9%9B%86-%E5%B0%8F%E9%8E%AE%E7%9C%BE%E7%A5%9E%E6%9C%83"
+      },
+      {
+        "title": "2023 秋季號・走尋地方名",
+        "image": "uploads/2026/10/shanhaiji-1dd90ec769aafc07.jpeg",
+        "alt": "2023 秋季號・走尋地方名封面",
+        "href": "?media=2023%E5%B1%B1%E6%B5%B7%E9%9B%86%E7%A7%8B%E5%AD%A3%E8%99%9F"
+      },
+      {
+        "title": "2022 秋季號",
+        "image": "uploads/2026/10/shanhaiji-32d101824e627fc1.png",
+        "alt": "2022 秋季號封面",
+        "href": "?media=2022%E5%B1%B1%E6%B5%B7%E9%9B%86%E7%A7%8B%E5%AD%A3%E8%99%9F"
+      },
+      {
+        "title": "2021 秋季號・南青故事",
+        "image": "uploads/2026/10/shanhaiji-695012e75b296fb6.jpg",
+        "alt": "2021 秋季號・南青故事封面",
+        "href": "?media=%E5%85%AC%E5%91%8A%EF%BC%9A%E5%B1%B1%E6%B5%B7%E9%9B%862021%E7%A7%8B%E5%AD%A3%E8%99%9F"
+      },
+      {
+        "title": "2020 秋季特刊・金秋別冊",
+        "image": "uploads/2026/10/shanhaiji-a280c6fa364503c4.jpg",
+        "alt": "2020 秋季特刊・金秋別冊封面",
+        "href": "?media=%E5%B1%B1%E6%B5%B7%E9%9B%862020%E7%A7%8B%E5%AD%A3%E8%99%9F%E7%89%B9%E5%88%8A"
+      },
+      {
+        "title": "2020 夏季號",
+        "image": "uploads/2026/10/shanhaiji-0604b2a5a838148b.jpg",
+        "alt": "2020 夏季號封面",
+        "href": "?media=%E5%B1%B1%E6%B5%B7%E9%9B%862020%E5%A4%8F%E5%AD%A3%E8%99%9F"
+      },
+      {
+        "title": "2018 創刊號",
+        "image": "uploads/2026/10/shanhaiji-6e1bc848e9f174da.jpg",
+        "alt": "山海集2018創刊號封面",
+        "href": "?media=2018%E5%B1%B1%E6%B5%B7%E9%9B%86%E5%89%B5%E5%88%8A%E8%99%9F"
+      }
+    ]
   },
-  {
-   "key": "videos",
-   "title": "影片精選",
-   "description": "{videos} 部影片",
-   "href": "?view=videos",
-   "cover": "uploads/2026/10/video-oVmCUXji8nA.jpg",
-   "coverAlt": "影片精選",
-   "icon": "",
-   "hidden": false
-  },
-  {
-   "key": "shanhaiji",
-   "title": "《山海集》",
-   "description": "協會的地方刊物",
-   "href": "?view=shanhaiji",
-   "cover": "uploads/2026/10/explore-shanhaiji.jpg",
-   "coverAlt": "《山海集》2022 秋季號封面",
-   "icon": "",
-   "hidden": false
-  },
-  {
-   "key": "archives",
-   "title": "紀錄文章",
-   "description": "活動紀錄與在地觀察",
-   "href": "?view=archives",
-   "cover": "uploads/2026/10/explore-archives.jpg",
-   "coverAlt": "在地文化紀錄",
-   "icon": "",
-   "hidden": false
-  }
- ],
- "footer": {
-  "subscribeTitle": "訂閱新文章",
-  "subscribeIntro": "留下 Email，有新文章時會寄信通知你。",
-  "subscribeHint": "訂閱由 WordPress.com 處理，需要到信箱點確認信。",
-  "subscribeButton": "訂閱",
-  "subscribePlaceholder": "你的 Email",
-  "contactTitle": "聯絡協會",
-  "copyright": "© {year} {org}"
- },
- "ui": {
-  "serviceMore": "了解與預約",
-  "allServices": "所有服務",
-  "allTowns": "所有社區",
-  "allMedia": "所有媒體報導",
-  "allPosts": "看所有文章",
-  "allVideos": "看所有影片",
-  "mediaOriginal": "閱讀原始報導",
-  "more": "看更多",
-  "related": "相關紀錄",
-  "bookingNotes": "預約須知",
-  "upcoming": "近期場次",
-  "otherServices": "其他服務",
-  "audience": "適合對象",
-  "duration": "所需時間",
-  "capacity": "人數",
-  "fee": "費用",
-  "bookOnline": "線上預約",
-  "phone": "打電話",
-  "facebook": "Facebook 私訊",
-  "line": "LINE 官方客服",
-  "email": "Email 詢問",
-  "map": "在地圖上看",
-  "address": "地址",
-  "hours": "開放時間",
-  "contact": "聯絡",
-  "bookingForm": "填寫預約表單",
-  "menu": "選單",
-  "close": "關閉",
-  "search": "搜尋",
-  "empty": "目前沒有內容。",
-  "emptyMedia": "目前還沒有媒體報導。",
-  "emptyVideos": "目前還沒有影片。",
-  "openStatus": "現在開放中，今天到 {time}",
-  "closedStatus": "目前休館，{day} {time} 開放",
-  "playVideo": "播放：{title}",
-  "previousImage": "上一張",
-  "nextImage": "下一張",
-  "share": "分享",
-  "copyLink": "複製連結",
-  "comments": "留言",
-  "writeComment": "我要留言",
-  "commentHint": "會開啟原網站的留言表單，填暱稱和 Email 就能留言。送出後回到這裡重新整理，就會看到你的留言（有些留言需要審核後才會顯示）。",
-  "commentsClosed": "這篇文章已關閉留言。",
-  "noComments": "還沒有人留言，留下第一則吧。",
-  "commentUnavailable": "暫時讀不到留言，請稍後重新整理。",
-  "skip": "跳到主要內容",
-  "footerFacebook": "Facebook",
-  "footerBooking": "預約導覽",
-  "footerServices": "服務項目",
-  "footerPosts": "所有文章",
-  "searchIntro": "輸入關鍵字，找文章。",
-  "searchPlaceholder": "例如：金紙、慈裕宮、手抄紙",
-  "searchLabel": "搜尋關鍵字",
-  "searchResultsTitle": "搜尋「{term}」",
-  "searchResultsLabel": "搜尋結果",
-  "localResultsTitle": "網站頁面",
-  "archivesIntro": "共 {count} 篇，由新到舊排列。",
-  "subscriptionFallback": "到 WordPress 訂閱 Email 通知",
-  "copyDone": "已複製連結",
-  "postEmpty": "這裡目前沒有文章。"
- },
- "statistics": {
-  "show": true,
-  "historicalViews": 132595,
-  "label": "累計點閱",
-  "unit": "次",
-  "mode": "combined",
-  "historicalLabel": "舊站累計點閱",
-  "breakdown": "舊站 {base} ＋ 新站 {live}",
-  "countEveryPageview": true,
-  "allowedHosts": [
-   "hs30.org.tw",
-   "www.hs30.org.tw"
+  "importedVideoPages": [
+    {
+      "id": 592,
+      "slug": "%e5%bd%b1%e7%89%87%e7%b2%be%e9%81%b8"
+    }
   ],
-  "inactiveHostText": "此網域不記錄點閱；正式網站開放後開始計數。"
- }
+  "layoutVersion": 3,
+  "brand": {
+    "logo": "uploads/2026/10/fanshe30-logo.png",
+    "logoAlt": "蕃社30 No.30 Huan Siá",
+    "icon": "uploads/2026/10/fanshe30-site-icon.png"
+  },
+  "visuals": {
+    "playIcon": "",
+    "videoFallback": "uploads/2026/10/video-placeholder.svg",
+    "placeholders": [
+      {
+        "image": "uploads/2026/10/placeholder-1.svg"
+      },
+      {
+        "image": "uploads/2026/10/placeholder-2.svg"
+      },
+      {
+        "image": "uploads/2026/10/placeholder-3.svg"
+      }
+    ]
+  },
+  "exploreCards": [
+    {
+      "key": "towns",
+      "title": "社區人文",
+      "description": "{towns} 個社區",
+      "href": "?view=towns",
+      "cover": "uploads/2026/10/wp-41d8fa39bacd9c4085a5.jpg",
+      "coverAlt": "社區人文",
+      "icon": "",
+      "hidden": false
+    },
+    {
+      "key": "media",
+      "title": "媒體報導",
+      "description": "{media} 則報導",
+      "href": "?view=media",
+      "cover": "uploads/2026/10/wp-6623701479baf71c4662.jpg",
+      "coverAlt": "媒體報導",
+      "icon": "",
+      "hidden": false
+    },
+    {
+      "key": "videos",
+      "title": "影片精選",
+      "description": "{videos} 部影片",
+      "href": "?view=videos",
+      "cover": "uploads/2026/10/video-oVmCUXji8nA.jpg",
+      "coverAlt": "影片精選",
+      "icon": "",
+      "hidden": false
+    },
+    {
+      "key": "shanhaiji",
+      "title": "《山海集》",
+      "description": "協會的地方刊物",
+      "href": "?view=shanhaiji",
+      "cover": "uploads/2026/10/explore-shanhaiji.jpg",
+      "coverAlt": "《山海集》2022 秋季號封面",
+      "icon": "",
+      "hidden": false
+    },
+    {
+      "key": "archives",
+      "title": "紀錄文章",
+      "description": "活動紀錄與在地觀察",
+      "href": "?view=archives",
+      "cover": "uploads/2026/10/explore-archives.jpg",
+      "coverAlt": "在地文化紀錄",
+      "icon": "",
+      "hidden": false
+    }
+  ],
+  "footer": {
+    "subscribeTitle": "訂閱新文章",
+    "subscribeIntro": "留下 Email，有新文章時會寄信通知你。",
+    "subscribeHint": "訂閱由 WordPress.com 處理，需要到信箱點確認信。",
+    "subscribeButton": "訂閱",
+    "subscribePlaceholder": "你的 Email",
+    "contactTitle": "聯絡協會",
+    "copyright": "© {year} {org}"
+  },
+  "ui": {
+    "serviceMore": "了解與預約",
+    "allServices": "所有服務",
+    "allTowns": "所有社區",
+    "allMedia": "所有媒體報導",
+    "allPosts": "看所有文章",
+    "allVideos": "看所有影片",
+    "mediaOriginal": "閱讀原始報導",
+    "more": "看更多",
+    "related": "相關紀錄",
+    "bookingNotes": "預約須知",
+    "upcoming": "近期場次",
+    "otherServices": "其他服務",
+    "audience": "適合對象",
+    "duration": "所需時間",
+    "capacity": "人數",
+    "fee": "費用",
+    "bookOnline": "線上預約",
+    "phone": "打電話",
+    "facebook": "Facebook 私訊",
+    "line": "LINE 官方客服",
+    "email": "Email 詢問",
+    "map": "在地圖上看",
+    "address": "地址",
+    "hours": "開放時間",
+    "contact": "聯絡",
+    "bookingForm": "填寫預約表單",
+    "menu": "選單",
+    "close": "關閉",
+    "search": "搜尋",
+    "empty": "目前沒有內容。",
+    "emptyMedia": "目前還沒有媒體報導。",
+    "emptyVideos": "目前還沒有影片。",
+    "openStatus": "現在開放中，今天到 {time}",
+    "closedStatus": "目前休館，{day} {time} 開放",
+    "playVideo": "播放：{title}",
+    "previousImage": "上一張",
+    "nextImage": "下一張",
+    "share": "分享",
+    "copyLink": "複製連結",
+    "comments": "留言",
+    "writeComment": "我要留言",
+    "commentHint": "會開啟原網站的留言表單，填暱稱和 Email 就能留言。送出後回到這裡重新整理，就會看到你的留言（有些留言需要審核後才會顯示）。",
+    "commentsClosed": "這篇文章已關閉留言。",
+    "noComments": "還沒有人留言，留下第一則吧。",
+    "commentUnavailable": "暫時讀不到留言，請稍後重新整理。",
+    "skip": "跳到主要內容",
+    "footerFacebook": "Facebook",
+    "footerBooking": "預約導覽",
+    "footerServices": "服務項目",
+    "footerPosts": "所有文章",
+    "searchIntro": "輸入關鍵字，找文章。",
+    "searchPlaceholder": "例如：金紙、慈裕宮、手抄紙",
+    "searchLabel": "搜尋關鍵字",
+    "searchResultsTitle": "搜尋「{term}」",
+    "searchResultsLabel": "搜尋結果",
+    "localResultsTitle": "網站頁面",
+    "archivesIntro": "共 {count} 篇，由新到舊排列。",
+    "subscriptionFallback": "到 WordPress 訂閱 Email 通知",
+    "copyDone": "已複製連結",
+    "postEmpty": "這裡目前沒有文章。"
+  },
+  "statistics": {
+    "show": true,
+    "historicalViews": 132595,
+    "label": "累計點閱",
+    "unit": "次",
+    "mode": "combined",
+    "historicalLabel": "舊站累計點閱",
+    "breakdown": "舊站 {base} ＋ 新站 {live}",
+    "countEveryPageview": true,
+    "allowedHosts": [
+      "hs30.org.tw",
+      "www.hs30.org.tw"
+    ],
+    "inactiveHostText": "此網域不記錄點閱；正式網站開放後開始計數。"
+  }
 }

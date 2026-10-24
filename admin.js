@@ -151,6 +151,11 @@
     s.hero = s.hero || {};
     delete s.exploreImages;
     if (s.hero.illustrationLabels == null) s.hero.illustrationLabels = true;
+    if (s.hero.lightEffects == null) s.hero.lightEffects = true;
+    if (s.hero.sunStrength == null) s.hero.sunStrength = 170;
+    if (s.hero.rayStrength == null) s.hero.rayStrength = 80;
+    if (s.hero.sunDuration == null) s.hero.sunDuration = 11;
+    if (s.hero.rayDuration == null) s.hero.rayDuration = 7;
     s.featuredCategories = s.featuredCategories || [];
     s.importedVideoPages = s.importedVideoPages || [];
     ['services', 'towns', 'videos', 'events', 'media', 'shanhaiji'].forEach(function (k) { if (!Array.isArray(state[k])) state[k] = []; });
@@ -808,6 +813,11 @@
       '<div class="panel"><h2>封面</h2><div class="grid2">' +
       imgField('site.hero.illustration', '古厝場域圖（首頁右側）') + inp('site.hero.illustrationAlt', '古厝圖的替代文字') +
       chk('site.hero.illustrationLabels', '顯示門額、門柱名稱與年份（留白插畫適用）') +
+      chk('site.hero.lightEffects','啟用古厝自然斜陽與柔和光束') +
+      inp('site.hero.sunStrength','自然斜陽強度（%）',{type:'number',hint:'預設170；0表示不顯示斜陽，最高300。'}) +
+      inp('site.hero.sunDuration','自然斜陽每輪秒數',{type:'number',hint:'預設11秒，與光束各自循環。'}) +
+      inp('site.hero.rayStrength','耶穌光強度（%）',{type:'number',hint:'預設80；0表示不顯示光束，最高200。'}) +
+      inp('site.hero.rayDuration','耶穌光每輪秒數',{type:'number',hint:'預設7秒，光束已加寬與柔化。'}) +
       inp('site.hero.lintel', '門額（正常閱讀順序，例如：潁川堂）') + inp('site.hero.leftPlaque', '左門柱文字') + inp('site.hero.leftYear', '左門柱年份') +
       inp('site.hero.rightPlaque', '右門柱文字') + inp('site.hero.rightYear', '右門柱年份') +
       inp('site.hero.entryText', '古厝故事入口文字') + inp('site.hero.entryHref', '古厝故事連結', {hint:'站內頁使用 ?p=3320 這類相對連結。'}) +
@@ -1253,6 +1263,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

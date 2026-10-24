@@ -428,6 +428,20 @@
     }
 
     (C.visuals.placeholders || []).forEach(function(x,i){var path=img(x.image);document.documentElement.style.setProperty('--placeholder-image-'+(i+1),path?'url("'+path+'")':'none');});
+    var houseLight = $('.heritage-light');
+    if (houseLight) {
+      var source = img(H.illustration, 1600);
+      houseLight.hidden = !source || H.lightEffects === false;
+      function lightValue(value, fallback, min, max) {
+        var n = Number(value == null || value === '' ? fallback : value);
+        return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+      }
+      houseLight.style.setProperty('--house-light-image', source ? 'url("' + source.replace(/"/g, '%22') + '")' : 'none');
+      houseLight.style.setProperty('--house-sun-strength', lightValue(H.sunStrength,170,0,300) / 100);
+      houseLight.style.setProperty('--house-ray-strength', lightValue(H.rayStrength,80,0,200) / 100);
+      houseLight.style.setProperty('--house-sun-duration', lightValue(H.sunDuration,11,1,120) + 's');
+      houseLight.style.setProperty('--house-ray-duration', lightValue(H.rayDuration,7,1,120) + 's');
+    }
     configureBrandAndHouse();
     renderHistoricalStats();
     var V = C.visit;
@@ -1377,6 +1391,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

@@ -396,7 +396,12 @@
       if (href) entry.setAttribute('href', href); else entry.removeAttribute('href');
       entry.setAttribute('aria-label', H.entryText || H.illustrationAlt || C.name);
     }
-    if (label) { label.textContent = H.entryText || ''; label.hidden = !H.entryText; }
+    if (label) {
+      label.textContent = H.entryText || '';
+      label.hidden = !H.entryText;
+      var storyHref = ContentSettings.linkPath(H.entryHref);
+      if (storyHref) label.setAttribute('href', storyHref); else label.removeAttribute('href');
+    }
     var note = $('.heritage-place-note');
     if (note) { note.textContent = H.note || ''; note.hidden = !H.note; }
     [['.heritage-lintel', Array.from(H.lintel || '').reverse().join('')], ['.heritage-plaque--left', H.leftPlaque], ['.heritage-plaque--right', H.rightPlaque], ['.heritage-year--left', H.leftYear], ['.heritage-year--right', H.rightYear]].forEach(function (pair) {
@@ -414,7 +419,8 @@
     $('#brand').textContent = C.org;
     $('#heroName').textContent = C.name;
     $('#heroTag').textContent = C.tagline;
-    $('#menuBtn').textContent = ui('menu','選單');
+    $('#menuBtn').innerHTML = '<span class="menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>';
+    $('#menuBtn').setAttribute('aria-label', ui('menu','選單'));
     $('.skip').textContent = ui('skip','跳到主要內容');
     // 首頁圖片都由 data/site.json 設定，沿用 ADMIN 的 uploads 照片庫。
     var houseImage = $('.heritage-image'), houseEntry = $('.heritage-entry'), H = C.hero || {};
@@ -487,7 +493,7 @@
       var setOpen = function (o) {
         document.body.classList.toggle('menu-open', o);
         mb.setAttribute('aria-expanded', o ? 'true' : 'false');
-        mb.textContent = o ? ui('close', '關閉') : ui('menu', '選單');
+        mb.setAttribute('aria-label', o ? ui('close', '關閉') : ui('menu', '選單'));
       };
       mb.addEventListener('click', function () { setOpen(!document.body.classList.contains('menu-open')); });
       nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
@@ -1416,6 +1422,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

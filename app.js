@@ -647,7 +647,7 @@
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'about') {
-          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p>' + (C.aboutPage ? '<p><a class="more" href="?view=about">' + esc(ui('aboutMore','認識協會與老屋的故事')) + '</a></p>' : '') + '</section>';
+          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p>' + '</section>';
         }
         if (k === 'services') {
           var sv = servicesHtml();
@@ -1416,6 +1416,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

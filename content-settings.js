@@ -126,3 +126,11 @@ ContentSettings.defaults.ui.previousIssue='前一期';
 ContentSettings.defaults.ui.nextIssue='後一期';
 ContentSettings.defaults.ui.allIssueLink='看全部山海集';
 
+
+
+ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[
+ ['aboutTitle','關於我們標題','關於我們'],['aboutMore','首頁完整介紹連結','認識協會與老屋的故事'],['backHome','返回首頁連結','回到首頁'],
+ ['tagCloudTitle','文章總表標籤雲標題','依主題探索'],['tagCloudCount','標籤文章數替代文字','{name}，{count} 篇文章'],
+ ['tagCloudUnavailable','標籤暫時讀取失敗說明','標籤暫時無法讀取，仍可從下方文章總表瀏覽。'],['moreTags','展開其他標籤文字','展開其他標籤（{count} 個）']
+]);
+Object.assign(ContentSettings.defaults.ui,{aboutTitle:'關於我們',aboutMore:'認識協會與老屋的故事',backHome:'回到首頁',tagCloudTitle:'依主題探索',tagCloudCount:'{name}，{count} 篇文章',tagCloudUnavailable:'標籤暫時無法讀取，仍可從下方文章總表瀏覽。',moreTags:'展開其他標籤（{count} 個）'});

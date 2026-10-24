@@ -647,7 +647,7 @@
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'about') {
-          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p></section>';
+          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p>' + (C.aboutPage ? '<p><a class="more" href="?view=about">' + esc(ui('aboutMore','認識協會與老屋的故事')) + '</a></p>' : '') + '</section>';
         }
         if (k === 'services') {
           var sv = servicesHtml();
@@ -1179,6 +1179,7 @@
       tmp.innerHTML = x.body || '';
       return [x.title, x.summary, x.outlet, x.description, tmp.textContent].join(' ').toLowerCase().indexOf(t) >= 0;
     };
+    if (C.aboutPage && has(C.aboutPage)) out.push([ui('aboutTitle','關於我們'), C.aboutPage.title || ui('aboutTitle','關於我們'), '?view=about']);
     shown(D.services).filter(has).forEach(function (x) { out.push(['協會服務', x.title, serviceUrl(x)]); });
     shown(D.towns).filter(has).forEach(function (x) { out.push(['社區人文', x.title, townUrl(x)]); });
     shown(D.shanhaiji).filter(has).forEach(function (x) { out.push([ui('issueLabel','山海集'), x.title, issueUrl(x)]); });
@@ -1190,9 +1191,31 @@
     }).join('') + '</ul></section>';
   }
 
+  function renderAbout() {
+    var about = C.aboutPage || {};
+    setTitle(about.title || ui('aboutTitle','關於我們'));
+    view.innerHTML = '<article class="wrap art about-page"><a class="back" href="./">' + esc(ui('backHome','回到首頁')) + '</a>' +
+      '<header class="list-head"><h1>' + esc(about.title || ui('aboutTitle','關於我們')) + '</h1></header><div class="prose">' + clean(about.body || '') + '</div></article>';
+  }
+
+  function tagCloudHtml(tags) {
+    var label = ui('tagCloudTitle','依主題探索');
+    if (tags === null) return '<p class="tag-cloud-note">' + esc(ui('tagCloudUnavailable','標籤暫時無法讀取，仍可從下方文章總表瀏覽。')) + '</p>';
+    var list = (tags || []).filter(function (x) { return x.count > 0; }).sort(function (a,b) { return b.count - a.count || text(a.name).localeCompare(text(b.name),'zh-Hant'); });
+    if (!list.length) return '';
+    var max = Math.max.apply(null,list.map(function (x) { return x.count; }));
+    function links(items) { return items.map(function (x) {
+      var name = text(x.name), size = 14 + Math.round(10 * Math.log(1 + x.count) / Math.log(1 + max));
+      return '<a href="' + esc(q({tag:decodeSlug(x.slug)})) + '" style="font-size:' + size + 'px" aria-label="' + esc(template(ui('tagCloudCount','{name}，{count} 篇文章'),{name:name,count:x.count})) + '">' + esc(name) + '</a>';
+    }).join(''); }
+    var limit = 45;
+    return '<section class="tag-cloud-section" aria-labelledby="tagCloudTitle"><h2 id="tagCloudTitle">' + esc(label) + '</h2><nav class="tag-cloud" aria-label="' + esc(label) + '">' + links(list.slice(0,limit)) + '</nav>' +
+      (list.length > limit ? '<details class="tag-cloud-more"><summary>' + esc(template(ui('moreTags','展開其他標籤（{count} 個）'),{count:list.length-limit})) + '</summary><nav class="tag-cloud" aria-label="' + esc(label) + '">' + links(list.slice(limit)) + '</nav></details>' : '') + '</section>';
+  }
+
   function renderArchives() {
     setTitle(ui('allPosts','所有文章'));
-    Promise.all([allPages('posts', { _fields: 'id,date,title,categories' }), categoriesP]).then(function (r) {
+    Promise.all([allPages('posts', { _fields: 'id,date,title,categories' }), categoriesP, allPages('tags', { _fields:'id,name,slug,count' }).catch(function () { return null; })]).then(function (r) {
       var posts = hideImported(r[0]), cats = r[1];
       var years = {}, order = [];
       posts.forEach(function (p) {
@@ -1202,7 +1225,7 @@
       });
       view.innerHTML = '<div class="wrap list-page"><header class="list-head"><h1>' + esc(ui('allPosts','所有文章')) + '</h1><p>' + esc(template(ui('archivesIntro','共 {count} 篇，由新到舊排列。'),{count:posts.length})) + '</p>' +
         '<nav class="arch-cats" aria-label="分類">' + cats.filter(function (c) { return c.count > 0; }).sort(function (a, b) { return b.count - a.count; })
-          .map(function (c) { return '<a href="' + catUrl(c) + '">' + esc(c.name) + '（' + c.count + '）</a>'; }).join('') + '</nav></header>' +
+          .map(function (c) { return '<a href="' + catUrl(c) + '">' + esc(c.name) + '（' + c.count + '）</a>'; }).join('') + '</nav>' + tagCloudHtml(r[2]) + '</header>' +
         order.map(function (y) {
           return '<section class="arch-year" aria-labelledby="y' + y + '"><h2 id="y' + y + '">' + y + '</h2><ul class="arch-list">' +
             years[y].map(function (p) {
@@ -1283,6 +1306,7 @@
   // 已經用管理程式搬過來的 WordPress 頁面，舊連結改顯示新頁面
   function importedTarget(idOrSlug) {
     var hit = function (x) { return x && (String(x.wpId) === idOrSlug || (x.wpSlug && decodeSlug(x.wpSlug) === idOrSlug)); };
+    if (C.aboutPage && hit(C.aboutPage)) return renderAbout;
     var issue = shown(D.shanhaiji).filter(hit)[0];
     if (issue) return function () { renderIssueDetail(issue.slug || issue.title); };
     var m = shown(D.media).filter(hit)[0];
@@ -1297,6 +1321,7 @@
 
   function route() {
     var g = function (k) { return (params.get(k) || '').trim(); };
+    if (g('view') === 'about') return renderAbout();
     if (g('service')) return renderDetail('service', g('service'));
     if (g('town')) return renderDetail('town', g('town'));
     if (g('view') === 'services') return renderIndex('services');
@@ -1391,6 +1416,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

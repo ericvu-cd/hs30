@@ -149,6 +149,9 @@
     s.visit.temporaryClosure = s.visit.temporaryClosure || {active:false,reason:''};
     s.shanhaiji = s.shanhaiji || {};
     s.hero = s.hero || {};
+    s.aboutPage = s.aboutPage || {title: '關於我們',body: ''};
+    s.photoCollections = s.photoCollections || [];
+    s.photoCollections.forEach(function (x) { x.gallery = x.gallery || []; });
     delete s.exploreImages;
     if (s.hero.illustrationLabels == null) s.hero.illustrationLabels = true;
     if (s.hero.lightEffects == null) s.hero.lightEffects = true;
@@ -500,7 +503,7 @@
     markDirty();
   }
 
-  /* ---------- WordPress（分類、標籤、匯入） ---------- */
+  /* ---------- WordPress（相關文章的分類、標籤） ---------- */
 
   function wpApi(path) {
     return fetch('https://public-api.wordpress.com/wp/v2/sites/' + state.site.wordpressSite + '/' + path).then(function (r) {
@@ -522,140 +525,11 @@
     }).catch(function () {});
   }
 
-  function importDialog(target) {
-    var names = { services: '協會服務', towns: '社區人文', videos: '影片精選', media: '媒體報導' };
-    showDialog('從 WordPress 匯入到「' + names[target] + '」', '<p class="muted">讀取 WordPress 上的' + (target === 'media' ? '文章' : '頁面') + '中…</p>');
-    var listP = target !== 'media' ? wpApi('pages?per_page=100&_fields=id,slug,title,parent') :
-      wpApi('categories?per_page=100&_fields=id,name').then(function (cats) {
-        var c = cats.filter(function (x) { return x.name === '媒體報導'; })[0];
-        return wpApi('posts?per_page=100&_fields=id,slug,title,date' + (c ? '&categories=' + c.id : '')).then(function (l) {
-          return l.map(function (p) { p.parent = 0; p.dateText = p.date.slice(0, 10); return p; });
-        });
-      });
-    listP.then(function (pages) {
-      var done = {};
-      state.services.concat(state.towns).forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
-      state.site.importedVideoPages.forEach(function (p) { done[p.id] = 1; });
-      state.media.concat(state.shanhaiji).forEach(function (x) { if (x.wpId) done[x.wpId] = 1; });
-      var tmp = document.createElement('div');
-      var t = function (h) { tmp.innerHTML = h; return tmp.textContent; };
-      $('#dlgBody').innerHTML = '<p class="muted">' + (target === 'videos'
-        ? '勾選含有影片的頁面，會把頁面裡的 YouTube 影片逐一加入影片清單。'
-        : target === 'media'
-        ? '下面是 WordPress「媒體報導」分類裡的文章，預設全部勾選。匯入後，這些文章會從網站的文章列表移到媒體報導，舊連結也會自動轉過來。已匯入的不能重複匯入。'
-        : '勾選要搬過來的頁面。標題、內文、照片會一起帶進來，照片仍從 WordPress 載入。匯入後可以再修改。') + '</p>' +
-        (target === 'media' && !pages.length ? '<p class="notice">WordPress 上找不到「媒體報導」分類的文章。</p>' : '') +
-        '<div class="list" style="margin:14px 0">' + pages.map(function (p) {
-          return '<label class="check item" style="grid-template-columns:auto 1fr"><input type="checkbox" value="' + p.id + '"' + (done[p.id] ? ' disabled' : target === 'media' ? ' checked' : '') + '> ' +
-            (p.dateText ? '<span class="muted">' + p.dateText + '</span> ' : '') + esc(t(p.title.rendered)) + (done[p.id] ? ' <span class="badge">已匯入</span>' : '') + (p.parent ? ' <span class="badge">子頁面</span>' : '') + '</label>';
-        }).join('') + '</div><button class="btn primary" type="button" data-act="doImport" data-target="' + target + '">匯入勾選的頁面</button>';
-    }).catch(function () {
-      $('#dlgBody').innerHTML = '<p class="notice bad">讀不到 WordPress 的頁面清單，請確認網路，或到「基本資料」確認 WordPress 網址。</p>';
-    });
-  }
-  function localizeImportImages(list, target) {
-    if (target === 'videos') return Promise.resolve(list);
-    var prior = Object.keys(pending), cache = {};
-    function localImage(src) {
-      if (!src) return Promise.resolve('');
-      var local = ContentSettings.imagePath(src);
-      if (local) return Promise.resolve(local);
-      var address;
-      try { address = new URL(src, 'https://' + state.site.wordpressSite + '/').href; } catch(e) { return Promise.reject(new Error('無法辨識圖片網址')); }
-      if (!/^https:\/\//i.test(address)) return Promise.reject(new Error('匯入圖片必須來自 https 網址'));
-      if (!cache[address]) cache[address] = fetch(address).then(function(response) {
-        if (!response.ok) throw new Error('圖片下載失敗：' + response.status);
-        return response.blob();
-      }).then(function(blob) {
-        if (!/^image\//.test(blob.type)) throw new Error('下載的檔案不是圖片');
-        var name = new URL(address).pathname.split('/').pop() || 'import.jpg';
-        return addUploads([new File([blob], name, {type:blob.type})]);
-      }).then(function(paths) { return paths[0]; });
-      return cache[address];
-    }
-    return Promise.allSettled(list.map(function(post) {
-      var page = document.createElement('template'); page.innerHTML = sanitize(post.content && post.content.rendered || '');
-      return Promise.allSettled(Array.prototype.map.call(page.content.querySelectorAll('img'),function(image) {
-        var original = image.getAttribute('src');
-        return localImage(original).then(function(path) {
-          image.setAttribute('src',path);
-          var link=image.closest('a'); if(link && /\.(jpe?g|png|webp|gif)([?#]|$)/i.test(link.getAttribute('href')||'')) link.setAttribute('href',path);
-        });
-      }).concat([localImage(post.jetpack_featured_media_url).then(function(path){post.jetpack_featured_media_url=path;})])).then(function(results) {
-        var failed=results.filter(function(result){return result.status==='rejected';}); if(failed.length) throw failed[0].reason;
-        post.content={rendered:page.innerHTML}; return post;
-      });
-    })).then(function(results) {
-      var failed=results.filter(function(result){return result.status==='rejected';});
-      if(failed.length) {Object.keys(pending).forEach(function(path){if(prior.indexOf(path)<0) delete pending[path];}); throw failed[0].reason;}
-      return results.map(function(result){return result.value;});
-    });
-  }
-
-  function doImport(target) {
-    var ids = $$('#dlgBody input[type=checkbox]:checked').map(function (i) { return i.value; });
-    if (!ids.length) { toast('請先勾選頁面'); return; }
-    $('#dlgBody').innerHTML = '<p class="muted">匯入中…</p>';
-    var type = target === 'media' ? 'posts/' : 'pages/';
-    Promise.all(ids.map(function (id) { return wpApi(type + id + '?_fields=id,slug,date,title,content,excerpt,jetpack_featured_media_url'); })).then(function(list) { return localizeImportImages(list,target); }).then(function (list) {
-      var tmp = document.createElement('div');
-      var text = function (h) { tmp.innerHTML = h || ''; return (tmp.textContent || '').replace(/\s+/g, ' ').trim(); };
-      var n = 0;
-      list.forEach(function (p) {
-        var html = p.content && p.content.rendered || '';
-        var title = text(p.title.rendered);
-        if (target === 'videos') {
-          var seen = {};
-          (html.match(/(?:youtube(?:-nocookie)?\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([\w-]{11})/g) || []).forEach(function (m) {
-            var id = m.slice(-11);
-            if (seen[id] || state.videos.some(function (v) { return (v.url || '').indexOf(id) >= 0; })) return;
-            seen[id] = 1;
-            state.videos.push({ title: title + '（' + (Object.keys(seen).length) + '）', url: 'https://www.youtube.com/watch?v=' + id, cover: state.site.visuals.videoFallback, coverAlt: title, description: '', hidden: false });
-            n++;
-          });
-          state.site.importedVideoPages.push({ id: p.id, slug: p.slug });
-          return;
-        }
-        var first = (html.match(/<img[^>]+src="([^"]+)"/) || [])[1];
-        var summary = text(p.excerpt && p.excerpt.rendered).replace(/\s*(\[…\]|繼續閱讀.*)$/, '');
-        if (target === 'media') {
-          // 內文裡第一個連到外部網站的連結，當作原始報導網址
-          var site = state.site.wordpressSite;
-          var ext = (html.match(/<a[^>]+href="(https?:\/\/[^"]+)"/g) || []).map(function (a) { return a.match(/href="([^"]+)"/)[1]; })
-            .filter(function (u) { return u.indexOf(site) < 0 && !/wordpress\.com|wp\.com|\.(jpe?g|png|gif|webp)(\?|$)/i.test(u); })[0] || '';
-          var sl = title;
-          if (state.media.some(function (x) { return (x.slug || x.title) === sl; })) sl = title + '-' + (p.date || '').slice(0, 10);
-          state.media.push({ slug: sl, title: title, outlet: '', date: (p.date || '').slice(0, 10), url: ext,
-            summary: summary.length > 80 ? summary.slice(0, 80) + '…' : summary,
-            coverAlt: title, cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), hidden: false, wpId: p.id, wpSlug: p.slug });
-          n++;
-          return;
-        }
-        var item = { slug: title, title: title, summary: summary.length > 60 ? summary.slice(0, 60) + '…' : summary,
-          coverAlt: title, cover: (p.jetpack_featured_media_url || first || '').replace(/\?.*$/, ''), body: sanitize(html), gallery: [],
-          relatedCategory: '', relatedTag: '', hidden: false, wpId: p.id, wpSlug: p.slug };
-        if (target === 'services') { item.audience = ''; item.duration = ''; item.capacity = ''; item.fee = ''; item.bookingUrl = ''; }
-        else item.mapUrl = '';
-        // 同名的項目直接更新內容，其餘新增
-        var same = state[target].filter(function (x) { return x.title === title; })[0];
-        if (same) { Object.keys(item).forEach(function (k) { if (k !== 'slug' && (item[k] || k === 'body')) same[k] = item[k]; }); }
-        else state[target].push(item);
-        n++;
-      });
-      markDirty();
-      render();
-      $('#dlg').close();
-      toast('已匯入 ' + n + ' 項，檢查無誤後按「發布」。', 4000);
-    }).catch(function (error) {
-      $('#dlgBody').innerHTML = '<p class="notice bad">匯入失敗：' + esc(error.message || '') + '。圖片必須一併搬入照片庫，這次尚未新增內容。若來源不允許下載，請先下載照片，再從照片庫上傳。</p>';
-    });
-  }
-
   /* ---------- 畫面 ---------- */
 
   var TABS = [
     ['services', '協會服務'], ['towns', '社區人文'], ['videos', '影片精選'], ['media', '媒體報導'], ['events', '近期活動'], ['sep'],
-    ['home', '首頁'], ['nav', '選單'], ['visit', '到訪與預約'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
+    ['home', '首頁'], ['aboutGallery','關於與圖集'], ['nav', '選單'], ['visit', '到訪與預約'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
     ['content', '圖示與介面說明'], ['photos', '照片庫'], ['history', '版本紀錄'],
   ];
 
@@ -664,7 +538,7 @@
       return t[0] === 'sep' ? '<div class="sep"></div>' : '<button type="button" data-tab="' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</button>';
     }).join('');
     var fn = { services: viewItems, towns: viewItems, media: viewItems, videos: viewVideos, events: viewEvents, home: viewHome, nav: viewNav,
-      visit: viewVisit, shanhaiji: viewShanhaiji, basic: viewBasic, content: viewContent, photos: viewPhotos, history: viewHistory }[tab];
+      aboutGallery:viewAboutGallery, visit: viewVisit, shanhaiji: viewShanhaiji, basic: viewBasic, content: viewContent, photos: viewPhotos, history: viewHistory }[tab];
     $('#main').innerHTML = fn();
     if (tab === 'history') loadHistory();
     markDirty();
@@ -723,7 +597,7 @@
         towns: '小鎮社區人文的各社區介紹頁。',
         media: '媒體對協會的報導。網站上依日期由新到舊排列，首頁顯示最新幾則（在「首頁」設定）。' }[key]) +
       '<div class="row-acts" style="margin:0 0 16px"><button class="btn primary" type="button" data-act="addItem">＋ 新增' + name + '</button>' +
-      '<button class="btn" type="button" data-act="import" data-target="' + key + '">從 WordPress 匯入</button></div>' +
+      '</div>' +
       (list.length ? '<div class="list">' + list.map(function (x, i) { return [x, i]; }).sort(function (a, b) {
         // 媒體報導依日期由新到舊顯示；其他依設定的順序
         return isMedia ? ((b[0].date || '') > (a[0].date || '') ? 1 : -1) : a[1] - b[1];
@@ -735,7 +609,7 @@
           '<div class="item-body"><div class="title">' + esc(x.title || '（未命名）') + (x.hidden ? '<span class="badge off">隱藏中</span>' : '') + '</div>' +
           '<div class="sub">' + (isMedia ? esc([x.date, x.outlet].filter(Boolean).join('　')) : esc(x.summary || '')) + '</div></div></div>' +
           '<div class="acts">' + (isMedia ? '' : moveBtns(key, i)) + '<button class="btn small" type="button" data-act="edit" data-i="' + i + '">編輯</button></div></div>';
-      }).join('') + '</div>' : '<p class="empty">還沒有' + name + '，按「新增」或「從 WordPress 匯入」。</p>');
+      }).join('') + '</div>' : '<p class="empty">還沒有' + name + '，按「新增」建立內容。</p>');
   }
 
   function viewItemForm(key, i) {
@@ -776,7 +650,7 @@
   function viewVideos() {
     return head('影片精選', '影片網址與封面分別管理；封面上傳至照片庫，播放時才連到 YouTube。') +
       '<div class="row-acts" style="margin:0 0 16px"><button class="btn primary" type="button" data-act="addVideo">＋ 新增影片</button>' +
-      '<button class="btn" type="button" data-act="import" data-target="videos">從 WordPress 匯入</button></div>' +
+      '</div>' +
       (state.videos.length ? '<div class="list">' + state.videos.map(function (v, i) {
         var id = (String(v.url || '').match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([\w-]{11})/) || [])[1];
         return '<div class="item" data-list="videos" data-i="' + i + '"><span class="grip" draggable="true" title="拖曳調整順序">⋮⋮</span>' +
@@ -965,6 +839,17 @@
       ContentSettings.uiFields.map(function(x){return inp('site.ui.'+x[0],x[1],{textarea:x[0]==='commentHint'});}).join('') + '</div></div>';
   }
 
+  function viewAboutGallery() {
+    return head('關於我們與原站圖集','完整協會介紹可在此修改。兩個原站圖集存入照片庫供選用，不會自動顯示到首頁。') +
+      '<div class="panel"><h2>關於我們</h2>' + inp('site.aboutPage.title','頁面標題') +
+      '<p><a class="btn" href="./?view=about" target="_blank" rel="noopener">在網站上看</a></p>' + richHtml('site.aboutPage.body') + '</div>' +
+      state.site.photoCollections.map(function (album,i) {
+        var p = 'site.photoCollections.' + i;
+        return '<div class="panel"><h2>' + esc(album.title || '照片圖集') + '（' + (album.gallery || []).length + ' 張）</h2>' +
+          inp(p + '.title','圖集名稱') + '<details><summary>展開照片，編輯順序與說明</summary>' + galleryField(p + '.gallery') + '</details></div>';
+      }).join('');
+  }
+
   function viewPhotos() {
     var used = usedImages(), list = allImages();
     return head('照片庫', '所有上傳過的照片。沒有被使用的照片可以刪除，節省空間。') +
@@ -1148,8 +1033,6 @@
       case 'galAdd': openPicker(function (ps) { listAt(path).push.apply(listAt(path), ps.map(function(image){return {image:image,alt:'',caption:''};})); render(); }, true); break;
       case 'galDel': listAt(path).splice(i, 1); render(); break;
       case 'galMove': move(path, i, +t.getAttribute('data-d')); break;
-      case 'import': importDialog(t.getAttribute('data-target')); break;
-      case 'doImport': doImport(t.getAttribute('data-target')); break;
       case 'delPhoto':
         if (pending[path]) delete pending[path]; else removed[path] = 1;
         render();
@@ -1263,6 +1146,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

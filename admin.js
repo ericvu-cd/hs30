@@ -150,6 +150,12 @@
     s.shanhaiji = s.shanhaiji || {};
     s.hero = s.hero || {};
     s.aboutPage = s.aboutPage || {title: '關於我們',body: ''};
+    if (s.aboutPage.filmShow == null) s.aboutPage.filmShow = true;
+    if (s.aboutPage.filmAlbum == null) s.aboutPage.filmAlbum = 'wp-378';
+    if (s.aboutPage.filmTitle == null) s.aboutPage.filmTitle = '老屋裡的生活影像';
+    if (s.aboutPage.filmSeconds == null) s.aboutPage.filmSeconds = 144;
+    s.motion = s.motion || {};
+    if (s.motion.serviceReveal == null) s.motion.serviceReveal = true;
     s.photoCollections = s.photoCollections || [];
     s.photoCollections.forEach(function (x) { x.gallery = x.gallery || []; });
     delete s.exploreImages;
@@ -843,6 +849,11 @@
     return head('關於我們與原站圖集','完整協會介紹可在此修改。兩個原站圖集存入照片庫供選用，不會自動顯示到首頁。') +
       '<div class="panel"><h2>關於我們</h2>' + inp('site.aboutPage.title','頁面標題') +
       '<p><a class="btn" href="./?view=about" target="_blank" rel="noopener">在網站上看</a></p>' + richHtml('site.aboutPage.body') + '</div>' +
+      '<div class="panel"><h2>關於我們：生活影像帶</h2><div class="grid2">' + chk('site.aboutPage.filmShow','顯示生活影像帶') +
+      inp('site.aboutPage.filmAlbum','使用哪個圖集',{select:state.site.photoCollections.map(function (x) { return [x.key,x.title]; })}) +
+      inp('site.aboutPage.filmTitle','影像帶標題') + inp('site.aboutPage.filmText','影像帶說明（選填）',{textarea:true,full:true}) +
+      inp('site.aboutPage.filmSeconds','電腦自動移動一輪秒數',{type:'number',hint:'預設144秒；秒數越大越慢，手機預設手動滑動。'}) + '</div></div>' +
+      '<div class="panel"><h2>首頁服務區動態</h2>' + chk('site.motion.serviceReveal','服務項目進入畫面時依序浮現一次') + '</div>' +
       state.site.photoCollections.map(function (album,i) {
         var p = 'site.photoCollections.' + i;
         return '<div class="panel"><h2>' + esc(album.title || '照片圖集') + '（' + (album.gallery || []).length + ' 張）</h2>' +
@@ -1146,6 +1157,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

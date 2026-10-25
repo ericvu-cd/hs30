@@ -134,3 +134,7 @@ ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[
  ['tagCloudUnavailable','標籤暫時讀取失敗說明','標籤暫時無法讀取，仍可從下方文章總表瀏覽。'],['moreTags','展開其他標籤文字','展開其他標籤（{count} 個）']
 ]);
 Object.assign(ContentSettings.defaults.ui,{aboutTitle:'關於我們',aboutMore:'認識協會與老屋的故事',backHome:'回到首頁',tagCloudTitle:'依主題探索',tagCloudCount:'{name}，{count} 篇文章',tagCloudUnavailable:'標籤暫時無法讀取，仍可從下方文章總表瀏覽。',moreTags:'展開其他標籤（{count} 個）'});
+
+
+ContentSettings.uiFields.push.apply(ContentSettings.uiFields,[['lifeFilmTitle','生活影像帶預設標題','老屋裡的生活影像'],['lifeFilmHint','生活影像帶預設說明','活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。'],['lifeFilmPlay','播放影像帶按鈕','播放影像帶'],['lifeFilmPause','暫停影像帶按鈕','暫停影像帶'],['lifeFilmAlt','生活照片預設替代文字','古厝生活影像 {number}'],['lifeFilmGallery','生活照片區域替代文字','可橫向滑動的生活照片']]);
+Object.assign(ContentSettings.defaults.ui,{lifeFilmTitle:'老屋裡的生活影像',lifeFilmHint:'活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。',lifeFilmPlay:'播放影像帶',lifeFilmPause:'暫停影像帶',lifeFilmAlt:'古厝生活影像 {number}',lifeFilmGallery:'可橫向滑動的生活照片'});

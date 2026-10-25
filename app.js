@@ -688,6 +688,7 @@
         return '';
       }).join('');
       updateOpenStatus();
+      initServiceReveal();
       if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
     });
   }
@@ -1197,11 +1198,77 @@
     }).join('') + '</ul></section>';
   }
 
+  function lifeFilmHtml() {
+    var about = C.aboutPage || {};
+    if (about.filmShow === false) return '';
+    var albums = C.photoCollections || [], key = about.filmAlbum || 'wp-378';
+    var album = albums.filter(function (x) { return x.key === key; })[0];
+    var photos = (album && album.gallery || []).filter(function (x) { return !x.hidden && img(x.image,800); });
+    if (!photos.length) return '';
+    function group(duplicate) {
+      return '<div class="life-film-group"' + (duplicate ? ' aria-hidden="true"' : '') + '>' + photos.map(function (x,i) {
+        var image = img(x.image,1000);
+        return '<figure><img src="' + esc(image) + '" data-full="' + esc(image) + '"' + (duplicate ? '' : ' role="button" tabindex="0"') + ' alt="' + (duplicate ? '' : esc(x.alt || x.caption || template(ui('lifeFilmAlt','古厝生活影像 {number}'),{number:i+1}))) + '" loading="lazy" decoding="async">' + (x.caption ? '<figcaption>' + esc(x.caption) + '</figcaption>' : '') + '</figure>';
+      }).join('') + '</div>';
+    }
+    return '<section class="life-film" aria-labelledby="lifeFilmTitle"><div class="life-film-head"><div><h2 id="lifeFilmTitle">' + esc(about.filmTitle || ui('lifeFilmTitle','老屋裡的生活影像')) + '</h2><p>' + esc(about.filmText || ui('lifeFilmHint','活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。')) + '</p></div><button type="button" class="life-film-toggle btn" aria-controls="lifeFilmViewport" aria-pressed="false">' + esc(ui('lifeFilmPlay','播放影像帶')) + '</button></div>' +
+      '<div class="life-film-viewport" id="lifeFilmViewport" tabindex="0" role="region" aria-label="' + esc(ui('lifeFilmGallery','可橫向滑動的生活照片')) + '"><div class="life-film-track">' + group(false) + group(true) + '</div></div></section>';
+  }
+
+  function initLifeFilm() {
+    var film = $('.life-film'); if (!film) return;
+    var viewport = $('.life-film-viewport',film), track = $('.life-film-track',film), button = $('.life-film-toggle',film);
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)'), fine = window.matchMedia('(pointer: fine)');
+    var group = $('.life-film-group',film), count = $$('figure',group).length;
+    var seconds = Number((C.aboutPage || {}).filmSeconds) || count * 6;
+    film.style.setProperty('--film-duration',Math.max(20,Math.min(600,seconds)) + 's');
+    function setPlaying(on) {
+      on = on && !reduce.matches;
+      var offset = null;
+      if (!on && film.classList.contains('is-running')) {
+        var matrix = /^matrix\(([^)]+)\)$/.exec(window.getComputedStyle(track).transform);
+        if (matrix) offset = -parseFloat(matrix[1].split(',')[4]) % group.scrollWidth;
+      }
+      if (on) viewport.scrollLeft = 0;
+      film.classList.toggle('is-running',on);
+      if (offset !== null) viewport.scrollLeft = offset;
+      button.setAttribute('aria-pressed',on ? 'true' : 'false');
+      button.textContent = on ? ui('lifeFilmPause','暫停影像帶') : ui('lifeFilmPlay','播放影像帶');
+      button.disabled = reduce.matches;
+    }
+    button.addEventListener('click',function () { setPlaying(!film.classList.contains('is-running')); });
+    viewport.addEventListener('pointerdown',function (e) { if (e.pointerType !== 'mouse') setPlaying(false); },{passive:true});
+    viewport.addEventListener('click',function (e) { if (e.target.closest('img[data-full]')) setPlaying(false); });
+    viewport.addEventListener('keydown',function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('img[data-full]')) { e.preventDefault(); e.target.click(); } });
+    viewport.addEventListener('keydown',function (e) {
+      if (['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key) < 0) return;
+      setPlaying(false);
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); viewport.scrollBy({left:e.key === 'ArrowRight' ? 280 : -280,behavior:'auto'}); }
+    });
+    function changed() { setPlaying(fine.matches && !reduce.matches); }
+    if (reduce.addEventListener) reduce.addEventListener('change',changed);
+    changed();
+  }
+
+  function initServiceReveal() {
+    if ((C.motion || {}).serviceReveal === false || !window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var rows = $$('#services .svc-row');
+    if (!rows.length) return;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-revealed'); observer.unobserve(entry.target);
+      });
+    },{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+    rows.forEach(function (row) { row.classList.add('service-reveal-ready'); observer.observe(row); });
+  }
+
   function renderAbout() {
     var about = C.aboutPage || {};
     setTitle(about.title || ui('aboutTitle','關於我們'));
     view.innerHTML = '<article class="wrap art about-page"><a class="back" href="./">' + esc(ui('backHome','回到首頁')) + '</a>' +
-      '<header class="list-head"><h1>' + esc(about.title || ui('aboutTitle','關於我們')) + '</h1></header><div class="prose">' + clean(about.body || '') + '</div></article>';
+      '<header class="list-head"><h1>' + esc(about.title || ui('aboutTitle','關於我們')) + '</h1></header><div class="prose">' + clean(about.body || '') + '</div>' + lifeFilmHtml() + '</article>';
+    initLifeFilm();
   }
 
   function tagCloudHtml(tags) {
@@ -1287,11 +1354,14 @@
     var box = $('#lightbox'), big = box.querySelector('img'), list = [], idx = 0;
     var show = function (i) { idx = (i + list.length) % list.length; big.src = list[idx].getAttribute('data-full'); big.alt = list[idx].alt; };
     document.addEventListener('click', function (e) {
-      var img = e.target.closest && e.target.closest('.prose img[data-full]');
+      var img = e.target.closest && e.target.closest('.prose img[data-full],.life-film img[data-full]');
       if (!img || !box.showModal) return;
       e.preventDefault();
-      list = $$('.prose img[data-full]');
-      show(list.indexOf(img));
+      list = $$('.prose img[data-full],.life-film-group:not([aria-hidden=true]) img[data-full]');
+      var position = list.indexOf(img);
+      if (position < 0) position = list.map(function (x) { return x.getAttribute('data-full'); }).indexOf(img.getAttribute('data-full'));
+      if (position < 0) return;
+      show(position);
       box.showModal();
     });
     box.addEventListener('click', function (e) {
@@ -1422,6 +1492,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

@@ -166,3 +166,7 @@
 
 /* 匾額文字已用正體楷書合成於圖片，避免重複疊字。 */
 .heritage-art .heritage-lintel{display:none}
+
+/* 古厝匾額、門牌與年份已合成於圖片，停用對應疊字。 */
+.heritage-art .heritage-lintel,.heritage-art .heritage-plaque,.heritage-art .heritage-year{display:none}
+

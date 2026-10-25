@@ -217,6 +217,17 @@
       "hidden": false
     },
     {
+      "key": "culture-game",
+      "title": "在地文化知識型互動平台",
+      "description": "用遊戲探索地方文化，挑戰任務、蒐集徽章。",
+      "href": "https://game.hs30.org.tw/",
+      "cover": "uploads/2026/10/explore-culture-game.png",
+      "coverAlt": "在地文化知識型互動平台：書本與遊戲手把",
+      "icon": "",
+      "newTab": true,
+      "hidden": false
+    },
+    {
       "key": "media",
       "title": "媒體報導",
       "description": "{media} 則報導",
@@ -562,4 +573,3 @@
     "wpSlug": "%e9%97%9c%e6%96%bc%e6%88%91%e5%80%91"
   }
 }
-

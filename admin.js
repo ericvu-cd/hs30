@@ -708,7 +708,7 @@
       state.site.exploreCards.map(function(x,i){var p='site.exploreCards.'+i;return '<div class="panel"><div class="acts">'+moveBtns('site.exploreCards',i)+
       '<button class="btn danger small" type="button" data-act="delRow" data-list="site.exploreCards" data-i="'+i+'">刪除</button></div><div class="grid2">'+
       inp(p+'.title','入口標題')+inp(p+'.description','入口說明',{hint:'可使用 {towns}、{media}、{videos} 自動帶入數量。'})+inp(p+'.href','連結')+
-      imgField(p+'.cover','入口配圖')+inp(p+'.coverAlt','配圖替代文字')+imgField(p+'.icon','自訂圖示（選填）')+chk(p+'.hidden','暫時隱藏')+'</div></div>';}).join('')+
+      imgField(p+'.cover','入口配圖')+inp(p+'.coverAlt','配圖替代文字')+imgField(p+'.icon','自訂圖示（選填）')+chk(p+'.newTab','新分頁開啟')+chk(p+'.hidden','暫時隱藏')+'</div></div>';}).join('')+
       '<button class="btn" type="button" data-act="addExplore">＋ 新增入口</button></div>' +
       '<div class="panel"><h2>首頁段落</h2><div class="list">' + state.site.sections.map(function (s, i) {
         var p = 'site.sections.' + i;
@@ -1007,7 +1007,7 @@
         render();
         break;
       case 'move': move(t.getAttribute('data-list'), i, +t.getAttribute('data-d')); break;
-      case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',hidden:false}); render(); break;
+      case 'addExplore': state.site.exploreCards.push({title:'新入口',description:'',href:'',cover:'',coverAlt:'',icon:'',newTab:false,hidden:false}); render(); break;
       case 'editIssue': editing = {list:'shanhaiji',i:i}; render(); window.scrollTo(0,0); break;
       case 'addIssue':
         state.shanhaiji.push({title:'新一期山海集',cardTitle:'新一期',slug:'',date:'',summary:'',cover:'',coverAlt:'',body:'',gallery:[],buyUrl:'',readingUrl:'',hidden:false});
@@ -1157,6 +1157,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

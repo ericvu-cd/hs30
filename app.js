@@ -623,7 +623,7 @@
     return '<section class="explore wrap" id="explore" aria-labelledby="exH">' + secHead(key, 'exH', '探索更多') + '<div class="tiles">' + cards.map(function (card, i) {
       var cover = img(card.cover, 600), icon = img(card.icon, 100), href = ContentSettings.linkPath(card.href);
       var tag = href ? 'a' : 'div';
-      return '<' + tag + ' class="tile' + (cover ? ' has-img' : ' t' + (i % 3 + 1)) + '"' + (href ? ' href="' + esc(href) + '"' : '') + '>' +
+      return '<' + tag + ' class="tile' + (cover ? ' has-img' : ' t' + (i % 3 + 1)) + '"' + (href ? ' href="' + esc(href) + '"' + (card.newTab ? ' target="_blank" rel="noopener noreferrer" aria-label="' + esc(card.title + '（另開新分頁）') + '"' : '') : '') + '>' +
         (cover ? '<img data-ph="1" src="' + esc(cover) + '" alt="' + esc(card.coverAlt || '') + '" loading="lazy" decoding="async">' : '') +
         '<span class="tile-txt">' + (icon ? '<img class="tile-icon" src="' + esc(icon) + '" alt="">' : '') + '<strong>' + esc(card.title) + '</strong><small>' + esc(template(card.description, counts)) + '</small></span></' + tag + '>';
     }).join('') + '</div></section>';
@@ -1492,6 +1492,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

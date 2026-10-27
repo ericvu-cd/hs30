@@ -96,3 +96,8 @@
 .booking-choice select{margin-bottom:22px}
 .booking-choice textarea.booking-message{resize:vertical;line-height:1.75;margin:0;min-height:145px;font-family:var(--sans, sans-serif)}
 .booking-choice select:focus-visible,.booking-choice textarea:focus-visible{outline:2px solid #B85042;outline-offset:3px}
+
+/* 服務分類固定於圖片左上角，保留獨立文字語意。 */
+.culture-service-card{position:relative}
+.culture-service-card>.service-category{position:absolute;z-index:2;top:14px;left:14px;max-width:calc(100% - 28px);box-sizing:border-box;margin:0;background:#EAF1ED;color:#354E43;line-height:1.6;box-shadow:0 2px 8px #2d241e20;pointer-events:none}
+

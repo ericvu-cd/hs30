@@ -558,9 +558,9 @@
   // 服務列：照片佔大面積，文字只放名稱、一句話、服務資訊
 function svcRow(x, i) {
     var src=img(x.cover,900), href=serviceUrl(x), f=factsOf(x);
-    return '<article class="svc-row culture-service-card"><a class="svc-row-photo ph t'+(i%3+1)+'" href="'+esc(href)+'" tabindex="-1" aria-hidden="true">'+
+    return '<article class="svc-row culture-service-card">'+(x.category?'<span class="service-category">'+esc(x.category)+'</span>':'')+'<a class="svc-row-photo ph t'+(i%3+1)+'" href="'+esc(href)+'" tabindex="-1" aria-hidden="true">'+
       (src?'<img data-ph="1" src="'+esc(src)+'" alt="'+esc(x.coverAlt||'')+'" loading="lazy" decoding="async">':'')+'</a>'+
-      '<div class="svc-row-text">'+(x.category?'<span class="service-category">'+esc(x.category)+'</span>':'')+
+      '<div class="svc-row-text">'+
       '<h3><a href="'+esc(href)+'">'+esc(x.title)+'</a></h3>'+(x.summary?'<p class="service-summary">'+esc(x.summary)+'</p>':'')+
       (f.length?'<dl class="mini-facts">'+f.slice(0,2).map(function(r){return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';}).join('')+'</dl>':'')+
       '<div class="service-card-actions"><a class="more" href="'+esc(href)+'">'+esc(ui('serviceDetails','了解服務'))+'</a><a class="btn" href="'+esc(bookingEntry(x))+'">'+esc(x.bookingText||ui('serviceBooking','預約與詢問'))+'</a></div></div></article>';
@@ -1541,6 +1541,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

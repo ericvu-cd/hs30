@@ -150,6 +150,8 @@
     s.shanhaiji = s.shanhaiji || {};
     s.hero = s.hero || {};
     s.aboutPage = s.aboutPage || {title: '關於我們',body: ''};
+    s.aboutPage.featurePhotos=s.aboutPage.featurePhotos||[{image:'',alt:'',caption:''},{image:'',alt:'',caption:''},{image:'',alt:'',caption:''}];
+    s.aboutPage.milestones=s.aboutPage.milestones||[{year:'1937',title:'陳家古厝興建',text:''},{year:'2015',title:'修復完成，重新開放',text:''}];
     if (s.aboutPage.filmShow == null) s.aboutPage.filmShow = true;
     if (s.aboutPage.filmAlbum == null) s.aboutPage.filmAlbum = 'wp-378';
     if (s.aboutPage.filmTitle == null) s.aboutPage.filmTitle = '老屋裡的生活影像';
@@ -636,11 +638,12 @@
       inp(p + '.coverAlt', '封面圖片說明（替代文字）') + imgField(p + '.cover', '封面照片') + '</div>' +
       '<div class="row-acts">' + chk(p + '.hidden', '暫時隱藏（不在網站上顯示）') + '</div></div>' +
       (isMedia ? '' : isSvc ? '<div class="panel"><h2>服務資訊</h2><p class="muted">顯示在服務頁右側，沒有的可以留空。</p><div class="grid2">' +
+        inp(p + '.category','卡片分類標籤',{placeholder:'例如：走讀導覽、工藝手作'}) + inp(p + '.bookingText','卡片預約按鈕文字',{placeholder:'預約與詢問'}) +
         inp(p + '.audience', '適合對象', { placeholder: '例如：國小以上、團體 10 人起' }) +
         inp(p + '.duration', '所需時間', { placeholder: '例如：約 90 分鐘' }) +
         inp(p + '.capacity', '人數', { placeholder: '例如：10–40 人' }) +
         inp(p + '.fee', '費用', { placeholder: '例如：每人 200 元' }) +
-        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空會使用「到訪與預約」裡的預約表單。' }) +
+        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空使用「到訪與預約」的表單。網址中可放 {service}，會自動換成服務名稱；一般網址不會任意附加參數。' }) +
         inp(p + '.notes', '預約須知（一行一項，選填）', { textarea: true, full: true, rows: 4, hint: '例如：請於一週前預約；10 人以上可包場；雨天照常進行。' }) + '</div></div>'
         : '<div class="panel"><h2>地點</h2>' + inp(p + '.mapUrl', 'Google 地圖連結', { hint: '在 Google 地圖找到地點 → 分享 → 複製連結' }) + '</div>') +
       '<div class="panel"><h2>內文</h2>' + richHtml(p + '.body') + '</div>' +
@@ -849,6 +852,10 @@
     return head('關於我們與原站圖集','完整協會介紹可在此修改。兩個原站圖集存入照片庫供選用，不會自動顯示到首頁。') +
       '<div class="panel"><h2>關於我們</h2>' + inp('site.aboutPage.title','頁面標題') +
       '<p><a class="btn" href="./?view=about" target="_blank" rel="noopener">在網站上看</a></p>' + richHtml('site.aboutPage.body') + '</div>' +
+      '<div class="panel"><h2>關於我們：精選照片（最多三張）</h2>'+chk('site.aboutPage.featureShow','顯示精選照片')+'<p class="muted">第一張為大圖，其餘兩張為細節小圖；移除圖片即可減少張數。</p>'+
+      (state.site.aboutPage.featurePhotos||[]).slice(0,3).map(function(x,i){var p='site.aboutPage.featurePhotos.'+i;return '<div class="panel"><h3>'+(i===0?'主要照片':'細節照片 '+i)+'</h3>'+imgField(p+'.image','照片')+'<div class="grid2">'+inp(p+'.alt','替代文字')+inp(p+'.caption','照片說明')+'</div></div>';}).join('')+'</div>'+
+      '<div class="panel"><h2>老屋年份卡片</h2>'+chk('site.aboutPage.milestonesShow','顯示年份卡片')+inp('site.aboutPage.milestonesTitle','區塊標題')+
+      (state.site.aboutPage.milestones||[]).map(function(x,i){var p='site.aboutPage.milestones.'+i;return '<div class="panel"><div class="grid2">'+inp(p+'.year','年份')+inp(p+'.title','事件標題')+inp(p+'.text','說明',{textarea:true,full:true})+'</div></div>';}).join('')+'</div>'+
       '<div class="panel"><h2>關於我們：生活影像帶</h2><div class="grid2">' + chk('site.aboutPage.filmShow','顯示生活影像帶') +
       inp('site.aboutPage.filmAlbum','使用哪個圖集',{select:state.site.photoCollections.map(function (x) { return [x.key,x.title]; })}) +
       inp('site.aboutPage.filmTitle','影像帶標題') + inp('site.aboutPage.filmText','影像帶說明（選填）',{textarea:true,full:true}) +
@@ -1157,6 +1164,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

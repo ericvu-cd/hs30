@@ -260,17 +260,16 @@
     return posts.filter(function (p) { return !ids[p.id]; });
   }
 
-  function listHtml(posts, cats, offset) {
-    posts = hideImported(posts);
-    if (!posts.length) return '<p class="c-empty">' + esc(ui('postEmpty','這裡目前沒有文章。')) + '<a href="?view=archives">' + esc(ui('allPosts', '看所有文章')) + '</a></p>';
-    return posts.map(function (p, i) {
-      var c = catsById(p.categories, cats)[0];
-      return '<article class="post"><div class="p-date"><span>' + dotDate(p.date) + '</span>' + (c ? '<span>' + esc(c.name) + '</span>' : '') + '</div>' +
-        '<div><h3><a href="' + postUrl(p) + '">' + esc(title(p)) + '</a></h3><p>' + esc(excerpt(p)) + '</p></div>' +
-        thumbHtml(p, i + (offset || 0)) + '</article>';
+  function listHtml(posts,cats,offset) {
+    posts=hideImported(posts);
+    if(!posts.length) return '<p class="c-empty">'+esc(ui('postEmpty','這裡目前沒有文章。'))+'</p>';
+    return posts.map(function(p,i) {
+      var c=catsById(p.categories,cats)[0];
+      return '<article class="post culture-post">'+thumbHtml(p,i+(offset||0))+'<div class="post-content"><div class="p-date"><time datetime="'+esc(p.date)+'">'+esc(dotDate(p.date))+'</time>'+
+        (c?'<span class="post-category">'+esc(c.name)+'</span>':'')+'</div><h3><a href="'+postUrl(p)+'">'+esc(title(p))+'</a></h3><p class="post-summary">'+esc(excerpt(p))+'</p>'+
+        '<a class="more post-read" href="'+postUrl(p)+'">'+esc(ui('readArticle','閱讀全文'))+'</a></div></article>';
     }).join('');
   }
-
   function filterHtml(cats, currentId) {
     var list = C.featuredCategories.map(function (n) { return cats.filter(function (c) { return c.name === n && c.count > 0; })[0]; }).filter(Boolean);
     return '<nav class="filters" aria-label="依分類瀏覽"><a href="?view=archives"' + (!currentId ? ' aria-current="page"' : '') + '>全部</a>' +
@@ -299,12 +298,13 @@
     if (/^uploads\//.test(u)) return u;
     return ContentSettings.imagePath(u);
   }
-  function lineHref() {
+  function lineHref(svc) {
     var value = String(C.visit.line || '').trim();
-    return value ? (/^https?:\/\//i.test(value) ? value : 'https://line.me/R/oaMessage/' + encodeURIComponent(value)) : '';
+    var href=value ? (/^https?:\/\//i.test(value) ? value : 'https://line.me/R/oaMessage/' + encodeURIComponent(value)) : '';
+    return svc && /^https:\/\/line\.me\/R\/oaMessage\//i.test(href) ? href.split('?')[0].replace(/\/$/,'')+'/?'+encodeURIComponent(bookingMessage(svc)) : href;
   }
   function bookingUrl(svc) {
-    return (svc && svc.bookingUrl) || C.visit.bookingUrl || '';
+    return ContentSettings.linkPath(String((svc && svc.bookingUrl) || C.visit.bookingUrl || '').replace(/\{service\}/g,encodeURIComponent(svc ? svc.title : '團體到訪')));
   }
   function sectionConf(key) {
     return (C.sections || []).filter(function (x) { return x.key === key; })[0] || { key: key, title: '', intro: '' };
@@ -546,31 +546,26 @@
   }
 
   // 服務卡片：直式大照片 + 名稱 + 一句話 + 服務資訊標籤
-  function svcCard(x, i) {
-    var src = img(x.cover, 900);
-    var chips = [x.duration, x.audience, x.fee].filter(Boolean).slice(0, 2);
-    return '<a class="svc-card" href="' + serviceUrl(x) + '"><div class="svc-photo ph t' + (i % 3 + 1) + '">' +
-      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="' + (i < 2 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</div>' +
-      '<div class="svc-text"><h3>' + esc(x.title) + '</h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
-      (chips.length ? '<ul class="chips">' + chips.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>' : '') + '</div></a>';
-  }
+  function svcCard(x,i) { return svcRow(x,i); }
   function servicesHtml() {
     var list = shown(D.services);
     if (!list.length) return '';
-    return '<div class="svc-rows">' + list.map(svcRow).join('') + '</div>';
+    return '<div class="svc-rows culture-service-grid">' + list.map(svcRow).join('') + '</div>';
   }
   function factsOf(x) {
     return [[ui('audience', '適合對象'), x.audience], [ui('duration', '所需時間'), x.duration], [ui('capacity', '人數'), x.capacity], [ui('fee', '費用'), x.fee]].filter(function (r) { return r[1]; });
   }
   // 服務列：照片佔大面積，文字只放名稱、一句話、服務資訊
-  function svcRow(x, i) {
-    var src = img(x.cover, 1400), href = serviceUrl(x), f = factsOf(x);
-    return '<article class="svc-row"><a class="svc-row-photo ph t' + (i % 3 + 1) + '" href="' + href + '" tabindex="-1" aria-hidden="true">' +
-      (src ? '<img data-ph="1" src="' + esc(src) + '" alt="' + esc(x.coverAlt || '') + '" loading="' + (i < 1 ? 'eager' : 'lazy') + '" decoding="async" referrerpolicy="no-referrer">' : '') + '</a>' +
-      '<div class="svc-row-text"><h3><a href="' + href + '">' + esc(x.title) + '</a></h3>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') +
-      (f.length ? '<dl class="mini-facts">' + f.slice(0, 3).map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
-      '<a class="more" href="' + href + '">' + esc(ui('serviceMore', '了解與預約')) + '</a></div></article>';
+function svcRow(x, i) {
+    var src=img(x.cover,900), href=serviceUrl(x), f=factsOf(x);
+    return '<article class="svc-row culture-service-card"><a class="svc-row-photo ph t'+(i%3+1)+'" href="'+esc(href)+'" tabindex="-1" aria-hidden="true">'+
+      (src?'<img data-ph="1" src="'+esc(src)+'" alt="'+esc(x.coverAlt||'')+'" loading="lazy" decoding="async">':'')+'</a>'+
+      '<div class="svc-row-text">'+(x.category?'<span class="service-category">'+esc(x.category)+'</span>':'')+
+      '<h3><a href="'+esc(href)+'">'+esc(x.title)+'</a></h3>'+(x.summary?'<p class="service-summary">'+esc(x.summary)+'</p>':'')+
+      (f.length?'<dl class="mini-facts">'+f.slice(0,2).map(function(r){return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';}).join('')+'</dl>':'')+
+      '<div class="service-card-actions"><a class="more" href="'+esc(href)+'">'+esc(ui('serviceDetails','了解服務'))+'</a><a class="btn" href="'+esc(bookingEntry(x))+'">'+esc(x.bookingText||ui('serviceBooking','預約與詢問'))+'</a></div></div></article>';
   }
+
   function cardHtml(x, href, i) {
     var src = img(x.cover, 800);
     return '<a class="card" href="' + href + '"><div class="ph t' + (i % 3 + 1) + '" aria-hidden="true">' +
@@ -598,9 +593,9 @@
 
   function bookingActs(svc, compact) {
     var V = C.visit, book = bookingUrl(svc);
-    return (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">' + esc(ui('bookOnline', '線上預約')) + '</a>' : '') +
+    return (svc ? '<a class="btn" href="' + esc(bookingEntry(svc)) + '">' + esc(ui('serviceBooking','預約與詢問')) + '</a>' : '') + (book ? '<a class="btn" href="' + esc(book) + '" target="_blank" rel="noopener">' + esc(ui('bookOnline', '線上預約')) + '</a>' : '') +
       (V.phone ? '<a class="btn ' + (book ? 'line' : '') + '" href="tel:' + esc(V.phone.replace(/[^\d+]/g, '')) + '">' + (compact ? ui('phone', '打電話') : ui('phone', '打電話') + ' ' + esc(V.phone)) + '</a>' : '') +
-      (V.line ? '<a class="btn line" href="' + esc(lineHref()) + '">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
+      (V.line ? '<a class="btn line" href="' + esc(lineHref(svc)) + '">' + esc(ui('line', 'LINE 詢問')) + '</a>' : '') +
       (V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
   }
 
@@ -1264,10 +1259,10 @@
   }
 
   function renderAbout() {
-    var about = C.aboutPage || {};
-    setTitle(about.title || ui('aboutTitle','關於我們'));
-    view.innerHTML = '<article class="wrap art about-page"><a class="back" href="./">' + esc(ui('backHome','回到首頁')) + '</a>' +
-      '<header class="list-head"><h1>' + esc(about.title || ui('aboutTitle','關於我們')) + '</h1></header><div class="prose">' + clean(about.body || '') + '</div>' + lifeFilmHtml() + '</article>';
+    var about=C.aboutPage||{}, photos=aboutVisualHtml();
+    setTitle(about.title||ui('aboutTitle','關於我們'));
+    view.innerHTML='<article class="wrap art about-page"><a class="back" href="./">'+esc(ui('backHome','回到首頁'))+'</a><header class="list-head"><h1>'+esc(about.title||ui('aboutTitle','關於我們'))+'</h1></header>'+
+      '<div'+(photos?' class="about-story-grid"':'')+'>'+photos+'<div class="prose">'+clean(about.body||'')+'</div></div>'+aboutMilestonesHtml()+lifeFilmHtml()+'</article>';
     initLifeFilm();
   }
 
@@ -1288,7 +1283,7 @@
 
   function renderArchives() {
     setTitle(ui('allPosts','所有文章'));
-    Promise.all([allPages('posts', { _fields: 'id,date,title,categories' }), categoriesP, allPages('tags', { _fields:'id,name,slug,count' }).catch(function () { return null; })]).then(function (r) {
+    Promise.all([allPages('posts', { _fields: 'id,date,title,categories,excerpt' }), categoriesP, allPages('tags', { _fields:'id,name,slug,count' }).catch(function () { return null; })]).then(function (r) {
       var posts = hideImported(r[0]), cats = r[1];
       var years = {}, order = [];
       posts.forEach(function (p) {
@@ -1303,7 +1298,7 @@
           return '<section class="arch-year" aria-labelledby="y' + y + '"><h2 id="y' + y + '">' + y + '</h2><ul class="arch-list">' +
             years[y].map(function (p) {
               var c = catsById(p.categories, cats)[0];
-              return '<li><time datetime="' + esc(p.date) + '">' + p.date.slice(5, 10).replace('-', '.') + '</time><a href="' + postUrl(p) + '">' + esc(title(p)) + '</a><span>' + (c ? esc(c.name) : '') + '</span></li>';
+              return '<li><time datetime="' + esc(p.date) + '">' + p.date.slice(5, 10).replace('-', '.') + '</time><div><a class="archive-title" href="' + postUrl(p) + '">' + esc(title(p)) + '</a>' + (excerpt(p) ? '<p class="archive-summary">' + esc(excerpt(p)) + '</p>' : '') + '</div><span>' + (c ? esc(c.name) : '') + '</span></li>';
             }).join('') + '</ul></section>';
         }).join('') + '</div>';
     }).catch(function (e) { showError(e); });
@@ -1352,12 +1347,12 @@
 
     // 內文照片點一下放大
     var box = $('#lightbox'), big = box.querySelector('img'), list = [], idx = 0;
-    var show = function (i) { idx = (i + list.length) % list.length; big.src = list[idx].getAttribute('data-full'); big.alt = list[idx].alt; };
+    var show = function (i) { idx = (i + list.length) % list.length; big.src = list[idx].getAttribute('data-full'); big.alt = list[idx].alt || list[idx].getAttribute('aria-label') || ''; };
     document.addEventListener('click', function (e) {
-      var img = e.target.closest && e.target.closest('.prose img[data-full],.life-film img[data-full]');
+      var img = e.target.closest && e.target.closest('.prose img[data-full],.life-film img[data-full],.about-photo-button[data-full]');
       if (!img || !box.showModal) return;
       e.preventDefault();
-      list = $$('.prose img[data-full],.life-film-group:not([aria-hidden=true]) img[data-full]');
+      list = $$('.prose img[data-full],.life-film-group:not([aria-hidden=true]) img[data-full],.about-photo-button[data-full]');
       var position = list.indexOf(img);
       if (position < 0) position = list.map(function (x) { return x.getAttribute('data-full'); }).indexOf(img.getAttribute('data-full'));
       if (position < 0) return;
@@ -1395,8 +1390,45 @@
     return null;
   }
 
+function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || svc.title) : ''}); }
+  function bookingMessage(svc) {
+    return template(ui('bookingMessage','您好，我想詢問「{service}」的預約安排。'),{service:svc ? svc.title : ui('bookingGeneral','團體到訪')});
+  }
+  function renderBooking() {
+    var list=shown(D.services), chosen=findBy(list,params.get('item') || '');
+    setTitle(ui('bookingTitle','預約與詢問'));
+    function draw(chosen) {
+      var V=C.visit, message=bookingMessage(chosen), line=lineHref(), book=bookingUrl(chosen);
+      if (/^https:\/\/line\.me\/R\/oaMessage\//i.test(line)) line=line.split('?')[0].replace(/\/$/,'')+'/?'+encodeURIComponent(message);
+      view.innerHTML='<section class="wrap booking-page"><a class="back" href="?view=services">'+esc(ui('allServices','所有服務'))+'</a>'+
+        '<header class="list-head"><h1>'+esc(ui('bookingTitle','預約與詢問'))+'</h1><p>'+esc(ui('bookingIntro','選擇想了解的項目，我們會和你確認日期、人數及安排。'))+'</p></header>'+
+        '<div class="booking-choice"><label for="bookingService">'+esc(ui('bookingService','想了解的服務'))+'</label><select id="bookingService"><option value="">'+esc(ui('bookingGeneral','團體到訪'))+'</option>'+
+        list.map(function(s){var value=s.slug||s.title;return '<option value="'+esc(value)+'"'+(chosen===s?' selected':'')+'>'+esc(s.title)+'</option>';}).join('')+'</select>'+
+        '<p class="booking-message">'+esc(message)+'</p><div class="booking-channel">'+
+        (line?'<a class="btn" href="'+esc(line)+'">'+esc(ui('bookingLine','帶入項目，用 LINE 詢問'))+'</a>':'')+
+        (V.email?'<a class="btn ghost" href="mailto:'+esc(V.email)+'?subject='+encodeURIComponent('預約詢問：'+(chosen?chosen.title:ui('bookingGeneral','團體到訪')))+'&amp;body='+encodeURIComponent(message)+'">'+esc(ui('bookingEmail','帶入項目，用 Email 詢問'))+'</a>':'')+
+        (book?'<a class="btn ghost" href="'+esc(book)+'" target="_blank" rel="noopener">'+esc(ui('bookOnline','線上預約'))+'</a>':'')+
+        (V.phone?'<a class="more" href="tel:'+esc(V.phone.replace(/[^\d+]/g,''))+'">'+esc(ui('phone','打電話'))+' '+esc(V.phone)+'</a>':'')+
+        '</div><p class="booking-help">'+esc(ui('bookingHelp','LINE 與 Email 會預填詢問內容，仍需由你送出；日期與名額以協會回覆確認為準。'))+'</p></div></section>';
+      $('#bookingService').addEventListener('change',function(e){var next=findBy(list,e.target.value);history.replaceState(null,'',bookingEntry(next));draw(next);});
+    }
+    draw(chosen);
+  }
+
+  function aboutVisualHtml() {
+    var a=C.aboutPage||{}, photos=(a.featurePhotos||[]).filter(function(p){return p.image;}).slice(0,3);
+    if (a.featureShow===false || !photos.length) return '';
+    return '<div class="about-photo-set">'+photos.map(function(p,i){var src=img(p.image,1400);return '<figure'+(i===0?' class="about-main-photo"':'')+'><button type="button" class="about-photo-button" data-about-photo data-full="'+esc(src)+'" aria-label="'+esc((p.caption||p.alt||ui('viewPhoto','放大照片')))+'"><img data-full="'+esc(src)+'" src="'+esc(src)+'" alt="'+esc(p.alt||'')+'" loading="'+(i===0?'eager':'lazy')+'"></button>'+(p.caption?'<figcaption>'+esc(p.caption)+'</figcaption>':'')+'</figure>';}).join('')+'</div>';
+  }
+  function aboutMilestonesHtml() {
+    var a=C.aboutPage||{}, rows=(a.milestones||[]).filter(function(m){return m.year||m.title;});
+    if(a.milestonesShow===false||!rows.length) return '';
+    return '<section class="about-history" aria-labelledby="historyTitle"><h2 id="historyTitle">'+esc(a.milestonesTitle||ui('historyTitle','老屋的時間印記'))+'</h2><div class="history-cards">'+rows.map(function(m){return '<article class="history-card"><p class="history-year">'+esc(m.year)+'</p><h3>'+esc(m.title)+'</h3><p>'+esc(m.text||'')+'</p></article>';}).join('')+'</div></section>';
+  }
+
   function route() {
     var g = function (k) { return (params.get(k) || '').trim(); };
+    if (g('view') === 'booking') return renderBooking();
     if (g('view') === 'about') return renderAbout();
     if (g('service')) return renderDetail('service', g('service'));
     if (g('town')) return renderDetail('town', g('town'));
@@ -1492,6 +1524,7 @@
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

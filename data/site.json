@@ -345,7 +345,20 @@
     "otherIssues": "其他期山海集",
     "previousIssue": "前一期",
     "nextIssue": "後一期",
-    "allIssueLink": "看全部山海集"
+    "allIssueLink": "看全部山海集",
+    "serviceDetails": "了解服務",
+    "serviceBooking": "預約與詢問",
+    "readArticle": "閱讀全文",
+    "bookingTitle": "預約與詢問",
+    "bookingIntro": "選擇想了解的項目，我們會和你確認日期、人數及安排。",
+    "bookingService": "想了解的服務",
+    "bookingGeneral": "團體到訪",
+    "bookingMessage": "您好，我想詢問「{service}」的預約安排。",
+    "bookingLine": "帶入項目，用 LINE 詢問",
+    "bookingEmail": "帶入項目，用 Email 詢問",
+    "bookingHelp": "LINE 與 Email 會預填詢問內容，仍需由你送出；日期與名額以協會回覆確認為準。",
+    "viewPhoto": "放大照片",
+    "historyTitle": "老屋的時間印記"
   },
   "statistics": {
     "show": true,
@@ -570,6 +583,38 @@
     "title": "關於我們",
     "body": "<p>苗栗縣在地文化推廣協會以在地文化為起點，結合藝文生活來打造一個新的文化聚落，2000年由竹南鎮陳保成先生開始啟動老屋翻修，歷經數年的考究，自力整修老厝，2015年底完成了蕃社30，一棟日治時期的閩式三合院的整修與復原，以開放的環境打造在地文化根據地，且2016年與在地青壯年合作，開啟目前經營的三大據點:  <a href=\"https://www.facebook.com/huansia/?ref=py_c\" target=\"_blank\" rel=\"noreferrer noopener\" aria-label=\"蕃社30陳家古厝 (在新分頁中開啟)\">蕃社30陳家古厝</a>、<a href=\"https://zh-tw.facebook.com/house35020\" target=\"_blank\" rel=\"noreferrer noopener\" aria-label=\"蕃社20號House好事咖啡 (在新分頁中開啟)\">蕃社20號House好事咖啡</a>、<a href=\"https://zh-tw.facebook.com/pg/HaveBread/photos/?tab=album&amp;album_id=411440365727261&amp;ref=page_internal\" target=\"_blank\" rel=\"noreferrer noopener\" aria-label=\"蕃社40-1號蕃社烘培小屋 (在新分頁中開啟)\">蕃社40-1號蕃社烘培小屋</a>。<br>透過新世代注入創新的元素，舉辦各式社區活動，吸引人們再度步入老社區，將在地文化融合於教育、導覽、市集活動、體驗營、展覽之中，且與周邊的文化古蹟據點(慈裕宮)串聯，期待中港城能重拾生命力，且於2018年成立協會以共同推廣在地文化。</p>",
     "wpId": 288,
-    "wpSlug": "%e9%97%9c%e6%96%bc%e6%88%91%e5%80%91"
+    "wpSlug": "%e9%97%9c%e6%96%bc%e6%88%91%e5%80%91",
+    "featureShow": true,
+    "featurePhotos": [
+      {
+        "image": "uploads/2026/10/explore-archives.jpg",
+        "alt": "陳家古厝正廳、潁川堂匾額與庭院植栽",
+        "caption": "老屋今日的樣貌"
+      },
+      {
+        "image": "uploads/2026/10/gallery-72db898c2b4a1f34c20e.jpg",
+        "alt": "陳家古厝整修期間的外觀",
+        "caption": "修復過程的記錄"
+      },
+      {
+        "image": "uploads/2026/10/wp-c62b87f29fecf9d98832.jpg",
+        "alt": "古厝內的手作課程與交流",
+        "caption": "老屋裡的手作與交流"
+      }
+    ],
+    "milestonesShow": true,
+    "milestonesTitle": "老屋的時間印記",
+    "milestones": [
+      {
+        "year": "1937",
+        "title": "陳家古厝興建",
+        "text": "日治時期的閩式三合院，留下家族與中港聚落的生活記憶。"
+      },
+      {
+        "year": "2015",
+        "title": "修復完成，重新開放",
+        "text": "歷經多年考究與自力整修，2015 年底完成整修與復原，成為在地文化交流據點。"
+      }
+    ]
   }
 }

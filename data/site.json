@@ -350,15 +350,17 @@
     "serviceBooking": "預約與詢問",
     "readArticle": "閱讀全文",
     "bookingTitle": "預約與詢問",
-    "bookingIntro": "選擇想了解的項目，我們會和你確認日期、人數及安排。",
+    "bookingIntro": "選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。",
     "bookingService": "想了解的服務",
     "bookingGeneral": "團體到訪",
     "bookingMessage": "您好，我想詢問「{service}」的預約安排。",
     "bookingLine": "帶入項目，用 LINE 詢問",
     "bookingEmail": "帶入項目，用 Email 詢問",
-    "bookingHelp": "LINE 與 Email 會預填詢問內容，仍需由你送出；日期與名額以協會回覆確認為準。",
+    "bookingHelp": "LINE 與 Email 會預填詢問內容；Facebook 請自行貼上需求。訊息仍需由你送出，日期與名額以協會回覆確認為準。",
     "viewPhoto": "放大照片",
-    "historyTitle": "老屋的時間印記"
+    "historyTitle": "老屋的時間印記",
+    "bookingServicePlaceholder": "可選擇服務，或直接輸入你的需求",
+    "bookingServiceHint": "例如：親子手作、學校校外教學，或團體走讀。"
   },
   "statistics": {
     "show": true,

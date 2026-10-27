@@ -69,3 +69,23 @@
 .culture-service-card{align-items:stretch}
 .culture-service-card:nth-child(even) .svc-row-photo{order:0}
 @media(max-width:699px){.others{grid-template-columns:1fr}}
+
+
+/* 紅磚錯列點陣：低透明度、延伸至螢幕邊緣，文字與卡片保留清楚底色。 */
+#view{overflow-x:clip}
+#services,.about-history{position:relative;isolation:isolate}
+#services::before,.about-history::before{
+ content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);
+ pointer-events:none;opacity:.12;
+ background-image:radial-gradient(#B85042 0.75px,transparent .9px),radial-gradient(#B85042 0.75px,transparent .9px);
+ background-size:24px 28px;background-position:0 0,12px 14px;
+}
+.about-history{padding:28px 0}
+.booking{background:#2D241E;color:#FAF7F2;--band:#2D241E;--band-ink:#FAF7F2}
+.booking .booking-facts dt,.booking .status{color:#FAF7F2}
+.booking .btn{background:#FAF7F2;color:#2D241E;border-color:#FAF7F2}
+.booking .btn.line{background:transparent;color:#FAF7F2;border-color:#faf7f280}
+.booking-choice input[list]{width:100%;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);padding:12px;border-radius:5px;min-height:48px}
+.booking-input-hint{font-size:13px;line-height:1.7;color:var(--muted);margin:9px 0 18px}
+.booking-channel>[hidden]{display:none!important}
+@media print{#services::before,.about-history::before{display:none}}

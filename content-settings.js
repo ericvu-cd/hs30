@@ -148,3 +148,8 @@ ContentSettings.uiFields=ContentSettings.uiFields.concat([["serviceDetails", "�
 /* 自由輸入服務的介面文字，均可在 ADMIN 修改。 */
 Object.assign(ContentSettings.defaults.ui,{"bookingIntro": "選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。", "bookingServicePlaceholder": "可選擇服務，或直接輸入你的需求", "bookingServiceHint": "例如：親子手作、學校校外教學，或團體走讀。", "bookingHelp": "LINE 與 Email 會預填詢問內容；Facebook 請自行貼上需求。訊息仍需由你送出，日期與名額以協會回覆確認為準。"});
 ContentSettings.uiFields=ContentSettings.uiFields.filter(function(x){return ["bookingIntro", "bookingServicePlaceholder", "bookingServiceHint", "bookingHelp"].indexOf(x[0])<0;}).concat([["bookingIntro", "預約頁：選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。", "選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。"], ["bookingServicePlaceholder", "預約頁：可選擇服務，或直接輸入你的需求", "可選擇服務，或直接輸入你的需求"], ["bookingServiceHint", "預約頁：例如：親子手作、學校校外教學，或團體走讀。", "例如：親子手作、學校校外教學，或團體走讀。"], ["bookingHelp", "預約頁：LINE 與 Email 會預填詢問內容；Facebook 請自行貼上需求。訊息仍需由你送出，日期與名額以協會回覆確認為準。", "LINE 與 Email 會預填詢問內容；Facebook 請自行貼上需求。訊息仍需由你送出，日期與名額以協會回覆確認為準。"]]);
+
+
+/* 預約：服務下拉選擇，下一列詢問內容可編輯。 */
+Object.assign(ContentSettings.defaults.ui,{"bookingIntro": "選擇想了解的服務，並在下方填寫詢問內容，我們會和你確認日期、人數及安排。", "bookingMessageLabel": "詢問內容", "bookingServiceHint": "可直接修改上方內容，填寫希望的日期、人數與其他需求。"});
+ContentSettings.uiFields=ContentSettings.uiFields.filter(function(x){return ["bookingIntro", "bookingMessageLabel", "bookingServiceHint"].indexOf(x[0])<0;}).concat([["bookingIntro", "預約頁：選擇想了解的服務，並在下方填寫詢問內容，我們會和你確認日期、人數及安排。", "選擇想了解的服務，並在下方填寫詢問內容，我們會和你確認日期、人數及安排。"], ["bookingMessageLabel", "預約頁：詢問內容", "詢問內容"], ["bookingServiceHint", "預約頁：可直接修改上方內容，填寫希望的日期、人數與其他需求。", "可直接修改上方內容，填寫希望的日期、人數與其他需求。"]]);

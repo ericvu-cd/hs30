@@ -71,15 +71,16 @@
 @media(max-width:699px){.others{grid-template-columns:1fr}}
 
 
-/* 紅磚錯列點陣：低透明度、延伸至螢幕邊緣，文字與卡片保留清楚底色。 */
+/* 淡磚紅錯列點陣：明確置於區塊底色上、內容下，延伸至視窗兩側。 */
 #view{overflow-x:clip}
 #services,.about-history{position:relative;isolation:isolate}
 #services::before,.about-history::before{
- content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);
- pointer-events:none;opacity:.12;
- background-image:radial-gradient(#B85042 0.75px,transparent .9px),radial-gradient(#B85042 0.75px,transparent .9px);
- background-size:24px 28px;background-position:0 0,12px 14px;
+ content:"";position:absolute;z-index:0;inset:0 auto 0 50%;width:100vw;transform:translateX(-50%);
+ pointer-events:none;opacity:.28;
+ background-image:radial-gradient(circle,#B85042 .75px,transparent .95px),radial-gradient(circle,#B85042 .75px,transparent .95px);
+ background-size:14px 18px;background-position:0 0,7px 9px;
 }
+#services>*,.about-history>*{position:relative;z-index:1}
 .about-history{padding:28px 0}
 .booking{background:#2D241E;color:#FAF7F2;--band:#2D241E;--band-ink:#FAF7F2}
 .booking .booking-facts dt,.booking .status{color:#FAF7F2}
@@ -89,3 +90,9 @@
 .booking-input-hint{font-size:13px;line-height:1.7;color:var(--muted);margin:9px 0 18px}
 .booking-channel>[hidden]{display:none!important}
 @media print{#services::before,.about-history::before{display:none}}
+
+
+.booking-choice select,.booking-choice textarea{display:block;width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:12px;min-height:48px}
+.booking-choice select{margin-bottom:22px}
+.booking-choice textarea.booking-message{resize:vertical;line-height:1.75;margin:0;min-height:145px;font-family:var(--sans, sans-serif)}
+.booking-choice select:focus-visible,.booking-choice textarea:focus-visible{outline:2px solid #B85042;outline-offset:3px}

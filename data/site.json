@@ -350,7 +350,7 @@
     "serviceBooking": "預約與詢問",
     "readArticle": "閱讀全文",
     "bookingTitle": "預約與詢問",
-    "bookingIntro": "選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。",
+    "bookingIntro": "選擇想了解的服務，並在下方填寫詢問內容，我們會和你確認日期、人數及安排。",
     "bookingService": "想了解的服務",
     "bookingGeneral": "團體到訪",
     "bookingMessage": "您好，我想詢問「{service}」的預約安排。",
@@ -360,7 +360,8 @@
     "viewPhoto": "放大照片",
     "historyTitle": "老屋的時間印記",
     "bookingServicePlaceholder": "可選擇服務，或直接輸入你的需求",
-    "bookingServiceHint": "例如：親子手作、學校校外教學，或團體走讀。"
+    "bookingServiceHint": "可直接修改上方內容，填寫希望的日期、人數與其他需求。",
+    "bookingMessageLabel": "詢問內容"
   },
   "statistics": {
     "show": true,

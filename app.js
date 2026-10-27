@@ -1398,31 +1398,39 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     var list=shown(D.services), chosen=findBy(list,params.get('item') || ''), V=C.visit;
     setTitle(ui('bookingTitle','預約與詢問'));
     view.innerHTML='<section class="wrap booking-page"><a class="back" href="?view=services">'+esc(ui('allServices','所有服務'))+'</a>'+
-      '<header class="list-head"><h1>'+esc(ui('bookingTitle','預約與詢問'))+'</h1><p>'+esc(ui('bookingIntro','選擇或輸入想了解的項目，我們會和你確認日期、人數及安排。'))+'</p></header>'+
+      '<header class="list-head"><h1>'+esc(ui('bookingTitle','預約與詢問'))+'</h1><p>'+esc(ui('bookingIntro','選擇想了解的服務，並在下方填寫詢問內容，我們會和你確認日期、人數及安排。'))+'</p></header>'+
       '<div class="booking-choice"><label for="bookingService">'+esc(ui('bookingService','想了解的服務'))+'</label>'+
-      '<input id="bookingService" type="text" list="bookingServiceOptions" maxlength="120" autocomplete="off" value="'+esc(chosen?chosen.title:'')+'" placeholder="'+esc(ui('bookingServicePlaceholder','可選擇服務，或直接輸入你的需求'))+'" aria-describedby="bookingServiceHint">'+
-      '<datalist id="bookingServiceOptions">'+list.map(function(s){return '<option value="'+esc(s.title)+'"></option>';}).join('')+'</datalist>'+
-      '<p class="booking-input-hint" id="bookingServiceHint">'+esc(ui('bookingServiceHint','例如：親子手作、學校校外教學，或團體走讀。'))+'</p>'+
-      '<p class="booking-message" aria-live="polite"></p><div class="booking-channel">'+
+      '<select id="bookingService"><option value="">'+esc(ui('bookingGeneral','團體到訪'))+'</option>'+list.map(function(s){return '<option value="'+esc(s.slug)+'"'+(chosen&&chosen.slug===s.slug?' selected':'')+'>'+esc(s.title)+'</option>';}).join('')+'</select>'+
+      '<label for="bookingMessage">'+esc(ui('bookingMessageLabel','詢問內容'))+'</label>'+
+      '<textarea id="bookingMessage" class="booking-message" rows="5" maxlength="4000" aria-describedby="bookingServiceHint">'+esc(bookingMessage(chosen))+'</textarea>'+
+      '<p class="booking-input-hint" id="bookingServiceHint">'+esc(ui('bookingServiceHint','可直接修改上方內容，填寫希望的日期、人數與其他需求。'))+'</p><div class="booking-channel">'+
       (V.line?'<a class="btn" data-booking-line href="'+esc(lineHref())+'">'+esc(ui('bookingLine','帶入項目，用 LINE 詢問'))+'</a>':'')+
       (V.email?'<a class="btn ghost" data-booking-email href="mailto:'+esc(V.email)+'">'+esc(ui('bookingEmail','帶入項目，用 Email 詢問'))+'</a>':'')+
       (V.facebookUrl?'<a class="btn ghost" href="'+esc(ContentSettings.linkPath(V.facebookUrl))+'" target="_blank" rel="noopener noreferrer">'+esc(ui('facebook','Facebook 私訊'))+'</a>':'')+
       '<a class="btn ghost" data-booking-form hidden target="_blank" rel="noopener">'+esc(ui('bookOnline','線上預約'))+'</a>'+
       (V.phone?'<a class="more" href="tel:'+esc(V.phone.replace(/[^\d+]/g,''))+'">'+esc(ui('phone','打電話'))+' '+esc(V.phone)+'</a>':'')+
       '</div><p class="booking-help">'+esc(ui('bookingHelp','LINE 與 Email 會預填詢問內容；Facebook 請自行貼上需求。訊息仍需由你送出，日期與名額以協會回覆確認為準。'))+'</p></div></section>';
+    var serviceField=$('#bookingService'), messageField=$('#bookingMessage');
+    var generatedMessage=bookingMessage(chosen);
     function sync() {
-      var value=$('#bookingService').value.trim(), svc=value ? (findBy(list,value)||{title:value}) : null;
-      var message=bookingMessage(svc), line=$('[data-booking-line]'), email=$('[data-booking-email]'), form=$('[data-booking-form]'), book=bookingUrl(svc);
-      $('.booking-message').textContent=message;
-      if(line) line.href=lineHref(svc||{title:ui('bookingGeneral','團體到訪')});
-      if(email) email.href='mailto:'+V.email+'?subject='+encodeURIComponent('預約詢問：'+(value||ui('bookingGeneral','團體到訪')))+'&body='+encodeURIComponent(message);
+      var svc=findBy(list,serviceField.value), message=messageField.value;
+      var line=$('[data-booking-line]'), email=$('[data-booking-email]'), form=$('[data-booking-form]'), book=bookingUrl(svc);
+      if(line) {
+        var href=lineHref(svc||{title:ui('bookingGeneral','團體到訪')});
+        line.href=/^https:\/\/line\.me\/R\/oaMessage\//i.test(href) ? href.split('?')[0].replace(/\/$/,'')+'/?'+encodeURIComponent(message) : href;
+      }
+      if(email) email.href='mailto:'+V.email+'?subject='+encodeURIComponent('預約詢問：'+(svc?svc.title:ui('bookingGeneral','團體到訪')))+'&body='+encodeURIComponent(message);
       if(form) {form.hidden=!book; if(book)form.href=book; else form.removeAttribute('href');}
     }
-    $('#bookingService').addEventListener('input',sync);
-    $('#bookingService').addEventListener('change',sync);
+    serviceField.addEventListener('change',function(){
+      var next=bookingMessage(findBy(list,serviceField.value));
+      if(messageField.value===generatedMessage) messageField.value=next;
+      generatedMessage=next;
+      sync();
+    });
+    messageField.addEventListener('input',sync);
     sync();
   }
-
 
   function aboutVisualHtml() {
     var a=C.aboutPage||{}, photos=(a.featurePhotos||[]).filter(function(p){return p.image;}).slice(0,3);
@@ -1533,6 +1541,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

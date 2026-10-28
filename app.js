@@ -599,12 +599,12 @@ function svcRow(x, i) {
       (V.facebookUrl ? '<a class="btn line" href="' + esc(V.facebookUrl) + '" target="_blank" rel="noopener">' + esc(ui('facebook', 'Facebook 私訊')) + '</a>' : '');
   }
 
-  // 預約與到訪：開放狀態、時間地址、預約按鈕，一個區塊講完
+  // 預約與詢問：開放狀態、時間地址、預約按鈕，一個區塊講完
   function bookingBarHtml(key, svc) {
     var V = C.visit;
     var fmt = function (t) { return String(t || '').replace(/^0/, ''); };
     var map = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(V.address);
-    return '<section class="booking" id="visit" aria-labelledby="bkH"><div class="wrap booking-in"><div class="booking-head">' + secHead(key, 'bkH', '預約與到訪') +
+    return '<section class="booking" id="visit" aria-labelledby="bkH"><div class="wrap booking-in"><div class="booking-head">' + secHead(key, 'bkH', '預約與詢問') +
       '<p class="status" data-status><span class="dot"></span><span class="status-text"></span></p></div>' +
       '<dl class="booking-facts"><div><dt>' + esc(ui('hours', '開放時間')) + '</dt><dd>' + esc(V.openText) + ' ' + fmt(V.open) + '–' + fmt(V.close) + '</dd></div>' +
       '<div><dt>' + esc(ui('address', '地址')) + '</dt><dd><a href="' + map + '" target="_blank" rel="noopener">' + esc(V.address) + '</a>' + (V.transport ? '<small>' + esc(V.transport) + '</small>' : '') + '</dd></div></dl>' +
@@ -924,7 +924,7 @@ function svcRow(x, i) {
       '</article>';
   }
 
-  // 服務頁：大照片 → 名稱與一句話 → 服務資訊與預約 → 內容 → 照片 → 預約須知 → 近期場次 → 相關紀錄 → 其他服務 → 預約與到訪
+  // 服務頁：大照片 → 名稱與一句話 → 服務資訊與預約 → 內容 → 照片 → 預約須知 → 近期場次 → 相關紀錄 → 其他服務 → 預約與詢問
   function serviceHtml(x) {
     var cover = img(x.cover, 2000), f = factsOf(x);
     var notes = String(x.notes || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -1501,7 +1501,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     (s.sections || []).forEach(function (x) { old[x.key] = x; });
     var def = [
       ['services', true, '協會的服務', '以陳家古厝為據點，提供導覽、展覽、課程與市集。'],
-      ['booking', true, '預約與到訪', '團體導覽與手作課程請先預約。'],
+      ['booking', true, '預約與詢問', '團體導覽與手作課程請先預約。'],
       ['events', true, '近期活動', ''],
       ['explore', true, '探索更多', ''],
       ['posts', false, '活動紀錄與在地觀察', ''], ['media', false, '媒體報導', ''], ['towns', false, '小鎮社區人文', ''],
@@ -1559,6 +1559,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

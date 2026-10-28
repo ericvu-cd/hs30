@@ -196,7 +196,7 @@
     (s.sections || []).forEach(function (x) { old[x.key] = x; });
     var def = [
       ['services', true, '協會的服務', '以陳家古厝為據點，提供導覽、展覽、課程與市集。'],
-      ['booking', true, '預約與到訪', '團體導覽與手作課程請先預約。'],
+      ['booking', true, '預約與詢問', '團體導覽與手作課程請先預約。'],
       ['events', true, '近期活動', ''],
       ['explore', true, '探索更多', ''],
       ['posts', false, '活動紀錄與在地觀察', ''], ['media', false, '媒體報導', ''], ['towns', false, '小鎮社區人文', ''],
@@ -537,7 +537,7 @@
 
   var TABS = [
     ['services', '協會服務'], ['towns', '社區人文'], ['videos', '影片精選'], ['media', '媒體報導'], ['events', '近期活動'], ['sep'],
-    ['home', '首頁'], ['aboutGallery','關於與圖集'], ['nav', '選單'], ['visit', '到訪與預約'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
+    ['home', '首頁'], ['aboutGallery','關於與圖集'], ['nav', '選單'], ['visit', '預約與詢問'], ['shanhaiji', '山海集'], ['basic', '基本資料'], ['sep'],
     ['content', '圖示與介面說明'], ['photos', '照片庫'], ['history', '版本紀錄'],
   ];
 
@@ -643,7 +643,7 @@
         inp(p + '.duration', '所需時間', { placeholder: '例如：約 90 分鐘' }) +
         inp(p + '.capacity', '人數', { placeholder: '例如：10–40 人' }) +
         inp(p + '.fee', '費用', { placeholder: '例如：每人 200 元' }) +
-        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空使用「到訪與預約」的表單。網址中可放 {service}，會自動換成服務名稱；一般網址不會任意附加參數。' }) +
+        inp(p + '.bookingUrl', '預約表單網址', { full: true, hint: '留空使用「預約與詢問」的表單。網址中可放 {service}，會自動換成服務名稱；一般網址不會任意附加參數。' }) +
         inp(p + '.notes', '預約須知（一行一項，選填）', { textarea: true, full: true, rows: 4, hint: '例如：請於一週前預約；10 人以上可包場；雨天照常進行。' }) + '</div></div>'
         : '<div class="panel"><h2>地點</h2>' + inp(p + '.mapUrl', 'Google 地圖連結', { hint: '在 Google 地圖找到地點 → 分享 → 複製連結' }) + '</div>') +
       '<div class="panel"><h2>內文</h2>' + richHtml(p + '.body') + '</div>' +
@@ -690,7 +690,7 @@
       }).join('') + '</div>' : '<p class="empty">目前沒有活動。</p>');
   }
 
-  var SECTION_NAMES = { about: '開場短文', services: '協會的服務', booking: '預約與到訪', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
+  var SECTION_NAMES = { about: '開場短文', services: '協會的服務', booking: '預約與詢問', explore: '探索更多（社區、報導、影片、山海集、文章的入口）', events: '近期活動', towns: '小鎮社區人文', shanhaiji: '山海集', videos: '影片精選', posts: '最新文章（WordPress）', media: '媒體報導', visit: '到訪資訊' };
   function viewHome() {
     return head('首頁', '最上面固定是「番社參拾」封面，下面各段落可以調整順序、改標題，或暫時不顯示。首頁建議保持精簡，其他內容由「探索更多」進入。') +
       '<div class="panel"><h2>封面</h2><div class="grid2">' +
@@ -726,7 +726,7 @@
   }
 
   var NAV_TYPES = [['auto-services', '服務項目（自動列出所有服務）'], ['auto-towns', '社區人文（自動列出所有社區）'], ['service', '某一項服務'], ['town', '某一個社區'],
-    ['videos', '影片精選'], ['media', '媒體報導'], ['posts', '所有文章'], ['visit', '到訪與預約'], ['search', '搜尋'], ['category', 'WordPress 分類'], ['url', '其他網址'], ['menu', '自訂下拉選單']];
+    ['videos', '影片精選'], ['media', '媒體報導'], ['posts', '所有文章'], ['visit', '預約與詢問'], ['search', '搜尋'], ['category', 'WordPress 分類'], ['url', '其他網址'], ['menu', '自訂下拉選單']];
   function navTarget(p, it) {
     if (it.type === 'service') return inp(p + '.target', '哪一項服務', { select: state.services.map(function (s) { return [s.slug || s.title, s.title]; }) });
     if (it.type === 'town') return inp(p + '.target', '哪一個社區', { select: state.towns.map(function (s) { return [s.slug || s.title, s.title]; }) });
@@ -771,7 +771,7 @@
   function viewVisit() {
     var days = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
     var on = state.site.visit.openDays || [];
-    return head('到訪與預約', '顯示在首頁「預約與到訪」「到訪陳家古厝」、服務頁與頁尾。') +
+    return head('預約與詢問', '顯示在首頁「預約與詢問」「到訪陳家古厝」、服務頁與頁尾。') +
       '<div class="panel"><h2>開放時間</h2><label>開放日</label><div class="days" style="margin:6px 0 14px">' + days.map(function (d, i) {
         return '<label><input type="checkbox" data-day="' + i + '"' + (on.indexOf(i) >= 0 ? ' checked' : '') + '> ' + d + '</label>';
       }).join('') + '</div><div class="grid3">' + inp('site.visit.openText', '開放日文字', { placeholder: '週三至週日' }) +
@@ -1164,6 +1164,7 @@
     $('#login').hidden = false;
   })();
 })();
+
 
 
 

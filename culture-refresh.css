@@ -101,3 +101,13 @@
 .culture-service-card{position:relative}
 .culture-service-card>.service-category{position:absolute;z-index:2;top:14px;left:14px;max-width:calc(100% - 28px);box-sizing:border-box;margin:0;background:#EAF1ED;color:#354E43;line-height:1.6;box-shadow:0 2px 8px #2d241e20;pointer-events:none}
 
+
+
+/* 預約與到訪內直接填寫；與獨立詢問頁共用同一套欄位與文字。 */
+.booking-in>.booking-choice{grid-column:1/-1;max-width:none;min-width:0;color:var(--ink);border-color:#d6cdc3}
+.booking .booking-head{grid-row:auto}
+.booking .booking-choice .booking-help,.booking .booking-choice .booking-input-hint{color:var(--muted)}
+.booking .booking-choice .btn{color:#FAF7F2;background:var(--brick,#B85042);border-color:var(--brick,#B85042)}
+.booking .booking-choice .btn.ghost{color:var(--brick,#B85042);background:transparent;border-color:var(--line)}
+.booking .booking-choice .more{color:var(--ink)}
+@media print{.booking-choice{display:none!important}}

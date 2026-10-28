@@ -111,3 +111,9 @@
 .booking .booking-choice .btn.ghost{color:var(--brick,#B85042);background:transparent;border-color:var(--line)}
 .booking .booking-choice .more{color:var(--ink)}
 @media print{.booking-choice{display:none!important}}
+
+/* 開館為綠燈，所有休館情況（含例行與臨時休館）為紅燈。 */
+.status .dot{background:#C63832;opacity:1}
+.status.open .dot{background:#238549}
+.service-card-actions{justify-content:flex-end}
+

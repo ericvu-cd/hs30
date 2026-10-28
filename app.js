@@ -563,7 +563,7 @@ function svcRow(x, i) {
       '<div class="svc-row-text">'+
       '<h3><a href="'+esc(href)+'">'+esc(x.title)+'</a></h3>'+(x.summary?'<p class="service-summary">'+esc(x.summary)+'</p>':'')+
       (f.length?'<dl class="mini-facts">'+f.slice(0,2).map(function(r){return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';}).join('')+'</dl>':'')+
-      '<div class="service-card-actions"><a class="more" href="'+esc(href)+'">'+esc(ui('serviceDetails','了解服務'))+'</a><a class="btn" href="'+esc(bookingEntry(x))+'">'+esc(x.bookingText||ui('serviceBooking','預約與詢問'))+'</a></div></div></article>';
+      '<div class="service-card-actions"><a class="btn" href="'+esc(bookingEntry(x))+'">'+esc(x.bookingText||ui('serviceBooking','預約與詢問'))+'</a></div></div></article>';
   }
 
   function cardHtml(x, href, i) {
@@ -1559,6 +1559,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

@@ -5,10 +5,56 @@
 .life-film.is-running .life-film-group[aria-hidden=true]{display:flex}.life-film.is-running .life-film-viewport{overflow-x:hidden}.life-film.is-running .life-film-track{animation:lifeFilmTravel var(--film-duration,144s) linear infinite}
 .life-film.is-running .life-film-viewport:hover .life-film-track,.life-film.is-running .life-film-viewport:focus-within .life-film-track{animation-play-state:paused}
 @keyframes lifeFilmTravel{to{transform:translateX(-50%)}}
-.service-reveal-ready{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.65,.3,1)}
-.service-reveal-ready.is-revealed,.service-reveal-ready:focus-within{opacity:1;transform:none}
-.service-reveal-ready.is-revealed .svc-row-text{animation:serviceTextIn .7s .12s both}
-@keyframes serviceTextIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media(max-width:760px){.life-film{margin-top:34px}.life-film-head{align-items:flex-start;flex-direction:column;gap:14px}.life-film-group figure{width:235px;flex-basis:235px}.life-film-group img{height:180px}.life-film-group{gap:12px;padding-right:12px}.service-reveal-ready{transform:translateY(16px)}}
+@media(max-width:760px){.life-film{margin-top:34px}.life-film-head{align-items:flex-start;flex-direction:column;gap:14px}.life-film-group figure{width:235px;flex-basis:235px}.life-film-group img{height:180px}.life-film-group{gap:12px;padding-right:12px}}
 @media(prefers-reduced-motion:reduce){.life-film .life-film-track{animation:none!important;transform:none!important}.life-film .life-film-group[aria-hidden=true]{display:none!important}.life-film .life-film-viewport{overflow-x:auto!important}.service-reveal-ready{opacity:1!important;transform:none!important;transition:none!important}.service-reveal-ready .svc-row-text{animation:none!important}}
 @media print{.life-film-track{animation:none!important;transform:none!important}.life-film-group[aria-hidden=true],.life-film-toggle{display:none!important}.life-film-viewport{overflow:visible}.life-film-track,.life-film-group{width:100%;flex-wrap:wrap}.service-reveal-ready{opacity:1!important;transform:none!important}}
+
+
+/* 桌機／平板分方向入場；手機照片揭幕，卡片位置保持穩定。 */
+.culture-service-card.service-reveal-ready{--reveal-x:0px;--reveal-delay:0s;opacity:0;transform:translate(var(--reveal-x),24px);transition:opacity .65s ease var(--reveal-delay),transform .7s cubic-bezier(.2,.65,.3,1) var(--reveal-delay)}
+.culture-service-card.service-reveal-ready.is-revealed,.culture-service-card.service-reveal-ready:focus-within{opacity:1;transform:none}
+.culture-service-card.service-reveal-ready .svc-row-text{animation:none}
+@media(min-width:1041px){
+ .culture-service-card.service-reveal-ready:nth-child(3n+1){--reveal-x:-24px}
+ .culture-service-card.service-reveal-ready:nth-child(3n+2){--reveal-delay:.12s}
+ .culture-service-card.service-reveal-ready:nth-child(3n){--reveal-x:24px;--reveal-delay:.24s}
+}
+@media(min-width:700px) and (max-width:1040px){
+ .culture-service-card.service-reveal-ready:nth-child(odd){--reveal-x:-24px}
+ .culture-service-card.service-reveal-ready:nth-child(even){--reveal-x:24px;--reveal-delay:.12s}
+}
+@media(max-width:699px){
+ .culture-service-card.service-reveal-ready{opacity:1;transform:none;transition:none}
+ .culture-service-card.service-reveal-ready>.svc-row-photo{clip-path:inset(100% 0 0 0);transition:clip-path .65s cubic-bezier(.2,.65,.3,1)}
+ .culture-service-card.service-reveal-ready>.svc-row-photo img{transform:scale(1.05);transition:transform .8s cubic-bezier(.2,.65,.3,1)}
+ .culture-service-card.service-reveal-ready>.service-category{opacity:0;transition:opacity .3s ease .18s}
+ .culture-service-card.service-reveal-ready .svc-row-text>h3,
+ .culture-service-card.service-reveal-ready .svc-row-text>.service-summary,
+ .culture-service-card.service-reveal-ready .svc-row-text>.mini-facts,
+ .culture-service-card.service-reveal-ready .svc-row-text>.service-card-actions{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease}
+ .culture-service-card.service-reveal-ready .svc-row-text>h3{transition-delay:.16s}
+ .culture-service-card.service-reveal-ready .svc-row-text>.service-summary{transition-delay:.24s}
+ .culture-service-card.service-reveal-ready .svc-row-text>.mini-facts{transition-delay:.32s}
+ .culture-service-card.service-reveal-ready .svc-row-text>.service-card-actions{transition-delay:.4s}
+ .culture-service-card.service-reveal-ready.is-revealed>.svc-row-photo{clip-path:inset(0)}
+ .culture-service-card.service-reveal-ready.is-revealed>.svc-row-photo img{transform:none}
+ .culture-service-card.service-reveal-ready.is-revealed>.service-category{opacity:1}
+ .culture-service-card.service-reveal-ready.is-revealed .svc-row-text>*{opacity:1;transform:none}
+}
+/* 鍵盤移入直接顯示，保留所有連結與按鈕的可操作性。 */
+.culture-service-card.service-reveal-ready:focus-within>.svc-row-photo{clip-path:none;transition:none}
+.culture-service-card.service-reveal-ready:focus-within>.svc-row-photo img,
+.culture-service-card.service-reveal-ready:focus-within>.service-category,
+.culture-service-card.service-reveal-ready:focus-within .svc-row-text>*{opacity:1;transform:none;transition:none}
+@media(hover:hover) and (pointer:fine){
+ .culture-service-card .svc-row-photo img{transition:transform .65s ease}
+ .culture-service-card:not(.service-reveal-ready):hover,
+ .culture-service-card.service-reveal-ready.is-revealed:hover{transform:translateY(-5px);transition:transform .25s ease,box-shadow .25s ease;box-shadow:0 12px 26px #2d241e18}
+ .culture-service-card:hover .svc-row-photo img{transform:scale(1.03)}
+}
+@media(prefers-reduced-motion:reduce){
+ .culture-service-card,.culture-service-card *{animation:none!important;transition:none!important;transform:none!important;opacity:1!important;clip-path:none!important}
+}
+@media print{
+ .culture-service-card,.culture-service-card *{animation:none!important;transition:none!important;transform:none!important;opacity:1!important;clip-path:none!important}
+}

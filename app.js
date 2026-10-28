@@ -950,7 +950,7 @@ function svcRow(x, i) {
     if (!x) { var e = new Error('not found'); e.notFound = true; return showError(e, kind === 'service' ? '服務' : '社區頁'); }
     setTitle(x.title, x.summary || C.description);
     view.innerHTML = kind === 'service' ? serviceHtml(x) : detailHtml(x, kind);
-    if (kind === 'service') { updateOpenStatus(); initBookingForms(); }
+    if (kind === 'service') { updateOpenStatus(); initBookingForms(); initServiceReveal(); }
     loadRelatedPosts(x, $('#relPosts'));
   }
 
@@ -964,6 +964,7 @@ function svcRow(x, i) {
       (isSvc ? bookingBarHtml('booking') : '');
     updateOpenStatus();
     initBookingForms();
+    if (isSvc) initServiceReveal();
   }
 
   function renderVideos() {
@@ -1249,7 +1250,7 @@ function svcRow(x, i) {
 
   function initServiceReveal() {
     if ((C.motion || {}).serviceReveal === false || !window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var rows = $$('#services .svc-row');
+    var rows = $$('.culture-service-card:not(.service-reveal-ready)');
     if (!rows.length) return;
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -1559,6 +1560,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

@@ -1,9 +1,0 @@
-.about-page{padding-bottom:48px}.about-page>.prose{max-width:780px;margin:0 auto;line-height:2}.about-page p{overflow-wrap:anywhere}
-.tag-cloud-section{margin:28px 0 0;padding-top:22px;border-top:1px solid var(--line,#ccc)}
-.tag-cloud-section h2{font-size:18px;line-height:1.6;margin:0 0 16px}
-.tag-cloud{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 20px;line-height:1.8}
-.tag-cloud a{display:inline-block;max-width:100%;overflow-wrap:anywhere;text-decoration:none;color:inherit}
-.tag-cloud a:hover,.tag-cloud a:focus-visible{text-decoration:underline;text-underline-offset:5px}
-.tag-cloud-note{font-size:14px;line-height:1.8}
-.tag-cloud-more{margin-top:18px}.tag-cloud-more summary{cursor:pointer;font-size:14px;padding:6px 0}.tag-cloud-more[open] summary{margin-bottom:12px}
-@media(max-width:600px){.tag-cloud{gap:8px 14px}.about-page>.prose{font-size:16px}}

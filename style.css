@@ -4927,3 +4927,30 @@ h1.v {
   justify-content: flex-end;
 }
 
+
+
+/* 首頁 Facebook 最新消息嵌入 */
+.fb-news-frame {
+  width: 100%;
+  max-width: 500px;
+  min-height: 520px;
+  margin: 1.25rem auto 0;
+  overflow: hidden;
+  border: 1px solid var(--line, #dedbd2);
+  border-radius: 12px;
+  background: #fff;
+}
+.fb-news-frame iframe {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  min-height: 520px;
+  margin: 0 auto;
+}
+.fb-news .list-more { margin-top: 1rem; }
+@media (max-width: 560px) {
+  .fb-news-frame, .fb-news-frame iframe {
+    min-height: 520px;
+    border-radius: 10px;
+  }
+}

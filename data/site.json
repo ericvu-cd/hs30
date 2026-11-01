@@ -58,9 +58,9 @@
     },
     {
       "key": "posts",
-      "show": false,
-      "title": "活動紀錄與在地觀察",
-      "intro": ""
+      "show": true,
+      "title": "最新消息",
+      "intro": "蕃社30 Facebook 粉絲專頁最新動態。"
     },
     {
       "key": "media",
@@ -94,7 +94,7 @@
       "intro": ""
     }
   ],
-  "homePostCount": 4,
+  "homePostCount": 1,
   "perPage": 12,
   "featuredCategories": [
     "在地微觀",
@@ -621,4 +621,3 @@
     ]
   }
 }
-

@@ -668,17 +668,15 @@ function svcRow(x, i) {
             '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">' + esc(ui('allVideos', '看所有影片')) + '</a></p></section>' : '';
         }
         if (k === 'posts') {
-          // 首頁最新消息：嵌入蕃社30 Facebook 粉絲專頁動態。
-          // Facebook Page Plugin 由 Facebook 自行載入最新動態；高度固定，避免首頁過長。
+          // 首頁最新消息：使用 Facebook JavaScript SDK 解析 Page Plugin，避免直接 iframe 嵌入。
           var fbPage = C.visit && C.visit.facebookUrl ? C.visit.facebookUrl : 'https://www.facebook.com/huansia';
-          // Page Plugin 寬度參數需介於 180–500px；由容器 CSS 自適應縮放。
-          // 以 500px 作為外掛最大寬度，避免原先 680px 超出支援範圍。
-          var fbPlugin = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent(fbPage) +
-            '&tabs=timeline&width=500&height=600&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false';
-          return '<section class="journal fb-news wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', sec.title || '最新消息') +
-            '<div class="fb-news-frame"><iframe title="蕃社30 Facebook 最新動態" src="' + esc(fbPlugin) +
-            '" width="500" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' +
+          var fbMarkup = '<div class="fb-page" data-href="' + esc(fbPage) + '" data-tabs="timeline" data-width="500" data-height="600" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="false"><blockquote cite="' + esc(fbPage) + '" class="fb-xfbml-parse-ignore"><a href="' + esc(fbPage) + '">蕃社30 Facebook</a></blockquote></div>';
+          var section = '<section class="journal fb-news wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', sec.title || '最新消息') +
+            '<div class="fb-news-frame">' + fbMarkup + '</div>' +
             '<div class="list-more"><a class="more" href="' + esc(fbPage) + '" target="_blank" rel="noopener">前往 Facebook 查看最新消息</a></div></section>';
+          // renderHome 以 innerHTML 動態插入區塊，需在插入後手動要求 SDK 解析。
+          window.setTimeout(function () { if (window.FB && FB.XFBML) FB.XFBML.parse(document.getElementById('journal')); }, 0);
+          return section;
         }
         if (k === 'media') {
           var all = mediaSorted();

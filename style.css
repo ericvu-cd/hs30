@@ -4929,36 +4929,14 @@ h1.v {
 
 
 
-/* 首頁 Facebook 最新消息嵌入：符合 Page Plugin 180–500px 寬度範圍 */
+/* 首頁 Facebook JavaScript SDK Page Plugin */
 .fb-news-frame {
-  width: 100%;
-  max-width: 500px;
-  min-height: 600px;
-  margin: 1.5rem auto 0;
-  overflow: hidden;
-  border: 1px solid var(--line, #dedbd2);
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 4px 18px rgba(35, 29, 22, .05);
+  width: 100%; max-width: 500px; min-height: 600px; margin: 1.5rem auto 0;
+  overflow: hidden; border: 1px solid var(--line, #dedbd2); border-radius: 14px;
+  background: #fff; box-shadow: 0 4px 18px rgba(35, 29, 22, .05);
 }
-.fb-news-frame iframe {
-  display: block;
-  width: 100%;
-  height: 600px;
-  border: 0;
-  margin: 0 auto;
+.fb-news-frame .fb-page, .fb-news-frame .fb-page > span, .fb-news-frame iframe {
+  display: block; max-width: 100% !important;
 }
-.fb-news .list-more {
-  margin-top: 1.25rem;
-  text-align: center;
-}
-@media (max-width: 560px) {
-  .fb-news-frame {
-    min-height: 600px;
-    margin-top: 1rem;
-    border-radius: 10px;
-  }
-  .fb-news-frame iframe {
-    height: 600px;
-  }
-}
+.fb-news .list-more { margin-top: 1.25rem; text-align: center; }
+@media (max-width: 560px) { .fb-news-frame { margin-top: 1rem; border-radius: 10px; } }

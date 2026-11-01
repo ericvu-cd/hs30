@@ -671,11 +671,13 @@ function svcRow(x, i) {
           // 首頁最新消息：嵌入蕃社30 Facebook 粉絲專頁動態。
           // Facebook Page Plugin 由 Facebook 自行載入最新動態；高度固定，避免首頁過長。
           var fbPage = C.visit && C.visit.facebookUrl ? C.visit.facebookUrl : 'https://www.facebook.com/huansia';
+          // Page Plugin 寬度參數需介於 180–500px；由容器 CSS 自適應縮放。
+          // 以 500px 作為外掛最大寬度，避免原先 680px 超出支援範圍。
           var fbPlugin = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent(fbPage) +
-            '&tabs=timeline&width=680&height=360&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false';
+            '&tabs=timeline&width=500&height=600&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false';
           return '<section class="journal fb-news wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', sec.title || '最新消息') +
             '<div class="fb-news-frame"><iframe title="蕃社30 Facebook 最新動態" src="' + esc(fbPlugin) +
-            '" width="680" height="360" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' +
+            '" width="500" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' +
             '<div class="list-more"><a class="more" href="' + esc(fbPage) + '" target="_blank" rel="noopener">前往 Facebook 查看最新消息</a></div></section>';
         }
         if (k === 'media') {

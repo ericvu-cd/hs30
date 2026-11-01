@@ -4929,28 +4929,36 @@ h1.v {
 
 
 
-/* 首頁 Facebook 最新消息嵌入 */
+/* 首頁 Facebook 最新消息嵌入：加寬版面，手機自動縮放 */
 .fb-news-frame {
   width: 100%;
-  max-width: 500px;
-  min-height: 520px;
-  margin: 1.25rem auto 0;
+  max-width: 680px;
+  min-height: 680px;
+  margin: 1.5rem auto 0;
   overflow: hidden;
   border: 1px solid var(--line, #dedbd2);
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
+  box-shadow: 0 4px 18px rgba(35, 29, 22, .05);
 }
 .fb-news-frame iframe {
   display: block;
   width: 100%;
-  max-width: 500px;
-  min-height: 520px;
+  height: 680px;
+  border: 0;
   margin: 0 auto;
 }
-.fb-news .list-more { margin-top: 1rem; }
+.fb-news .list-more {
+  margin-top: 1.25rem;
+  text-align: center;
+}
 @media (max-width: 560px) {
-  .fb-news-frame, .fb-news-frame iframe {
-    min-height: 520px;
+  .fb-news-frame {
+    min-height: 680px;
+    margin-top: 1rem;
     border-radius: 10px;
+  }
+  .fb-news-frame iframe {
+    height: 680px;
   }
 }

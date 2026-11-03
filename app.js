@@ -668,15 +668,9 @@ function svcRow(x, i) {
             '<div class="vid-grid">' + vids + '</div><p class="list-more"><a class="more" href="?view=videos">' + esc(ui('allVideos', '看所有影片')) + '</a></p></section>' : '';
         }
         if (k === 'posts') {
-          // 首頁最新消息：使用 Facebook JavaScript SDK 解析 Page Plugin，避免直接 iframe 嵌入。
-          var fbPage = C.visit && C.visit.facebookUrl ? C.visit.facebookUrl : 'https://www.facebook.com/huansia';
-          var fbMarkup = '<div class="fb-page" data-href="' + esc(fbPage) + '" data-tabs="timeline" data-width="500" data-height="600" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="false"><blockquote cite="' + esc(fbPage) + '" class="fb-xfbml-parse-ignore"><a href="' + esc(fbPage) + '">蕃社30 Facebook</a></blockquote></div>';
-          var section = '<section class="journal fb-news wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', sec.title || '最新消息') +
-            '<div class="fb-news-frame">' + fbMarkup + '</div>' +
-            '<div class="list-more"><a class="more" href="' + esc(fbPage) + '" target="_blank" rel="noopener">前往 Facebook 查看最新消息</a></div></section>';
-          // renderHome 以 innerHTML 動態插入區塊，需在插入後手動要求 SDK 解析。
-          window.setTimeout(function () { if (window.FB && FB.XFBML) FB.XFBML.parse(document.getElementById('journal')); }, 0);
-          return section;
+          if (posts === null) return '';
+          return '<section class="journal wrap" id="journal" aria-labelledby="jH">' + secHead(k, 'jH', '活動紀錄與在地觀察') +
+            '<div class="feed">' + listHtml(posts, cats) + '</div><div class="list-more"><a class="more" href="?view=archives">' + esc(ui('allPosts', '看所有文章')) + '</a></div></section>';
         }
         if (k === 'media') {
           var all = mediaSorted();

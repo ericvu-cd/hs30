@@ -4927,16 +4927,3 @@ h1.v {
   justify-content: flex-end;
 }
 
-
-
-/* 首頁 Facebook JavaScript SDK Page Plugin */
-.fb-news-frame {
-  width: 100%; max-width: 500px; min-height: 600px; margin: 1.5rem auto 0;
-  overflow: hidden; border: 1px solid var(--line, #dedbd2); border-radius: 14px;
-  background: #fff; box-shadow: 0 4px 18px rgba(35, 29, 22, .05);
-}
-.fb-news-frame .fb-page, .fb-news-frame .fb-page > span, .fb-news-frame iframe {
-  display: block; max-width: 100% !important;
-}
-.fb-news .list-more { margin-top: 1.25rem; text-align: center; }
-@media (max-width: 560px) { .fb-news-frame { margin-top: 1rem; border-radius: 10px; } }

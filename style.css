@@ -4433,6 +4433,29 @@ h1.v {
   line-height: 1.4;
   margin: 12px 0;
 }
+/* 服務名稱本身是詳情連結：保留標題字型，以細磚紅底線提示可點擊。 */
+.culture-service-card h3 a {
+  text-decoration-line: underline;
+  text-decoration-color: var(--brick,#A54837);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .18em;
+  text-decoration-skip-ink: auto;
+}
+.culture-service-card h3 a:hover,
+.culture-service-card h3 a:focus-visible {
+  color: var(--brick,#A54837);
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+}
+.culture-service-card h3 a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.culture-service-card h3 a:active {
+  color: #7D3C2C;
+}
+
 .service-category {
   align-self: flex-start;
   background: #EAF1ED;
@@ -4975,4 +4998,5 @@ h1.v {
     margin:0;
   }
 }
+
 

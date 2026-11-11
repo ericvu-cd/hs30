@@ -4927,3 +4927,52 @@ h1.v {
   justify-content: flex-end;
 }
 
+
+/* 手機服務卡片：標題與詢問按鈕同列，長標題時自然換行。 */
+@media (max-width:699px) {
+  .culture-service-card .svc-row-text {
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-content:flex-start;
+    align-items:center;
+    gap:12px;
+  }
+  .culture-service-card .svc-row-text > h3 {
+    order:1;
+    flex:1 1 auto;
+    min-width:0;
+    max-width:100%;
+    margin:0;
+    overflow-wrap:anywhere;
+  }
+  .culture-service-card .service-card-actions {
+    order:2;
+    flex:0 0 auto;
+    max-width:100%;
+    margin:0 0 0 auto;
+    padding:0;
+    border:0;
+  }
+  .culture-service-card .service-card-actions .btn {
+    min-height:44px;
+    max-width:100%;
+    box-sizing:border-box;
+    padding:7px 12px;
+    font-size:12px;
+    line-height:1.5;
+    overflow-wrap:anywhere;
+  }
+  .culture-service-card .service-summary {
+    order:3;
+    flex:0 0 100%;
+    min-width:0;
+    margin:0;
+  }
+  .culture-service-card .mini-facts {
+    order:4;
+    flex:0 0 100%;
+    min-width:0;
+    margin:0;
+  }
+}
+

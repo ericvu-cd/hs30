@@ -10,23 +10,7 @@
   "capacity": "",
   "fee": "",
   "bookingUrl": "",
-  "gallery": [
-   {
-    "image": "",
-    "alt": "",
-    "caption": ""
-   },
-   {
-    "image": "",
-    "alt": "",
-    "caption": ""
-   },
-   {
-    "image": "",
-    "alt": "",
-    "caption": ""
-   }
-  ],
+  "gallery": [],
   "relatedCategory": "",
   "relatedTag": "",
   "hidden": false,

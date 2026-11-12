@@ -33,7 +33,7 @@
  "sections": [
   {
    "key": "about",
-   "show": true,
+   "show": false,
    "title": "關於番社參拾",
    "intro": ""
   },

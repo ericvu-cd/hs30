@@ -636,6 +636,13 @@ function svcRow(x, i) {
       '</div></div></div></section>';
   }
 
+  function ensureOpeningIntro(s) {
+    (s.sections||[]).forEach(function(section){
+      if(section.key!=='about'||section.introMode==='independent')return;
+      if(!section.intro)section.intro=s.description||'';
+      section.introMode='independent';
+    });
+  }
   function ensureFeaturedSection(s) {
     s.sections=s.sections||[];
     if(s.sections.some(function(x){return x.key==='featured';}))return;
@@ -671,7 +678,7 @@ function svcRow(x, i) {
       view.innerHTML = (C.sections || []).filter(function (x) { return x.show; }).map(function (sec) {
         var k = sec.key;
         if (k === 'about') {
-          return '<section class="about wrap" id="about" aria-label="' + esc(sec.title || '關於番社參拾') + '"><p class="about-text">' + esc(sec.intro || C.description) + '</p>' + '</section>';
+          return sec.intro && sec.intro.trim() ? '<section class="about wrap" id="about" aria-label="首頁開場短文"><p class="about-text">' + esc(sec.intro) + '</p></section>' : '';
         }
         if (k === 'services') {
           var sv = servicesHtml();
@@ -1571,6 +1578,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     C.sections = C.sections || [];
     migrateLayout(C);
     ensureFeaturedSection(C);
+    ensureOpeningIntro(C);
     if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {
       var at = C.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
       C.sections.splice(at || C.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
@@ -1585,6 +1593,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

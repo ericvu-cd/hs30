@@ -645,7 +645,7 @@ function svcRow(x, i) {
     var item = shown(D[type] || []).filter(function(x) {return (x.slug || x.title) === slug;})[0];
     if (!item) return '';
     var href = config[1](item), image = img(item.cover,1200);
-    return '<section class="featured-story wrap" aria-labelledby="featuredStoryHeading"><h2 id="featuredStoryHeading">老屋與地方近況</h2><article class="featured-story-card'+(image?'':' no-image')+'">'+
+    return '<section class="featured-story wrap" aria-labelledby="featuredStoryHeading"><h2 class="sec-h" id="featuredStoryHeading">老屋與地方近況</h2><article class="featured-story-card'+(image?'':' no-image')+'">'+
       (image?'<a class="featured-story-image" href="'+esc(href)+'" tabindex="-1" aria-hidden="true"><img src="'+esc(image)+'" alt="'+esc(item.coverAlt||item.title)+'" loading="lazy" decoding="async"></a>':'')+
       '<div class="featured-story-copy"><p class="meta"><span>'+esc(config[0])+'</span>'+(item.date?'<time datetime="'+esc(item.date)+'">'+longDate(item.date)+'</time>':'')+'</p><h3><a href="'+esc(href)+'">'+esc(item.title)+'</a></h3>'+
       (item.summary?'<p>'+esc(item.summary)+'</p>':'')+'<a class="btn" href="'+esc(href)+'">閱讀故事</a></div></article></section>';
@@ -1577,6 +1577,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

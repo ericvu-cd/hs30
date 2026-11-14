@@ -629,12 +629,14 @@
    {
     "year": "1937",
     "title": "陳家古厝興建",
-    "text": "日治時期的閩式三合院，留下家族與中港聚落的生活記憶。"
+    "text": "日治時期的閩式三合院，留下家族與中港聚落的生活記憶。",
+    "href": "?p=1701"
    },
    {
     "year": "2015",
     "title": "修復完成，重新開放",
-    "text": "歷經多年考究與自力整修，2015 年底完成整修與復原，成為在地文化交流據點。"
+    "text": "歷經多年考究與自力整修，2015 年底完成整修與復原，成為在地文化交流據點。",
+    "href": "?p=657"
    }
   ],
   "filmShow": true,
@@ -644,5 +646,9 @@
  },
  "motion": {
   "serviceReveal": true
+ },
+ "featuredStory": {
+  "show": true,
+  "reference": "media:zhunan-glass-craft-shanhai-20261107"
  }
 }

@@ -636,6 +636,21 @@ function svcRow(x, i) {
       '</div></div></div></section>';
   }
 
+  function featuredStoryHtml() {
+    var settings = C.featuredStory || {};
+    if (!settings.show || !settings.reference) return '';
+    var colon = settings.reference.indexOf(':'), type = settings.reference.slice(0,colon), slug = settings.reference.slice(colon+1);
+    var config = {media:['媒體報導',mediaUrl],services:['協會服務',serviceUrl],shanhaiji:['山海集',issueUrl]}[type];
+    if (!config) return '';
+    var item = shown(D[type] || []).filter(function(x) {return (x.slug || x.title) === slug;})[0];
+    if (!item) return '';
+    var href = config[1](item), image = img(item.cover,1200);
+    return '<section class="featured-story wrap" aria-labelledby="featuredStoryHeading"><h2 id="featuredStoryHeading">老屋與地方近況</h2><article class="featured-story-card'+(image?'':' no-image')+'">'+
+      (image?'<a class="featured-story-image" href="'+esc(href)+'" tabindex="-1" aria-hidden="true"><img src="'+esc(image)+'" alt="'+esc(item.coverAlt||item.title)+'" loading="lazy" decoding="async"></a>':'')+
+      '<div class="featured-story-copy"><p class="meta"><span>'+esc(config[0])+'</span>'+(item.date?'<time datetime="'+esc(item.date)+'">'+longDate(item.date)+'</time>':'')+'</p><h3><a href="'+esc(href)+'">'+esc(item.title)+'</a></h3>'+
+      (item.summary?'<p>'+esc(item.summary)+'</p>':'')+'<a class="btn" href="'+esc(href)+'">閱讀故事</a></div></article></section>';
+  }
+
   function renderHome() {
     setTitle('', C.description);
     $('#hero').hidden = false;
@@ -682,6 +697,8 @@ function svcRow(x, i) {
         if (k === 'visit') return visitHtml(k);
         return '';
       }).join('');
+      var feature=featuredStoryHtml();
+      if(feature){var serviceBlock=$('#services',view),exploreBlock=$('#explore',view);if(serviceBlock)serviceBlock.insertAdjacentHTML('afterend',feature);else if(exploreBlock)exploreBlock.insertAdjacentHTML('beforebegin',feature);else view.insertAdjacentHTML('afterbegin',feature);}
       updateOpenStatus();
       initBookingForms();
       initServiceReveal();
@@ -1459,7 +1476,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
   function aboutMilestonesHtml() {
     var a=C.aboutPage||{}, rows=(a.milestones||[]).filter(function(m){return m.year||m.title;});
     if(a.milestonesShow===false||!rows.length) return '';
-    return '<section class="about-history" aria-labelledby="historyTitle"><h2 id="historyTitle">'+esc(a.milestonesTitle||ui('historyTitle','老屋的時間印記'))+'</h2><div class="history-cards">'+rows.map(function(m){return '<article class="history-card"><p class="history-year">'+esc(m.year)+'</p><h3>'+esc(m.title)+'</h3><p>'+esc(m.text||'')+'</p></article>';}).join('')+'</div></section>';
+    return '<section class="about-history" aria-labelledby="historyTitle"><h2 id="historyTitle">'+esc(a.milestonesTitle||ui('historyTitle','老屋的時間印記'))+'</h2><div class="history-cards">'+rows.map(function(m){return '<article class="history-card"><p class="history-year">'+(ContentSettings.linkPath(m.href||'')?'<a href="'+esc(ContentSettings.linkPath(m.href))+'" aria-label="'+esc(m.year+'：閱讀'+(m.title||'相關故事'))+'">'+esc(m.year)+'</a>':esc(m.year))+'</p><h3>'+esc(m.title)+'</h3><p>'+esc(m.text||'')+'</p></article>';}).join('')+'</div></section>';
   }
 
   function route() {
@@ -1560,6 +1577,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

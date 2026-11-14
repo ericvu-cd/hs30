@@ -636,16 +636,24 @@ function svcRow(x, i) {
       '</div></div></div></section>';
   }
 
+  function ensureFeaturedSection(s) {
+    s.sections=s.sections||[];
+    if(s.sections.some(function(x){return x.key==='featured';}))return;
+    var at=s.sections.map(function(x){return x.key;}).indexOf('services');
+    if(at>=0)at++;else{at=s.sections.map(function(x){return x.key;}).indexOf('explore');if(at<0)at=0;}
+    s.sections.splice(at,0,{key:'featured',show:!!(s.featuredStory&&s.featuredStory.show),title:'老屋與地方近況',intro:''});
+  }
   function featuredStoryHtml() {
     var settings = C.featuredStory || {};
-    if (!settings.show || !settings.reference) return '';
+    var section=sectionConf('featured');
+    if (section.show===false || !settings.reference) return '';
     var colon = settings.reference.indexOf(':'), type = settings.reference.slice(0,colon), slug = settings.reference.slice(colon+1);
     var config = {media:['媒體報導',mediaUrl],services:['協會服務',serviceUrl],shanhaiji:['山海集',issueUrl]}[type];
     if (!config) return '';
     var item = shown(D[type] || []).filter(function(x) {return (x.slug || x.title) === slug;})[0];
     if (!item) return '';
     var href = config[1](item), image = img(item.cover,1200);
-    return '<section class="featured-story wrap" aria-labelledby="featuredStoryHeading"><h2 class="sec-h" id="featuredStoryHeading">老屋與地方近況</h2><article class="featured-story-card'+(image?'':' no-image')+'">'+
+    return '<section class="featured-story wrap" aria-labelledby="featuredStoryHeading"><h2 class="sec-h" id="featuredStoryHeading">'+esc(section.title||'老屋與地方近況')+'</h2>'+(section.intro?'<p class="sec-intro">'+esc(section.intro)+'</p>':'')+'<article class="featured-story-card'+(image?'':' no-image')+'">'+
       (image?'<a class="featured-story-image" href="'+esc(href)+'" tabindex="-1" aria-hidden="true"><img src="'+esc(image)+'" alt="'+esc(item.coverAlt||item.title)+'" loading="lazy" decoding="async"></a>':'')+
       '<div class="featured-story-copy"><p class="meta"><span>'+esc(config[0])+'</span>'+(item.date?'<time datetime="'+esc(item.date)+'">'+longDate(item.date)+'</time>':'')+'</p><h3><a href="'+esc(href)+'">'+esc(item.title)+'</a></h3>'+
       (item.summary?'<p>'+esc(item.summary)+'</p>':'')+'<a class="btn" href="'+esc(href)+'">閱讀故事</a></div></article></section>';
@@ -669,6 +677,7 @@ function svcRow(x, i) {
           var sv = servicesHtml();
           return sv ? '<section class="svc-home wrap" id="services" aria-labelledby="svH">' + secHead(k, 'svH', '協會的服務') + sv + '</section>' : '';
         }
+        if (k === 'featured') return featuredStoryHtml();
         if (k === 'booking') return bookingBarHtml(k);
         if (k === 'events') return eventsHtml(k);
         if (k === 'explore') return exploreHtml(k);
@@ -697,8 +706,6 @@ function svcRow(x, i) {
         if (k === 'visit') return visitHtml(k);
         return '';
       }).join('');
-      var feature=featuredStoryHtml();
-      if(feature){var serviceBlock=$('#services',view),exploreBlock=$('#explore',view);if(serviceBlock)serviceBlock.insertAdjacentHTML('afterend',feature);else if(exploreBlock)exploreBlock.insertAdjacentHTML('beforebegin',feature);else view.insertAdjacentHTML('afterbegin',feature);}
       updateOpenStatus();
       initBookingForms();
       initServiceReveal();
@@ -1563,6 +1570,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     ContentSettings.normalizeData(D);
     C.sections = C.sections || [];
     migrateLayout(C);
+    ensureFeaturedSection(C);
     if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {
       var at = C.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
       C.sections.splice(at || C.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
@@ -1577,6 +1585,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

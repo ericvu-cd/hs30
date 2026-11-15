@@ -5020,3 +5020,55 @@ h1.v {
 @media(max-width:700px){.featured-story{padding-block:30px}.featured-story-card{grid-template-columns:1fr}.featured-story-image{min-height:0;aspect-ratio:16/9}.featured-story-copy{padding:24px}.featured-story-copy h3{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.featured-story-image img{transition:none}.featured-story-image:hover img{transform:none}}
 
+
+
+/* 兩個年份：老屋銘牌與修復新生；文字與文章連結維持原設定。 */
+.history-card{
+  --year-accent:#93442f;
+  position:relative;
+  padding:32px;
+  color:#2d241e;
+  background:radial-gradient(circle at 1px 1px,rgba(147,68,47,.06) .7px,transparent .9px) 0 0/7px 7px,#f5e8df;
+  border:1px solid #cda892;
+  border-top:4px solid var(--year-accent);
+  border-radius:10px;
+  box-shadow:0 4px 14px rgba(60,38,24,.04);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.history-card:first-child::before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border:1px solid rgba(147,68,47,.25);
+  border-radius:4px;
+  pointer-events:none;
+}
+.history-card:nth-child(2){
+  --year-accent:#315f4c;
+  background:linear-gradient(140deg,#f0f5ed,#e4eee3);
+  border-color:#b0c5b4;
+  border-top-color:var(--year-accent);
+}
+.history-card .history-year{
+  font-size:clamp(38px,4.6vw,56px);
+  color:var(--year-accent);
+  letter-spacing:.025em;
+  margin-bottom:18px;
+}
+.history-year a{
+  display:inline-block;
+  color:var(--year-accent);
+  text-decoration-color:var(--year-accent);
+  text-decoration-thickness:1px;
+  text-underline-offset:9px;
+  padding:2px 0 5px;
+  transition:text-decoration-thickness .2s,transform .15s;
+}
+.history-year a:hover,.history-year a:focus-visible{color:var(--year-accent);text-decoration-thickness:3px}
+.history-year a:active{transform:scale(.97)}
+.history-card:focus-within{box-shadow:0 0 0 3px rgba(171,137,60,.2),0 8px 22px rgba(60,38,24,.08)}
+.history-card h3{color:#2d241e;line-height:1.6}
+.history-card p:last-child{color:#60574d;line-height:1.85}
+@media(hover:hover) and (pointer:fine){.history-card:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(60,38,24,.12)}}
+@media(max-width:699px){.history-card{padding:23px 19px}.history-card .history-year{font-size:38px}.history-card p:last-child{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.history-card,.history-year a{transition:none}.history-card:hover,.history-year a:active{transform:none}}

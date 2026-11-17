@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://public-api.wordpress.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&display=swap">
-<link rel="stylesheet" href="style.css?v=20261115-year-cards">
+<link rel="stylesheet" href="style.css?v=20261117-home-film">
 </head>
 <body>
 <a class="skip" href="#view">跳到主要內容</a>
@@ -75,9 +75,11 @@
 </div>
 
 <dialog class="lightbox" id="lightbox" aria-label="放大的照片">
-  <img alt="">
+  <div class="lb-info"><span id="lbCount"></span><p id="lbCaption"></p></div>
+  <img alt="" id="lbImage" aria-describedby="lbCaption">
   <div class="lb-bar">
     <button type="button" data-lb="prev">上一張</button>
+    <button type="button" data-lb="play" aria-pressed="false" aria-controls="lbImage" hidden>播放輪播</button>
     <button type="button" data-lb="close">關閉</button>
     <button type="button" data-lb="next">下一張</button>
   </div>
@@ -85,9 +87,10 @@
 
 <script src="content-settings.js?v=20261028-booking-correction"></script>
 <script src="visit-hours.js?v=20261023-closures"></script>
-<script src="app.js?v=20261114-opening-intro"></script>
+<script src="app.js?v=20261117-home-film"></script>
 </body>
 </html>
+
 
 
 

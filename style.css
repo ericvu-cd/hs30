@@ -4044,7 +4044,7 @@ h1.v {
 /* ==========================================================================
    05 生活影像帶與服務卡片動態
    ========================================================================== */
-/* Life film is exclusive to About; original gallery remains managed in ADMIN. */
+/* Shared home/About life film; gallery remains managed in ADMIN. */
 .life-film {
   margin: 52px 0 20px;
   min-width: 0;
@@ -5072,3 +5072,16 @@ h1.v {
 @media(hover:hover) and (pointer:fine){.history-card:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(60,38,24,.12)}}
 @media(max-width:699px){.history-card{padding:23px 19px}.history-card .history-year{font-size:38px}.history-card p:last-child{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.history-card,.history-year a{transition:none}.history-card:hover,.history-year a:active{transform:none}}
+
+
+/* 首頁生活影像與放大輪播 */
+.life-film.wrap{margin:0 auto 20px;padding-top:46px;padding-bottom:46px}
+.life-film-head .sec-h{font-family:var(--serif);font-size:clamp(28px,6vw,44px);font-weight:900;line-height:1.3}
+.lightbox .lb-info{position:absolute;z-index:1;top:calc(12px + env(safe-area-inset-top,0px));left:24px;right:24px;color:#fff;text-align:center;pointer-events:none;font-size:14px}
+.lightbox .lb-info p{margin:4px 0 0;max-height:3.6em;overflow:hidden;line-height:1.6;text-shadow:0 1px 5px #000}
+.lightbox img{max-height:calc(100dvh - 185px);touch-action:pan-y}
+.lightbox .lb-bar{flex-wrap:wrap;padding:0 12px}
+.lightbox .lb-bar button{min-height:44px}
+.lightbox [data-lb="play"][aria-pressed="true"]{background:#d9b54e;color:#2d241e}
+.lightbox button:focus-visible{outline:3px solid #d9b54e;outline-offset:3px}
+@media(max-width:699px){.life-film.wrap{padding-top:30px;padding-bottom:30px}.lightbox .lb-bar{gap:7px}.lightbox .lb-bar button{padding:8px 12px;font-size:14px}.lightbox .lb-info{left:16px;right:16px}.lightbox img{max-height:calc(100dvh - 200px)}}

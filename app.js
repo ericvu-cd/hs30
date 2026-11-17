@@ -636,6 +636,14 @@ function svcRow(x, i) {
       '</div></div></div></section>';
   }
 
+  function ensureLifeFilmSection(s) {
+    s.sections=s.sections||[];
+    if(s.sections.some(function(x){return x.key==='lifeFilm';}))return;
+    var at=s.sections.map(function(x){return x.key;}).indexOf('services');
+    if(at<0)at=s.sections.map(function(x){return x.key;}).indexOf('about')+1;
+    var about=s.aboutPage||{};
+    s.sections.splice(at,0,{key:'lifeFilm',show:true,title:about.filmTitle||'老屋裡的生活影像',intro:about.filmText||'活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。'});
+  }
   function ensureOpeningIntro(s) {
     (s.sections||[]).forEach(function(section){
       if(section.key!=='about'||section.introMode==='independent')return;
@@ -680,6 +688,7 @@ function svcRow(x, i) {
         if (k === 'about') {
           return sec.intro && sec.intro.trim() ? '<section class="about wrap" id="about" aria-label="首頁開場短文"><p class="about-text">' + esc(sec.intro) + '</p></section>' : '';
         }
+        if (k === 'lifeFilm') return lifeFilmHtml(true);
         if (k === 'services') {
           var sv = servicesHtml();
           return sv ? '<section class="svc-home wrap" id="services" aria-labelledby="svH">' + secHead(k, 'svH', '協會的服務') + sv + '</section>' : '';
@@ -716,6 +725,7 @@ function svcRow(x, i) {
       updateOpenStatus();
       initBookingForms();
       initServiceReveal();
+      initLifeFilm();
       if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
     });
   }
@@ -1227,9 +1237,9 @@ function svcRow(x, i) {
     }).join('') + '</ul></section>';
   }
 
-  function lifeFilmHtml() {
+  function lifeFilmHtml(home) {
     var about = C.aboutPage || {};
-    if (about.filmShow === false) return '';
+    if (!home && about.filmShow === false) return '';
     var albums = C.photoCollections || [], key = about.filmAlbum || 'wp-378';
     var album = albums.filter(function (x) { return x.key === key; })[0];
     var photos = (album && album.gallery || []).filter(function (x) { return !x.hidden && img(x.image,800); });
@@ -1240,7 +1250,8 @@ function svcRow(x, i) {
         return '<figure><img src="' + esc(image) + '" data-full="' + esc(image) + '"' + (duplicate ? '' : ' role="button" tabindex="0"') + ' alt="' + (duplicate ? '' : esc(x.alt || x.caption || template(ui('lifeFilmAlt','古厝生活影像 {number}'),{number:i+1}))) + '" loading="lazy" decoding="async">' + (x.caption ? '<figcaption>' + esc(x.caption) + '</figcaption>' : '') + '</figure>';
       }).join('') + '</div>';
     }
-    return '<section class="life-film" aria-labelledby="lifeFilmTitle"><div class="life-film-head"><div><h2 id="lifeFilmTitle">' + esc(about.filmTitle || ui('lifeFilmTitle','老屋裡的生活影像')) + '</h2><p>' + esc(about.filmText || ui('lifeFilmHint','活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。')) + '</p></div><button type="button" class="life-film-toggle btn" aria-controls="lifeFilmViewport" aria-pressed="false">' + esc(ui('lifeFilmPlay','播放影像帶')) + '</button></div>' +
+    var conf=home?sectionConf('lifeFilm'):null;
+    return '<section class="life-film'+(home?' wrap':'')+'" id="lifeFilm" aria-labelledby="lifeFilmTitle"><div class="life-film-head"><div><h2'+(home?' class="sec-h"':'')+' id="lifeFilmTitle">' + esc(home?conf.title:(about.filmTitle || ui('lifeFilmTitle','老屋裡的生活影像'))) + '</h2><p>' + esc(home?conf.intro:(about.filmText || ui('lifeFilmHint','活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。'))) + '</p></div><button type="button" class="life-film-toggle btn" aria-controls="lifeFilmViewport" aria-pressed="false">' + esc(ui('lifeFilmPlay','播放影像帶')) + '</button></div>' +
       '<div class="life-film-viewport" id="lifeFilmViewport" tabindex="0" role="region" aria-label="' + esc(ui('lifeFilmGallery','可橫向滑動的生活照片')) + '"><div class="life-film-track">' + group(false) + group(true) + '</div></div></section>';
   }
 
@@ -1379,31 +1390,79 @@ function svcRow(x, i) {
       if (e.key === 'Escape') $$('.nav details').forEach(function (d) { d.open = false; });
     });
 
-    // 內文照片點一下放大
+    // 放大生活影像時，只輪播該圖集；其他內文照片維持手動瀏覽。
     var box = $('#lightbox'), big = box.querySelector('img'), list = [], idx = 0;
-    var show = function (i) { idx = (i + list.length) % list.length; big.src = list[idx].getAttribute('data-full'); big.alt = list[idx].alt || list[idx].getAttribute('aria-label') || ''; };
-    document.addEventListener('click', function (e) {
-      var img = e.target.closest && e.target.closest('.prose img[data-full],.life-film img[data-full],.about-photo-button[data-full]');
-      if (!img || !box.showModal) return;
+    var playButton = $('[data-lb="play"]',box), counter = $('#lbCount'), caption = $('#lbCaption');
+    var playing = false, filmMode = false, modalTimer = null, touchStart = null;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    function clearModalTimer() { clearTimeout(modalTimer); modalTimer = null; }
+    function updatePlayButton() {
+      playButton.hidden = !filmMode || list.length < 2;
+      playButton.textContent = playing ? '暫停輪播' : '播放輪播';
+      playButton.setAttribute('aria-pressed',playing ? 'true' : 'false');
+    }
+    function queueNext() {
+      clearModalTimer();
+      if (!box.open || !playing || document.hidden || list.length < 2) return;
+      modalTimer = setTimeout(function() { show(idx+1); },4000);
+    }
+    function setModalPlaying(on) {
+      playing = !!on && filmMode && list.length > 1;
+      updatePlayButton();
+      clearModalTimer();
+      if (big.complete) queueNext();
+    }
+    function show(i) {
+      if (!list.length) return;
+      clearModalTimer();
+      idx = (i + list.length) % list.length;
+      var selected = list[idx], figure = selected.closest('figure'), text = figure && $('figcaption',figure);
+      big.alt = selected.alt || selected.getAttribute('aria-label') || '';
+      counter.textContent = (idx+1) + ' / ' + list.length;
+      caption.textContent = text && text.textContent || big.alt;
+      big.onload = queueNext;
+      big.onerror = function() { caption.textContent = '此照片暫時無法載入，可切換下一張。'; queueNext(); };
+      big.src = selected.getAttribute('data-full');
+      if (big.complete) queueNext();
+    }
+    document.addEventListener('click', function(e) {
+      var image = e.target.closest && e.target.closest('.prose img[data-full],.life-film img[data-full],.about-photo-button[data-full]');
+      if (!image || !box.showModal) return;
       e.preventDefault();
-      list = $$('.prose img[data-full],.life-film-group:not([aria-hidden=true]) img[data-full],.about-photo-button[data-full]');
-      var position = list.indexOf(img);
-      if (position < 0) position = list.map(function (x) { return x.getAttribute('data-full'); }).indexOf(img.getAttribute('data-full'));
+      var film = image.closest('.life-film');
+      filmMode = !!film;
+      list = film ? $$('.life-film-group:not([aria-hidden=true]) img[data-full]',film) : $$('.prose img[data-full],.about-photo-button[data-full]');
+      var position = list.indexOf(image);
+      if (position < 0) position = list.map(function(x) {return x.getAttribute('data-full');}).indexOf(image.getAttribute('data-full'));
       if (position < 0) return;
+      playing = false;
       show(position);
-      box.showModal();
+      if (!box.open) box.showModal();
+      setModalPlaying(filmMode && !reduced.matches);
     });
-    box.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-lb]');
-      var a = b && b.getAttribute('data-lb');
-      if (a === 'prev') show(idx - 1);
-      else if (a === 'next') show(idx + 1);
-      else if (b || e.target === box || e.target === big) box.close();
+    box.addEventListener('click',function(e) {
+      var button = e.target.closest('[data-lb]'), action = button && button.getAttribute('data-lb');
+      if (action === 'prev') show(idx-1);
+      else if (action === 'next') show(idx+1);
+      else if (action === 'play') setModalPlaying(!playing);
+      else if (action === 'close' || e.target === box) box.close();
     });
-    box.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft') show(idx - 1);
-      if (e.key === 'ArrowRight') show(idx + 1);
+    box.addEventListener('keydown',function(e) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {e.preventDefault();show(idx+(e.key==='ArrowLeft'?-1:1));}
+      if ((e.key === ' ' || e.key === 'Spacebar') && (e.target === box || e.target === big)) {e.preventDefault();setModalPlaying(!playing);}
     });
+    big.addEventListener('pointerdown',function(e) {touchStart=e.pointerType==='touch'?{x:e.clientX,y:e.clientY}:null;});
+    big.addEventListener('pointerup',function(e) {
+      if(!touchStart)return;var dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;touchStart=null;
+      if(Math.abs(dx)>45 && Math.abs(dy)<70)show(idx+(dx<0?1:-1));
+    });
+    box.addEventListener('close',function() {
+      playing=false;clearModalTimer();updatePlayButton();touchStart=null;
+      big.onload=big.onerror=null;
+    });
+    document.addEventListener('visibilitychange',function() {if(document.hidden)clearModalTimer();else if(box.open&&big.complete)queueNext();});
+    if(reduced.addEventListener)reduced.addEventListener('change',function() {if(reduced.matches)setModalPlaying(false);});
+
   }
 
   /* ---------- 依網址決定顯示哪一頁 ---------- */
@@ -1579,6 +1638,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     migrateLayout(C);
     ensureFeaturedSection(C);
     ensureOpeningIntro(C);
+    ensureLifeFilmSection(C);
     if (shown(D.media).length && !C.sections.some(function (x) { return x.key === 'media'; })) {
       var at = C.sections.map(function (x) { return x.key; }).indexOf('posts') + 1;
       C.sections.splice(at || C.sections.length, 0, { key: 'media', show: true, title: '媒體報導', intro: '', count: 3 });
@@ -1593,6 +1653,7 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
     view.innerHTML = '<div class="wrap err"><h1>網站資料讀取失敗</h1><p>請稍後重新整理。若一直出現這個畫面，可能是 data/site.json 格式有誤，請到管理程式的「版本紀錄」還原上一個版本。</p></div>';
   });
 })();
+
 
 
 

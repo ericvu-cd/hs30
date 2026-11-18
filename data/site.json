@@ -35,13 +35,26 @@
    "key": "about",
    "show": true,
    "title": "關於番社參拾",
-   "intro": ""
+   "intro": "苗栗縣在地文化推廣協會以竹南中港的陳家古厝（番社30號）為據點，提供文化導覽、藝文策展、古厝市集與在地教育。",
+   "introMode": "independent"
+  },
+  {
+   "key": "lifeFilm",
+   "show": true,
+   "title": "老屋裡的生活影像",
+   "intro": "活動、相遇與地方日常，從這裡慢慢看見。滑動照片可瀏覽，點照片可放大。"
   },
   {
    "key": "services",
    "show": true,
    "title": "協會的服務",
    "intro": "以陳家古厝為據點，做導覽、展覽、課程與市集。"
+  },
+  {
+   "key": "featured",
+   "show": true,
+   "title": "老屋與地方近況",
+   "intro": ""
   },
   {
    "key": "booking",

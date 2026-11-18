@@ -221,16 +221,6 @@
  },
  "exploreCards": [
   {
-   "key": "towns",
-   "title": "社區人文",
-   "description": "{towns} 個社區",
-   "href": "?view=towns",
-   "cover": "uploads/2026/10/wp-41d8fa39bacd9c4085a5.jpg",
-   "coverAlt": "社區人文",
-   "icon": "",
-   "hidden": false
-  },
-  {
    "key": "culture-game",
    "title": "在地文化知識型互動平台",
    "description": "用遊戲探索地方文化，挑戰任務、蒐集徽章。",
@@ -639,13 +629,19 @@
     "year": "1937",
     "title": "陳家古厝興建",
     "text": "日治時期的閩式三合院，留下家族與中港聚落的生活記憶。",
-    "href": "?p=1701"
+    "href": "?p=1701",
+    "image": "uploads/2026/11/chen-house-1937-ai-reconstruction.jpg",
+    "alt": "AI 生成的陳家古厝金紙工坊情境重現，並非歷史實拍照片",
+    "caption": "金紙工坊情境重現｜AI 生成示意"
    },
    {
     "year": "2015",
     "title": "修復完成，重新開放",
     "text": "歷經多年考究與自力整修，2015 年底完成整修與復原，成為在地文化交流據點。",
-    "href": "?p=657"
+    "href": "?p=657",
+    "image": "uploads/2026/11/chen-house-2015.jpg",
+    "alt": "2015 年陳家古厝實景，紅磚圍牆與修復後正廳",
+    "caption": "2015 年古厝實景"
    }
   ],
   "filmShow": true,

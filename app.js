@@ -1549,7 +1549,11 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
   function aboutMilestonesHtml() {
     var a=C.aboutPage||{}, rows=(a.milestones||[]).filter(function(m){return m.year||m.title;});
     if(a.milestonesShow===false||!rows.length) return '';
-    return '<section class="about-history" aria-labelledby="historyTitle"><h2 id="historyTitle">'+esc(a.milestonesTitle||ui('historyTitle','老屋的時間印記'))+'</h2><div class="history-cards">'+rows.map(function(m){return '<article class="history-card"><p class="history-year">'+(ContentSettings.linkPath(m.href||'')?'<a href="'+esc(ContentSettings.linkPath(m.href))+'" aria-label="'+esc(m.year+'：閱讀'+(m.title||'相關故事'))+'">'+esc(m.year)+'</a>':esc(m.year))+'</p><h3>'+esc(m.title)+'</h3><p>'+esc(m.text||'')+'</p></article>';}).join('')+'</div></section>';
+    return '<section class="about-history" aria-labelledby="historyTitle"><h2 id="historyTitle">'+esc(a.milestonesTitle||ui('historyTitle','老屋的時間印記'))+'</h2><div class="history-cards">'+rows.map(function(m){
+      var href=ContentSettings.linkPath(m.href||''),src=img(m.image,1600),label=m.year+'：閱讀'+(m.title||'相關故事');
+      var photo=src?'<figure class="history-photo"><'+(href?'a href="'+esc(href)+'" aria-label="'+esc(label)+'"':'div')+' class="history-photo-frame"><img src="'+esc(src)+'" alt="'+esc(m.alt||m.title||'')+'" loading="lazy" decoding="async"></'+(href?'a':'div')+'>'+(m.caption?'<figcaption>'+esc(m.caption)+'</figcaption>':'')+'</figure>':'';
+      return '<article class="history-card'+(src?' has-photo':'')+'">'+photo+'<div class="history-copy"><p class="history-year">'+(href?'<a href="'+esc(href)+'" aria-label="'+esc(label)+'">'+esc(m.year)+'</a>':esc(m.year))+'</p><h3>'+esc(m.title)+'</h3><p>'+esc(m.text||'')+'</p></div></article>';
+    }).join('')+'</div></section>';
   }
 
   function route() {
@@ -1718,3 +1722,4 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
  if(document.fonts)document.fonts.ready.then(schedule);
  schedule();
 })();
+

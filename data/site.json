@@ -221,16 +221,6 @@
  },
  "exploreCards": [
   {
-   "key": "towns",
-   "title": "社區人文",
-   "description": "{towns} 個社區",
-   "href": "?view=towns",
-   "cover": "uploads/2026/10/wp-41d8fa39bacd9c4085a5.jpg",
-   "coverAlt": "社區人文",
-   "icon": "",
-   "hidden": false
-  },
-  {
    "key": "culture-game",
    "title": "在地文化知識型互動平台",
    "description": "用遊戲探索地方文化，挑戰任務、蒐集徽章。",

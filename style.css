@@ -5119,12 +5119,10 @@ h1.v {
 @media(max-width:699px){.prose figure[data-image-width]{width:100%}.prose [data-image-columns="3"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.prose [data-image-columns]{grid-template-columns:1fr}}
 
-/* Automatically justified photo album; original proportions, no crop. */
-.prose [data-image-columns="mosaic"]{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
-.prose [data-image-columns="mosaic"]>figure{flex:0 0 calc(50% - 4px);width:auto!important;min-width:0;max-width:100%;margin:0!important}
-.prose [data-image-columns="mosaic"] img{display:block;width:100%;height:auto;max-height:none;object-fit:contain}
-@media(max-width:439px){.prose [data-image-columns="mosaic"]>figure{flex-basis:100%!important}}
-
+/* Stacked mosaic: alternating full-height images and vertical pairs. */
+.prose [data-image-columns="mosaic"]{display:block;position:relative;width:100%;margin:1.4em 0;clear:both}
+.prose [data-image-columns="mosaic"]>figure{position:absolute;width:var(--mosaic-width,50%)!important;min-width:0;max-width:100%;margin:0!important;float:none}
+.prose [data-image-columns="mosaic"] img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;margin:0}
 .prose [data-image-columns][data-image-gap="4"]{gap:4px}
 .prose [data-image-columns][data-image-gap="8"]{gap:8px}
 .prose [data-image-columns][data-image-gap="16"]{gap:16px}

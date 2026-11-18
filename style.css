@@ -5139,3 +5139,15 @@ h1.v {
 .history-photo figcaption{margin:0;padding:10px 16px;font-size:13px;line-height:1.6;background:#f4ece2;color:#534435;border-bottom:1px solid rgba(104,78,47,.15)}
 .history-card:nth-child(2) .history-photo figcaption{background:#e8eee4;color:#345144}
 @media(max-width:699px){.history-cards{grid-template-columns:1fr}.history-card.has-photo .history-copy{padding:22px}}
+
+
+/* Desktop LINE contact: use an on-site dialog instead of unsupported PC chat URLs. */
+.line-contact-dialog{position:fixed;inset:0;margin:auto;width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #c9c1b4;border-radius:16px;padding:28px;background:#fffaf3;color:#2d241e;box-shadow:0 20px 70px #0005;font-family:inherit;line-height:1.7}
+.line-contact-dialog::backdrop{background:rgba(25,20,16,.6)}
+.line-contact-dialog h2{font-size:26px;margin:0 32px 12px 0}.line-contact-dialog p{margin:12px 0}
+.line-contact-close{position:absolute;right:12px;top:12px;border:0;border-radius:50%;width:40px;height:40px;background:#e9e4da;color:#2d241e;font-size:26px;cursor:pointer}
+.line-contact-qr{width:220px;max-width:100%;margin:16px auto;background:#fff;border-radius:8px}.line-contact-qr svg{display:block;width:100%;height:auto}
+.line-contact-id{text-align:center}.line-contact-id strong{font-size:22px;letter-spacing:.03em}
+.line-contact-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}.line-contact-actions .btn{font:inherit}
+.line-contact-message-label{display:block}.line-contact-message-label[hidden]{display:none}.line-contact-dialog textarea{display:block;width:100%;box-sizing:border-box;resize:vertical;padding:10px;font:inherit;color:#2d241e;background:#fff;border:1px solid #bfb6a9;border-radius:6px}.line-contact-status{min-height:1.5em;color:#235e3f}
+.line-contact-dialog button:focus-visible,.line-contact-dialog a:focus-visible{outline:3px solid #d9b54e;outline-offset:3px}

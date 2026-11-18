@@ -1680,3 +1680,32 @@ function bookingEntry(svc) { return q({view:'booking',item:svc ? (svc.slug || sv
 
 
 
+
+
+// Responsive justified photo rows; visual dimensions are recalculated, never stored as content.
+(function(){
+ var pending=false;
+ function layout(){pending=false;document.querySelectorAll('[data-image-columns="mosaic"]').forEach(function(album){
+  var width=album.clientWidth;if(!width)return;
+  var figures=Array.from(album.children).filter(function(f){return f.tagName==='FIGURE';});
+  var gap=Number(album.getAttribute('data-image-gap'))||8, rows=[], target=width<440?220:width<720?190:210;
+  var photos=figures.map(function(f){var im=f.querySelector('img');var ratio=im&&im.naturalWidth&&im.naturalHeight?im.naturalWidth/im.naturalHeight:1.4;return {f:f,r:Math.max(.15,Math.min(8,ratio))};});
+  // Choose balanced rows across the entire album, avoiding an oversized final row.
+  var cost=[0],previous=[0],limit=width<440?1:4;
+  for(var i=1;i<=photos.length;i++){cost[i]=Infinity;var total=0;
+   for(var count=1;count<=limit&&count<=i;count++){total+=photos[i-count].r;var height=(width-gap*(count-1))/total;
+    var score=cost[i-count]+Math.pow(height-target,2);if(score<cost[i]){cost[i]=score;previous[i]=i-count;}
+   }
+  }
+  for(var end=photos.length;end>0;end=previous[end])rows.unshift(photos.slice(previous[end],end));
+  rows.forEach(function(items){var sum=items.reduce(function(a,x){return a+x.r;},0);var usable=width-gap*(items.length-1);
+   items.forEach(function(x){var size=usable*x.r/sum;var value=size.toFixed(3)+'px';if(x.f.style.flexBasis!==value)x.f.style.flexBasis=value;});
+  });
+ });}
+ function schedule(){if(!pending){pending=true;requestAnimationFrame(layout);}}
+ document.addEventListener('load',function(e){if(e.target.tagName==='IMG')schedule();},true);
+ window.addEventListener('resize',schedule);
+ new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['src','data-image-columns','data-image-gap','hidden','class']});
+ if(window.ResizeObserver){var ro=new ResizeObserver(schedule);ro.observe(document.documentElement);}
+ schedule();
+})();

@@ -5085,3 +5085,46 @@ h1.v {
 .lightbox [data-lb="play"][aria-pressed="true"]{background:#d9b54e;color:#2d241e}
 .lightbox button:focus-visible{outline:3px solid #d9b54e;outline-offset:3px}
 @media(max-width:699px){.life-film.wrap{padding-top:30px;padding-bottom:30px}.lightbox .lb-bar{gap:7px}.lightbox .lb-bar button{padding:8px 12px;font-size:14px}.lightbox .lb-info{left:16px;right:16px}.lightbox img{max-height:calc(100dvh - 200px)}}
+
+
+/* 內文圖片的顯示大小與並排；不改變原檔 */
+.prose figure[data-image-width]{max-width:100%;margin:1.4em 0;box-sizing:border-box}
+.prose figure[data-image-width] img{display:block;width:100%;max-width:100%;height:auto}
+.prose figure[data-image-align="left"]{margin-left:0;margin-right:auto}
+.prose figure[data-image-align="center"]{margin-left:auto;margin-right:auto}
+.prose figure[data-image-align="right"]{margin-left:auto;margin-right:0}
+.prose [data-image-columns]{display:grid;gap:18px;align-items:start;width:100%;margin:1.4em 0;clear:both}
+.prose [data-image-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.prose [data-image-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.prose [data-image-columns]>figure{width:100%!important;max-width:100%;min-width:0;margin:0!important;float:none}
+.prose [data-image-columns] img{display:block;width:100%;height:auto;margin:0;object-fit:contain}
+.prose [data-image-columns] figcaption{font-size:14px;line-height:1.6;margin-top:8px;overflow-wrap:anywhere}
+.prose figure[data-image-width="20"]{width:20%}
+.prose figure[data-image-width="25"]{width:25%}
+.prose figure[data-image-width="30"]{width:30%}
+.prose figure[data-image-width="35"]{width:35%}
+.prose figure[data-image-width="40"]{width:40%}
+.prose figure[data-image-width="45"]{width:45%}
+.prose figure[data-image-width="50"]{width:50%}
+.prose figure[data-image-width="55"]{width:55%}
+.prose figure[data-image-width="60"]{width:60%}
+.prose figure[data-image-width="65"]{width:65%}
+.prose figure[data-image-width="70"]{width:70%}
+.prose figure[data-image-width="75"]{width:75%}
+.prose figure[data-image-width="80"]{width:80%}
+.prose figure[data-image-width="85"]{width:85%}
+.prose figure[data-image-width="90"]{width:90%}
+.prose figure[data-image-width="95"]{width:95%}
+.prose figure[data-image-width="100"]{width:100%}
+@media(max-width:699px){.prose figure[data-image-width]{width:100%}.prose [data-image-columns="3"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.prose [data-image-columns]{grid-template-columns:1fr}}
+
+/* Automatically justified photo album; original proportions, no crop. */
+.prose [data-image-columns="mosaic"]{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.prose [data-image-columns="mosaic"]>figure{flex:0 0 calc(50% - 4px);width:auto!important;min-width:0;max-width:100%;margin:0!important}
+.prose [data-image-columns="mosaic"] img{display:block;width:100%;height:auto;max-height:none;object-fit:contain}
+@media(max-width:439px){.prose [data-image-columns="mosaic"]>figure{flex-basis:100%!important}}
+
+.prose [data-image-columns][data-image-gap="4"]{gap:4px}
+.prose [data-image-columns][data-image-gap="8"]{gap:8px}
+.prose [data-image-columns][data-image-gap="16"]{gap:16px}
